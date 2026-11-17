@@ -1,5 +1,5 @@
 ---
-version: v16
+version: v17
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 0. Introduction
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Introduction / v16 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Introduction / v17 --- 2026/11/26.*
 ---
 
 ## 0.1. Contexte
@@ -190,7 +190,7 @@ Les exigences identifiées dans la section §0.3.2 ne couvrent pas complètement
 |          | **Autres sources**                                                                                                                                                 |              |      |      |
 | **EC27** | Héberger le code sur **GitHub**                                                                                                                                    | R1/D2       | L    | ✅    |
 | **EC28** | Démontrer l'infrastructure dans une configuration déployée, cloud ou on-premise                                                                                    | R1/D3/EE06 | DM   | ✅    |
-| ~~**EC29*~~* | ~~Structurer le dossier de sorte que les compétences C1 à C5 soient localisables par une référence explicite~~ | ~~R1, D2~~       | ~~D~~    | ✅    |
+
 > _Légendes : F : fonctionnelle, L : livrable, A : architecturale, D : documentaire, DM : démonstration, Vér. : vérifiable._
 
 ###### Remarques
@@ -300,12 +300,11 @@ Artefacts documentaires à produire.  D'après §0.3.
 | D06 | D1               | Décision d'optimisation argumentée par les durées mesurées _(alimentée par F10.1)_ | EC11   |
 | D07 | D1               | Dépendances entre tâches et flux, exposées _(réalisées par F08.2)_                 | EC09   |
 | D08 | D1               | Matrice de traçabilité exigence → infrastructure → code                            | EC07   |
-| D09 | D1/Annexe | Gouvernance : données personnelles, pseudonymisation, rôles, conservation          | EC16   |
+| D09 | D1/Annexe | Gouvernance : données personnelles, pseudonymisation, rôles, conservation                 | EC16   |
 | D10 | D2               | Le code source de tous les éléments nécessaires                                    | EE05   |
 | D11 | D2               | Hébergement sur GitHub                                                             | EC26   |
 | D12 | D3               | La capture vidéo de l'infrastructure en fonctionnement                             | EE06   |
 | D13 | D3               | Erreur provoquée en D3, sa détection et son traitement                             | EC25   |
-| ~~D14~~ | ~~Dossier~~  | ~~Structure permettant de localiser C1 à C5~~                              | ~~EC28~~   |
 
 ### 0.4.4. Eléments d'architecture écartés
 
