@@ -8,7 +8,7 @@ description: simplified data infrastructure diagram with data flows, control flo
 ```mermaid
 flowchart 
 	subgraph RTN["(5) Data Retention"]
-		RTN_T0(["⏱ weekly, Sunday 04:17"])
+		RTN_T0(["⏱ weekly, Sunday 04:00"])
 		RTN_PRG{{"<b>dag_purge :&nbsp;&nbsp;</b><br/>purge bronze<br/>beyond retention &rarr; log"}}
 	end
 	

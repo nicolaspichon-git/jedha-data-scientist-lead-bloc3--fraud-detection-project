@@ -1,5 +1,5 @@
 ---
-version: v14
+version: v15
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 1. Data Infrastructure Design
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v14 --- 2026/11/16.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v15 --- 2026/11/16.*
 ---
 
 ## 1.1. Vue d'ensemble 
@@ -207,28 +207,3 @@ attendre l'analyste qui arrive à 08:00.
 | **Python**                  | ingestion, validation, scoring, entraînement                                         |
 | **Streamlit**               | restitution du bilan quotidien et vue d'exploitation                                 |
 | **Docker Compose**          | déploiement local reproductible                                                      |
-
----
-
-## Couverture fonctionnelle 
-
-On vérifie dans le tableau suivant que tous les processus présentés dans les diagrammes précédents couvrent bien toutes les fonctionnalités attendues identifiées dans \[D0\] (chaque processus est justifié et chaque fonctionnalité est couverte par au moins un processus).
-
-| Processus                 | Fonctionnalités                                                       |
-| ------------------------- | --------------------------------------------------------------------- |
-| `dag_load_history`        | F02.2, F03.1, F04.1, F04.2, F09.1, F09.2, F09.3, F09.4                |
-| `dag_ingest : fetch`      | F02.1, F03.1, F10.1                                                   |
-| `dag_ingest : process`    | F03.2, F04.1, F06.1, F06.2, F09.1,  F09.2, F09.3, F09.4, F11.1        |
-| `dag_ingest : check`      | F10.1, F10.2, F10.3                                                   |
-| `dag_ingest_verdicts`      | F02.3                                                                 |
-| `dag_train`               | F05.1, F05.2, F05.3, F08.2                                            |
-| `dag_daily`               | F07.1, F07.2, F07.3, F08.2, F10.2                                     |
-| `dag_purge`               | F12.2 (purge)                                                         |
-| déploiement   | F03.3 (bases), F08.1 (orchestration), F12.1 (accès & secrets), F13.1 (paramètres) |
-
-Les trois registres du diagramme --- decision policy, governance policy et verdict delay --- ne  
-réalisent aucune fonctionnalité à eux seuls : ils externalisent les paramètres de F06.1,  
-F11.1/F12.2 et F02.3 respectivement, afin qu'une décision métier, une règle de conformité  
-ou un réglage de simulation ne soient pas codés en dur.
-
----
