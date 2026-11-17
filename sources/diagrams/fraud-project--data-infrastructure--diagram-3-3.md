@@ -1,5 +1,5 @@
 ---
-version: v13
+version: v15
 locale: en
 project: automatic fraud detection
 description: simplified data infrastructure diagram with data flows, control flows and dependencies
@@ -10,16 +10,18 @@ flowchart TD
 	G1_ING_PRC{{"<b>(3b) dag_ingest : process</b>"}}
 	
 	subgraph G1_CHK["(3c) Transactions Ingestion : Checking + Ops Alerting"]
-		G1_ING_CHK{{"<b>(3c) dag_ingest : check</b><br/>controls :<br/>freshness,<br/>empty run,<br/>rejection rate,<br/>volume invariant"}}
+		G1_ING_CHK{{"<b>dag_ingest : check</b><br/>controls :<br/>freshness,<br/>empty run,<br/>rejection rate,<br/>volume invariant"}}
 		G1_OPS["<b>ops channel</b><br/>(pipeline owner)"]
 	end    
 	    
 	subgraph DL[" "]
 		subgraph DL_SILVER["Silver"]
-			DL_TXN[("<b>transactions</b><br/>(typed, features,<br/>score, decision,<br/>model_version)")]
+			DL_TXN[("<b>transactions</b>")]
 		end		
-		DL_RUNS("<b>pipeline_runs</b><br/>(read, valid, rejected, duplicates)")
+		DL_RUNS("<b>pipeline_runs</b><br/>(read, valid, rejected)")
 	end
+	
+	OPS("<b>ops_state</b><br/>(state of the controls)")
 	
     %% ---
     G1_ING_PRC ~~~ G1_CHK
@@ -30,6 +32,8 @@ flowchart TD
     %% ---------- Data flow ----------
     DL_RUNS -->|"last runs"| G1_ING_CHK
     DL_TXN  -->|"last rows"| G1_ING_CHK
+    OPS  -->|"previous state"| G1_ING_CHK
+    G1_ING_CHK -->|"state of controls, on change"| OPS
     G1_ING_CHK  -->|"pipeline alert"| G1_OPS
     
     %% ---------- Group colours (pale wash) ----------
@@ -47,6 +51,6 @@ flowchart TD
     %% ---------- Shared stores : white, overriding the group colour ----------
     %% written and/or read by more than one pipeline
     classDef shared fill:#ffffff,stroke:#2b2b2b,stroke-width:2.5px,color:#111111
-    class DL_TXN,DL_RUNS shared
+    class DL_TXN,DL_RUNS,OPS shared
 
 ```

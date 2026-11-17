@@ -1,5 +1,5 @@
 ---
-version: v13
+version: v15
 locale: en
 project: automatic fraud detection
 description: simplified data infrastructure diagram with data flows, control flows and dependencies
@@ -8,7 +8,7 @@ description: simplified data infrastructure diagram with data flows, control flo
 ```mermaid
 flowchart TD
 	subgraph HDL["(1) Historical Data Loading"]
-		HDL_CSV["External time-series as CSV<br/>(ex: testFraud.csv)"]
+		HDL_CSV["External time-series as CSV<br/>(ex: fraudTest.csv)"]
 		HDL_T0(["▶ manual"])
 		HDL_LOAD{{"<b>dag_load_history :</b><br/>download &rarr; store raw &rarr; <br/>validate &rarr; backfill features"}}		    
 	end		
@@ -19,7 +19,7 @@ flowchart TD
 			DL_QRT[("<b>quarantine</b><br/>(rejected + reason)")]
 		end
 		subgraph DL_SILVER["Silver"]
-			DL_TXN[("<b>transactions</b><br/>(typed, features,<br/>score, decision,<br/>model_version)")]
+			DL_TXN[("<b>transactions</b>")]
 			DL_GTS[("<b>ground_truth</b><br/>(append-only :<br/>txn_id, label, label_ts)")]
 		end
 	end

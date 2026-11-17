@@ -1,14 +1,14 @@
 ---
-version: v13
+version: v15
 locale: en
 project: automatic fraud detection
 description: simplified data infrastructure diagram with data flows, control flows and dependencies
 ---
 
 ```mermaid
-flowchart LR
+flowchart
 	subgraph MT["(2) Models Training"]
-		MT_T3(["⏱ weekly"])
+		MT_T0(["⏱ weekly"])
 		MT_TDS[("<b>datasets</b><br/>(versioned <i>parquets</i>)")]
 		MT_TRN{{"<b>dag_train :</b><br/>build dataset &rarr; train &rarr; evaluate &rarr; register"}}  
 	end
@@ -16,10 +16,10 @@ flowchart LR
 	subgraph DL[" "]
 		direction LR
 		subgraph DL_SILVER["Silver"]
-			DL_TXN[("<b>transactions</b><br/>(typed, features,<br/>score, decision,<br/>model_version)")]
+			DL_TXN[("<b>transactions</b>")]
 			DL_GTS[("<b>ground_truth</b><br/>(txn_id, label, label_ts)")]
 		end		
-		DL_RUNS("<b>pipeline_runs</b><br/>(read, valid, rejected, duplicates)") 
+		DL_RUNS("<b>pipeline_runs</b><br/>(read, valid, rejected)") 
 	end
 	subgraph MR[" "]
 	    MR_MR("<b>models registry&nbsp;&nbsp;</b>")  
@@ -36,7 +36,7 @@ flowchart LR
     DL_RUNS -->|"ingestion health<br/>over the period"| MT_TRN 
     
     %% ---------- Control flow ----------
-    MT_T3 ==> MT_TRN
+    MT_T0 ==> MT_TRN
 	
     %% ---------- Group colours (pale wash) ----------
     style MR   fill:#fafaf9,stroke:#b9b9b2,stroke-width:2px
@@ -47,7 +47,7 @@ flowchart LR
     %% ---------- Nodes : same hue, more intense ----------
     classDef nMT  fill:#f9d5c6,stroke:#eb6834,stroke-width:1.5px,color:#111111
     %% simulation scaffolding : dashed border, absent from a real deployment
-    class MT_T3,MT_TRN,MT_TDS nMT
+    class MT_T0,MT_TRN,MT_TDS nMT
 
     %% ---------- Shared stores : white, overriding the group colour ----------
     %% written and/or read by more than one pipeline

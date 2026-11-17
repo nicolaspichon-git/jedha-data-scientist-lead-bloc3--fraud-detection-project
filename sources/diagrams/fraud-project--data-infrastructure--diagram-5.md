@@ -1,5 +1,5 @@
 ---
-version: v13
+version: v15
 locale: en
 project: automatic fraud detection
 description: simplified data infrastructure diagram with data flows, control flows and dependencies
@@ -7,6 +7,11 @@ description: simplified data infrastructure diagram with data flows, control flo
 
 ```mermaid
 flowchart 
+	subgraph RTN["(5) Data Retention"]
+		RTN_T0(["⏱ weekly, Sunday 04:17"])
+		RTN_PRG{{"<b>dag_purge :&nbsp;&nbsp;</b><br/>purge bronze<br/>beyond retention &rarr; log"}}
+	end
+	
 	subgraph DL[" "]
 		subgraph DL_BRONZE["Bronze"]
 			DL_RAW[("<b>raw_events</b><br/>(append-only except for purge beyond retention)")]
@@ -19,17 +24,12 @@ flowchart
 		GP_RTN("<b>governance policy :</b><br/>retention")
 	end
 	
-	subgraph RTN["Data Retention"]
-		RTN_T4(["⏱ daily 02:00"])
-		RTN_PRG{{"<b>dag_retention :&nbsp;&nbsp;</b><br/>purge bronze<br/>beyond retention &rarr; log"}}
-	end
-	
     %% ---
     
     GP ~~~ RTN ~~~ DL
     
     %% ---------- Control flow ----------
-    RTN_T4 ==> RTN_PRG
+    RTN_T0 ==> RTN_PRG
 	
     %% ---------- Data flow ----------
     RTN_PRG -->|"delete beyond retention"| DL_RAW 
@@ -54,5 +54,5 @@ flowchart
     class DL_RAW,DL_QRT,DL_GTS,DL_TXN,DL_RUNS,GP_RTN shared
     %% cross-cutting policy, read by two pipelines
     classDef nRTN fill:#e8e8e5,stroke:#8d8d86,stroke-width:1.5px,color:#111111
-    class RTN_T4,RTN_PRG nRTN
+    class RTN_T0,RTN_PRG nRTN
 ```
