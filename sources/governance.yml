@@ -423,6 +423,20 @@ realtime:
   # under 26 s would cut off calls that were about to succeed.
   timeout_seconds: 35
 
+  # THE TIME THE WHOLE POLL MAY TAKE, all calls together. Decided 2026-11-18,
+  # after an evening when the Space stopped answering: five calls of 35 s make
+  # 175 s, more than dag_ingest's dagrun_timeout of 2 minutes, so Airflow killed
+  # every run with a SIGTERM before poll could record a single failure. An
+  # absence nobody could read in the log -- the opposite of EC14.
+  #
+  # Under the dagrun_timeout with room for the tasks that follow -- validate,
+  # score, notify, the controls; a whole run took 47 s at worst in S3's
+  # measurements, polling included. Never below
+  # timeout_seconds, or a slow but successful call would be cut off; config
+  # refuses it. The first call that times out also ends the poll: an API that
+  # did not answer in 35 s will not answer the four next calls either.
+  poll_budget_seconds: 60
+
   # HOW OFTEN N7's DAG RUNS. Decided 2026-11-16.
   #
   # The plan framed this as a latency question. It is not. N0 established there

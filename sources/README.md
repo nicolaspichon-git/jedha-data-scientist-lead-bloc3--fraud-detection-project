@@ -14,7 +14,7 @@ sont réalisés ; chacun a son plan de développement sous [`ws/`](ws/).
 
 ## Ce que fait le système
 
-| Processus | Ce qu'il produit | DAG | Cadence (UTC) |
+| Processus | Ce qu'il produit | DAG | Cadence (heure de Paris) |
 | --- | --- | --- | --- |
 | **S1** chargement historique | la zone brute, la quarantaine, les transactions pseudonymisées et leurs features | `dag_load_history` | manuel, une fois |
 | **S2** entraînement | un jeu d'entraînement daté, un modèle, son manifeste `run.json`, sa référence M5 en base | `dag_train` | lundi 03:00 |
@@ -24,9 +24,11 @@ sont réalisés ; chacun a son plan de développement sous [`ws/`](ws/).
 | **S5** conservation | la purge de la zone brute et de la quarantaine au-delà de 90 jours, journalisée | `dag_purge` | dimanche 04:00 |
 | **S6** restitution | un tableau de bord en lecture seule | service `dashboard` | permanent |
 
-Airflow n'a pas de fuseau déclaré : les heures ci-dessus sont celles de son
-horloge, en UTC. Le **rapport**, lui, découpe ses journées dans le fuseau
-déclaré dans `governance.yml` (`Europe/Paris`).
+Chaque DAG porte un `start_date` dans le fuseau `Europe/Paris`, et Airflow
+évalue alors sa cadence **dans ce fuseau**, changements d'heure compris : le
+rapport tourne à 06:00 à Paris, l'été comme l'hiver. Les journaux d'Airflow,
+eux, affichent leurs horodatages en UTC. Le **rapport** découpe ses journées
+dans le fuseau déclaré dans `governance.yml`, le même.
 
 **Deux canaux de notification, deux publics.** Le canal des **fraudes** notifie
 l'analyste, au plus 60 alertes sur 24 heures glissantes ; au-delà, une alerte

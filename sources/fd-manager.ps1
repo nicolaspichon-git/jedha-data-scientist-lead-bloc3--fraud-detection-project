@@ -264,7 +264,7 @@ switch ($Task) {
             @{ n = 'cleanup';      d = 'supprime roles et tables de l''ancien nommage (sans prefixe)' }
             @{ n = 'progress';     d = 'ou en sont les executions, tache par tache' }
             @{ n = 'observe';      d = 'observe et mesure l''API [R4], rapporte sous runtime/observations/' }
-            @{ n = 'ingest';       d = 'déclencheun cycle temps reel : .\fd-manager.ps1 ingest [-Corrupt]' }
+            @{ n = 'ingest';       d = 'declenche un cycle temps reel : .\fd-manager.ps1 ingest [-Corrupt]' }
             @{ n = 'alerts';       d = 'etat des alertes et de leur notification' }
             @{ n = 'health';       d = 'les quatre controles du pipeline (-Notify pour envoyer)' }
             @{ n = 'abandoned';    d = 'liste lesexecutions restees en cours (-Apply pour les fermer)' }

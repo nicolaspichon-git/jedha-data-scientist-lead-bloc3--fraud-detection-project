@@ -33,7 +33,7 @@ A **video** capture of your working infrastructure on an example.
 
 #### Deliverables
 - \[D1\] [The Data Infrastructure Diagram](fraud-project--d1-data-infrastructure-diagram.pdf)
-- \[D2\] [The source code](fraud-project--d2-the-source-code-github-link)
+- \[D2\] [The source code](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project)
 - \[D3\] [A video capture](fraud-project--d3-a-video-capture-vidyard-link)
 
 #### Appendices
