@@ -31,14 +31,14 @@ param(
                  'alerts', 'health', 'abandoned', 'verdicts', 'report',
                  'check-leak',
                  'realtime',
-                 'backfill',
+                 'backfill', 'reference',
                  'measure-hour',
                  'rechoose-threshold',
                  'compare-recipes',
                  'batches',
                  'digests',
                  'purge',
-                 'replay', 'forget',
+                 'replay', 'forget', 'dashboard',
                  'tasklog', 'dag-test', 'accept', 'test', 'lint', 'traceability',
                  'typology',
                  'check')]
@@ -47,7 +47,7 @@ param(
     [string]$Batch,
 
     [ValidateSet('postgres', 'airflow-init', 'airflow-scheduler',
-                 'airflow-webserver', 'mlflow')]
+                 'airflow-webserver', 'mlflow', 'dashboard')]
     [string]$Service,
 
     [string]$TaskId = 'preflight',
@@ -251,7 +251,7 @@ switch ($Task) {
         @(
             @{ n = 'setup';        d = 'cree .env et y inscrit un FRAUD_PEPPER (a lancer en premier)' }
             @{ n = 'pepper';       d = 'affiche un FRAUD_PEPPER sans toucher a .env' }
-            @{ n = 'up';           d = 'demarre postgres, airflow, mlflow' }
+            @{ n = 'up';           d = 'demarre postgres, airflow, mlflow, streamlit' }
             @{ n = 'down';         d = 'arrete tout' }
             @{ n = 'reset';        d = 'DETRUIT les volumes et repart de zero' }
             @{ n = 'status';       d = 'etat des trois services, et journaux de ceux qui ont quitte' }
@@ -263,26 +263,28 @@ switch ($Task) {
             @{ n = 'train';        d = 'declenche S2 : .\fd-manager.ps1 train [-CutOff 2020-11-30] [-Drop none]' }
             @{ n = 'cleanup';      d = 'supprime roles et tables de l''ancien nommage (sans prefixe)' }
             @{ n = 'progress';     d = 'ou en sont les executions, tache par tache' }
-            @{ n = 'observe';      d = 'N0 : mesure l''API temps reel, ecrit sous ws/' }
-            @{ n = 'ingest';       d = 'N2 : un cycle temps reel : .\fd-manager.ps1 ingest [-Corrupt]' }
-            @{ n = 'alerts';       d = 'N5 : etat des alertes et de leur notification' }
-            @{ n = 'health';       d = 'N9 : les quatre controles du pipeline (-Notify pour envoyer)' }
-            @{ n = 'abandoned';    d = 'N9 : executions restees en cours (-Apply pour les fermer)' }
-            @{ n = 'report';       d = 'S4 : produit le rapport du matin (--date 2026-11-16)' }
-            @{ n = 'verdicts';     d = 'N6 : ecrit les verdicts retenus, hors de tout scoring' }
-            @{ n = 'check-leak';   d = 'N6 : exige le meme score avec is_fraud=0 et is_fraud=1' }
-            @{ n = 'realtime';     d = 'N7 : etat du DAG a la minute : .\fd-manager.ps1 realtime [-Start|-Stop]' }
+            @{ n = 'observe';      d = 'observe et mesure l''API [R4], rapporte sous runtime/observations/' }
+            @{ n = 'ingest';       d = 'déclencheun cycle temps reel : .\fd-manager.ps1 ingest [-Corrupt]' }
+            @{ n = 'alerts';       d = 'etat des alertes et de leur notification' }
+            @{ n = 'health';       d = 'les quatre controles du pipeline (-Notify pour envoyer)' }
+            @{ n = 'abandoned';    d = 'liste lesexecutions restees en cours (-Apply pour les fermer)' }
+            @{ n = 'report';       d = 'produit le rapport du matin (--date 2026-11-16)' }
+            @{ n = 'verdicts';     d = 'ecrit les verdicts retenus, hors de tout scoring' }
+            @{ n = 'check-leak';   d = 'exige le meme score avec is_fraud=0 et is_fraud=1' }
+            @{ n = 'realtime';     d = 'etat du DAG a la minute : .\fd-manager.ps1 realtime [-Start|-Stop]' }
             @{ n = 'backfill';     d = 'recalcule les features stockees et reconcilie les deux modes' }
-            @{ n = 'measure-hour'; d = 'N4 : ce que txn_hour fait au modele sur le flux' }
-            @{ n = 'rechoose-threshold'; d = 'N4 : rechoisit le seuil sur la distribution du flux' }
-            @{ n = 'compare-recipes';    d = 'N4 : compare deux recettes : --against <version>' }
+            @{ n = 'reference';    d = 'copie en base les mesures M5 des run.json anterieurs a R10 (-- --dry-run)' }
+            @{ n = 'measure-hour'; d = 'ce que txn_hour fait au modele sur le flux' }
+            @{ n = 'rechoose-threshold'; d = 'rechoisit le seuil sur la distribution du flux' }
+            @{ n = 'compare-recipes';    d = 'compare deux recettes : --against <version>' }
             @{ n = 'lock';         d = 'releve les versions resolues dans airflow/requirements.lock' }
             @{ n = 'mlflow-reset'; d = 'recree le volume MLflow (detruit son historique)' }
             @{ n = 'batches';      d = 'liste les lots de la zone brute et leur execution' }
-            @{ n = 'digests';      d = 'S5 : lots sans empreinte (-Apply pour la relever)' }
-            @{ n = 'purge';        d = 'S5 : purge a blanc (-Before ; -Apply pour supprimer)' }
+            @{ n = 'digests';      d = 'lots sans empreinte (-Apply pour la relever)' }
+            @{ n = 'purge';        d = 'purge a blanc (-Before ; -Apply pour supprimer)' }
             @{ n = 'replay';       d = 'rejoue un lot : .\fd-manager.ps1 replay -Batch <uuid>' }
-            @{ n = 'forget';       d = 'S5 : oublie un lot rate : forget -Batch <uuid> [-Apply]' }
+            @{ n = 'forget';       d = 'oublie un lot rate : forget -Batch <uuid> [-Apply]' }
+            @{ n = 'dashboard';    d = 'demarre le tableau de bord (http://localhost:8501) [-Stop]' }
             @{ n = 'tasklog';      d = 'affiche le dernier journal : .\fd-manager.ps1 tasklog -TaskId backfill_features' }
             @{ n = 'dag-test';     d = 'execute une tache en direct : .\fd-manager.ps1 dag-test -TaskId preflight' }
             @{ n = 'test';         d = 'tests unitaires, sans base ni Airflow' }
@@ -319,6 +321,34 @@ switch ($Task) {
                 (Join-Path $PWD '.env'), $lines,
                 (New-Object System.Text.UTF8Encoding($false)))
             Write-Host "  FRAUD_PEPPER genere et inscrit" -ForegroundColor Green
+        }
+
+        # THE DASHBOARD'S PASSWORD (S6/R0). Generated like the pepper, and for
+        # the same reason it is never versioned. The line is ADDED when absent:
+        # every .env made before S6 lacks it, and a replace-only loop would
+        # silently leave the dashboard without a password -- unable to log in,
+        # which is safe, but for no reason anybody would guess.
+        $lines = @(Get-Content '.env')
+        if ($lines -match '^FD_DASHBOARD_PASSWORD=.+') {
+            Write-Host "  FD_DASHBOARD_PASSWORD deja renseigne, laisse intact" -ForegroundColor Yellow
+        }
+        else {
+            $d = New-Pepper
+            if ($lines -match '^FD_DASHBOARD_PASSWORD=') {
+                $lines = $lines | ForEach-Object {
+                    if ($_ -match '^FD_DASHBOARD_PASSWORD=') { "FD_DASHBOARD_PASSWORD=$d" } else { $_ }
+                }
+            }
+            else {
+                $lines += ''
+                $lines += '# Password of fd_dashboard, the role the dashboard logs in as (S6).'
+                $lines += "FD_DASHBOARD_PASSWORD=$d"
+            }
+            [System.IO.File]::WriteAllLines(
+                (Join-Path $PWD '.env'), $lines,
+                (New-Object System.Text.UTF8Encoding($false)))
+            Write-Host "  FD_DASHBOARD_PASSWORD genere et inscrit" -ForegroundColor Green
+            Write-Host "  (a appliquer a la base :  .\fd-manager.ps1 init)"
         }
 
         Write-Host ""
@@ -358,6 +388,11 @@ switch ($Task) {
         Write-Host ""
         Write-Host "Airflow    : http://localhost:8080   (admin / admin)" -ForegroundColor Cyan
         Write-Host "MLflow     : http://localhost:5000" -ForegroundColor Cyan
+        Write-Host "Streamlit  : http://localhost:8501   (fd_dashboard, lecture seule)" -ForegroundColor Cyan
+        if (-not $env:FD_DASHBOARD_PASSWORD) {
+            Write-Host "  FD_DASHBOARD_PASSWORD est vide : le tableau de bord ne pourra pas se connecter." -ForegroundColor Yellow
+            Write-Host "  .\fd-manager.ps1 setup   puis   .\fd-manager.ps1 init" -ForegroundColor Yellow
+        }
         Write-Host "PostgreSQL : localhost:5432" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Pour consulter la base :  .\fd-manager.ps1 psql"
@@ -403,7 +438,7 @@ switch ($Task) {
         # status=running, whose support varies.
         # airflow-init is absent from this list: it migrates the schema and
         # then exits. Seeing it as "Exited (0)" is the expected behaviour.
-        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow')
+        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow', 'dashboard')
         $up = 0
         foreach ($svc in $expected) {
             $id = @(& docker compose ps -q $svc) -join ''
@@ -905,7 +940,7 @@ ORDER BY state DESC, control;
 SELECT a.notified_at IS NOT NULL AS notifiee, a.channel, count(*) AS alertes,
        min(a.raised_at)::timestamp(0) AS plus_ancienne,
        max(a.attempts) AS tentatives_max
-FROM   fd_alerts a
+FROM   fd_frauds a
 GROUP BY a.notified_at IS NOT NULL, a.channel
 ORDER BY 1;
 '@
@@ -913,7 +948,7 @@ ORDER BY 1;
         Write-Host "Alertes en attente ayant deja echoue, et pourquoi :" -ForegroundColor DarkGray
         & docker @Psql -c @'
 SELECT a.txn_id, a.attempts, left(a.last_error, 70) AS motif
-FROM   fd_alerts a
+FROM   fd_frauds a
 WHERE  a.notified_at IS NULL AND a.attempts > 0
 ORDER BY a.attempts DESC, a.raised_at
 LIMIT  10;
@@ -939,11 +974,26 @@ LIMIT  10;
         Write-Host ""
     }
 
+    'reference' {
+        Assert-Env
+        Assert-Docker
+        Write-Host ""
+        Write-Host "R10 : copie en base des mesures de M5 (rappel, precision, alertes/jour)." -ForegroundColor Cyan
+        Write-Host "Une seule fois, pour les recettes entrainees avant R10 : depuis," -ForegroundColor DarkGray
+        Write-Host "fit_model les ecrit lui-meme a cote de run.json." -ForegroundColor DarkGray
+        Write-Host ""
+        Write-Host "  --dry-run lit les manifestes sans rien ecrire ; --all reecrit tout." -ForegroundColor DarkGray
+        Write-Host ""
+        & docker compose exec -T airflow-scheduler `
+            python3 /opt/project/tools/backfill_reference.py @Rest
+        Write-Host ""
+    }
+
     'observe' {
         Assert-Docker
         Write-Host ""
         Write-Host "N0 : observation de l'API temps reel." -ForegroundColor Cyan
-        Write-Host "Environ 5 minutes. La mesure est ecrite sous ws/." -ForegroundColor DarkGray
+        Write-Host "Environ 5 minutes. La mesure est ecrite sous runtime/observations/." -ForegroundColor DarkGray
         Write-Host ""
         Write-Host "Le fichier produit ne contient AUCUNE donnee nominative :" -ForegroundColor DarkGray
         Write-Host "seules les formes sont relevees (type, longueur, decompte)." -ForegroundColor DarkGray
@@ -1076,6 +1126,27 @@ LIMIT  10;
         Invoke-Step 'fonction fd_client_features' {
             & docker @Psql -f '/work/sql/functions/fd_client_features.sql'
         }
+        # The recorded paths follow the directories they name (S6/R13).
+        # Idempotent: a path already under runtime/ matches nothing.
+        Invoke-Step 'chemins enregistres sous runtime/' {
+            & docker @Psql -f '/work/sql/maintenance/050_move_runtime_paths.sql'
+        }
+        # The dashboard's password lives in .env, never in sql/ddl (S6/R0).
+        # Without it fd_dashboard exists but cannot log in -- said, not hidden.
+        if ($env:FD_DASHBOARD_PASSWORD) {
+            if ($env:FD_DASHBOARD_PASSWORD -notmatch '^[0-9a-f]{64}$') {
+                Write-Host "FD_DASHBOARD_PASSWORD n'a pas la forme attendue (64 caracteres hexadecimaux)." -ForegroundColor Red
+                Write-Host "Videz la ligne dans .env puis relancez :  .\fd-manager.ps1 setup" -ForegroundColor Yellow
+                exit 1
+            }
+            Invoke-Step 'mot de passe de fd_dashboard' {
+                & docker @Psql -v "dashboard_password=$($env:FD_DASHBOARD_PASSWORD)" -f '/work/sql/roles/dashboard_password.sql'
+            }
+        }
+        else {
+            Write-Host "--- fd_dashboard : pas de FD_DASHBOARD_PASSWORD dans .env, le role ne peut pas se connecter" -ForegroundColor Yellow
+            Write-Host "    Le generer :  .\fd-manager.ps1 setup   puis   .\fd-manager.ps1 init" -ForegroundColor Yellow
+        }
         Write-Host "`nDDL applique. Le relancer ne doit produire aucune erreur.`n" -ForegroundColor Green
     }
 
@@ -1084,6 +1155,39 @@ LIMIT  10;
         Invoke-Step 'declenchement de S1' {
             & docker compose exec -T airflow-scheduler airflow dags trigger dag_load_history
         }
+    }
+
+    'dashboard' {
+        Assert-Env; Assert-Docker
+        if ($Stop) {
+            Invoke-Step 'arret du tableau de bord' { & docker compose stop dashboard }
+            return
+        }
+        # WITHOUT ITS PASSWORD the service would start and every page would say
+        # so. Saying it here, before building, costs nothing.
+        if (-not $env:FD_DASHBOARD_PASSWORD) {
+            Write-Host ""
+            Write-Host "FD_DASHBOARD_PASSWORD est vide dans .env : fd_dashboard ne peut pas se connecter." -ForegroundColor Red
+            Write-Host "  .\fd-manager.ps1 setup   puis   .\fd-manager.ps1 init" -ForegroundColor Yellow
+            Write-Host ""
+            exit 1
+        }
+        $env:BUILDKIT_PROGRESS = 'plain'
+        # --force-recreate: ALWAYS a new process. The code is mounted, but
+        # Python keeps a module it has imported, and Streamlit re-reads the
+        # PAGES on every run while fraud/ stays as it was when the container
+        # started -- outside the app's directory, and no file event crosses a
+        # Docker mount on Windows anyway. Without it, `up` leaves an unchanged
+        # container running: a new page then calls a function the old module
+        # does not have (AttributeError: rejects_view, 2026-11-17).
+        Invoke-Step 'docker compose up --build --force-recreate dashboard' {
+            & docker compose up -d --build --force-recreate dashboard
+        }
+        Write-Host ""
+        Write-Host "Tableau de bord : http://localhost:8501" -ForegroundColor Cyan
+        Write-Host "  connecte en fd_dashboard : lecture de fd_reports, fd_frauds, fd_transactions et quelques autres, rien de plus"
+        Write-Host "  journaux :  .\fd-manager.ps1 logs -Service dashboard"
+        Write-Host ""
     }
 
     'forget' {
@@ -1255,7 +1359,7 @@ LIMIT  10;
         Write-Host ""
         Write-Host "=== S2 : artefacts et chaine de tracabilite (M5 a M8)"
         & docker compose exec -T airflow-scheduler `
-            python3 /opt/project/tools/check_s2.py /opt/project/datasets
+            python3 /opt/project/tools/check_s2.py /opt/project/runtime/datasets
 
         Write-Host ""
         Write-Host "=== S3 : ingestion temps reel (N1 a N9)"
@@ -1285,6 +1389,15 @@ LIMIT  10;
             python3 /opt/project/tools/check_s5.py
 
         Write-Host ""
+        Write-Host "=== S6 : le role fd_dashboard, lu dans le catalogue (R0 a R5)"
+        & docker @Psql -f '/work/sql/checks/s6_acceptance.sql'
+
+        Write-Host ""
+        Write-Host "=== S6 : le conteneur du tableau de bord, tel qu'il tourne"
+        # On the HOST, not in the scheduler: there is no Docker inside a container.
+        & python tools/check_s6.py
+
+        Write-Host ""
         Write-Host "=== Les fichiers Parquet sur le disque"
         if (Test-Path 'datasets') {
             Get-ChildItem -Path 'datasets' -Recurse -Filter '*.parquet' |
@@ -1312,7 +1425,7 @@ LIMIT  10;
         }
         Invoke-Step 'artefacts et chaine de S2' {
             & docker compose exec -T airflow-scheduler `
-                python3 /opt/project/tools/check_s2.py /opt/project/datasets
+                python3 /opt/project/tools/check_s2.py /opt/project/runtime/datasets
         }
         Invoke-Step 'criteres d''acceptation de S3' {
             & docker @Psql -f '/work/sql/checks/s3_acceptance.sql'
@@ -1334,6 +1447,12 @@ LIMIT  10;
         Invoke-Step 'declaration, DAG et fichiers de S5' {
             & docker compose exec -T airflow-scheduler `
                 python3 /opt/project/tools/check_s5.py
+        }
+        Invoke-Step 'criteres d''acceptation de S6' {
+            & docker @Psql -f '/work/sql/checks/s6_acceptance.sql'
+        }
+        Invoke-Step 'conteneur du tableau de bord (S6)' {
+            & python tools/check_s6.py
         }
         Invoke-Step 'absence de fuite du verdict' {
             & docker compose exec -T airflow-scheduler `

@@ -1,5 +1,5 @@
 ---
-version: v12
+version: v13
 locale: fr
 tags:
   - _RNCP38777
@@ -17,32 +17,33 @@ tags:
 ## Appendices
 ### 1.A. Appendix A : Design Rationale
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / D1 / Annexe A : Design Rationale / v12 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / D1 / Annexe A : Design Rationale / v13 --- 2026/11/26.*
 ---
 
 ### 1.A.0. Contexte
 
-Ce document annexe présente les principes structurent la conception de l'infrastructure de données du cas d'etude \[D0\].
+Ce document annexe présente les principes qui structurent la conception de l'infrastructure de données du cas d'étude \[D0\].
 
 ### 1.A.1. P1 : Le besoin décide de la forme
-Le métier demande d'être notifié, mais pas de bloquer de la transaction. La détection n'est donc pas dans le chemin critique du paiement : aucun budget en millisecondes, aucun service résident, aucune haute disponibilité synchrone. Un traitement par petits lots d'une minute suffit.
 
-**Conséquence : absence de scoreur synchrone temps-réel.**
+Le métier demande à être notifié, mais pas de bloquer la transaction. La détection n'est donc pas dans le chemin critique du paiement : aucun budget en millisecondes, aucun service résident, aucune haute disponibilité synchrone. Un traitement par petits lots d'une minute suffit.
 
-### 1.A.2. Le simulateur de transactions temps-réelles délivre deux flux logiques
+**Conséquence.** Un traitement du flux continu par petits lots d'une minute est suffisant (pas besoin de service de scoring synchrone en temps réel).
 
-L'API \[R4\] livre à la fois la requête de transaction et son étiquette (le verdict fraude/légitime). Dans une application de paiement réelle, le verdict arrive après enquête, longtemps après la date de la transaction proprement dit. 
+### 1.A.2. P2 : Le simulateur délivre deux flux logiques
+
+L'API \[R4\] livre à la fois la transaction et son étiquette (le verdict fraude/légitime). Dans une application de paiement réelle, le verdict arrive après enquête, longtemps après la transaction.
 
 **Conséquence.** Le pipeline sépare ces deux entités à l'ingestion :
 
 - la *transaction* part vers le scoring, sans étiquette ;
 - le *verdict* est postdaté et ne sera visible qu'une fois l'échéance passée.
 
-### 1.A.3. P 3 : Les features sont calculées à l'ingestion
+L'ingestion des verdicts différés a un temps caractéristique propre, strictement compris entre le quasi-temps réel de l'ingestion des transactions et la périodicité journalière des rapports quotidiens.
 
-C'est le pivot de la simplification : en calculant et en persistant les features au moment où
-la transaction arrive, la correction temporelle est automatique : la ligne porte les valeurs qui
-étaient vraies à cet instant.
+### 1.A.3. P3 : Les features sont calculées à l'ingestion
+
+C'est le pivot de la simplification : en calculant et en persistant les features au moment où la transaction arrive, la correction temporelle est automatique.
 
 **Conséquence.** On n'a pas de jointure temporelle à faire, donc pas de magasin de features à gérer. L'entraînement et le scoring lisent les mêmes colonnes de la même table (pas d'écart entre entraînement et service, donc).
 
@@ -61,41 +62,56 @@ Les paramètres de gouvernance sont déclarés en configuration et deviennent de
 
 | Paramètre           | Nature         | Utilisation |
 | ------------------- | -------------- | ------------- |
-| `governance policy` | **conformité** | pseudonymisation, accès, rétention |
+| `governance policy` | **conformité** | pseudonymisation, accès, rétention, purge |
 | `decision policy`   | **métier**     | arbitrage faux positif / fraude manquée (seuil de score valant fraude) |
 | `verdict delay`     | **simulation** | imite le délai d'enquête (n'existe pas en production) |
 
 ### 1.A.7. P7 : Le harnais et le système sont bien différenciés
-La validation du contenu appartient au système. Le harnais, lui, imite les imperfections du
-monde : il injecte des anomalies et diffère les verdicts. Un banc d'essai qui nettoie les données
-masque la faiblesse du système.
+La validation du contenu appartient au système. Le harnais, lui, imite les imperfections du monde : il injecte des anomalies et diffère les verdicts. Un banc d'essai qui nettoie les données masque la faiblesse du système.
 
 ### 1.A.8. P8 : Tout magasin doit être lu
-Tous les magasins ont au moins un lecteur : `fd_quarantine` est examinée au bilan quotidien, `fd_datasets` est relu pour l'idempotence, `fd_pipeline_runs` alimente trois consommateurs, etc.
+
+Tous les magasins ont au moins un lecteur.
 
 ### 1.A.9. P9 : Les absences sont surveillées autant que les erreurs
+
 Une panne silencieuse est indiscernable d'une absence de fraude. Le dispositif détecte l'absence de données ou d'action : exécution ne produisant aucune ligne, obsolescence, nombre d'exécutions insuffisant. 
+
+Les contrôles d'absence portent sur la chaîne plutôt que sur les transactions :
+
+- *exécutions vides* : plus de 10 % des exécutions de l'heure n'ont rien stocké ;
+- *fraîcheur* : plus de dix minutes sans exécution réussie ;
+- *taux de rejet* : plus de 5 % des lignes lues envoyées en quarantaine ;
+- *invariant de volume* : chaque ligne lue est soit une transaction, soit une ligne en quarantaine.
 
 Les alertes pour ce types d'anomalie sont envoyées sur un canal de notification distinct de celui de l'analyste (canal de notification de fraude).
 
 ### 1.A.10. P10 : L'immuabilité est déclarée et appliquée
 
-L'instruction `UPDATE` est interdite par déclencheur sur les magasins en ajout seul, `DELETE` étant réservé au rôle de *purgeur*.
+L'immuabilité d'une table repose sur des révocations de droits : `UPDATE`, `DELETE` et `TRUNCATE` sont révoqués sur la zone brute et sur les scores. 
+
+L'instruction `DELETE` est réservé au rôle de *purgeur*. Celui-ci n'a aucun droit sur la couche exploitée.
+
+**Conséquence.** La garantie d'immuabilité se vérifie à l'exécution.
 
 ### 1.A.11. P11 : Chaque technologie est justifiée par une contrainte
 
-*Kafka*, *Debezium*, *Redis*, *Feast*, *dbt* et *Great Expectations* n'ont pas été retenues, faute de
-contraintes qui pouvaient les justifier à l''échelle de l'exercice. 
+*Kafka*, *Debezium*, *Redis*, *Feast*, *dbt* et *Great Expectations* n'ont pas été retenues, faute de contraintes qui pouvaient les justifier à l'échelle de l'exercice. 
+
+### 1.A.12. P12 : Chaque règle n'a qu'une définition et une seule
+
+Une règle n'est implémentée qu'une seule fois : configuration yaml, composant Python, fonction ou script SQL.
 
 ---
 
 #### Références
-##### Diagrammes
-- `step-0/diagrams/fraud-project--data-infrastructure-4--diagram.md` — complet
-- `…-diagram-overview.md`, `…-diagram-1.md` à `…-diagram-5.md`
-- `…-diagram-legends.md`
-##### Analyses
-- `outputs/fraud-project--infra-4--couverture-v09.md`
-- `outputs/fraud-project--c4--proposition.md`
-- `outputs/fraud-project--couches-et-identifiants.md`
-- `outputs/fraud-project--infrastructure-minimale.md`
+##### Spécifications
+- \[D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
+##### Livrables
+- \[D1\] [Data Infrastructure Design](fraud-project--d1-data-infrastructure.pdf)
+##### Annexes
+- \[D1-B\] [Data Governance Policy](fraud-project--d1-annexe-b--gouvernance.pdf)
+#### Ressources
+- \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
+
+---
