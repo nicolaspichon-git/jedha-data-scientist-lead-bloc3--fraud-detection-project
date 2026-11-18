@@ -481,3 +481,114 @@ def test_the_raw_door_stores_the_envelope_with_the_reason():
     _, items = stream.validate_raw([(7, envelope)], 5000.0, 120.0)
     assert items[0][0] == 7
     assert items[0][1] is envelope
+
+
+
+# --- the budget of the whole poll (18 November 2026) ----------------------------
+#
+# The Space stopped answering, five calls of 35 s exceeded dag_ingest's
+# two-minute dagrun_timeout, and every run was killed by a SIGTERM before poll
+# could record one failure. These tests hold the bound with small numbers.
+
+import time as _time
+from pathlib import Path
+
+import requests as _requests
+
+
+class HangingSession:
+    """Never answers within any timeout: a trickling server, a stuck DNS."""
+
+    def __init__(self, seconds=5.0):
+        self.seconds, self.calls = seconds, 0
+
+    def get(self, url, timeout=None):
+        self.calls += 1
+        _time.sleep(self.seconds)
+        return FakeSession.Response(200, body())
+
+
+class SlowSession(FakeSession):
+    def __init__(self, seconds):
+        super().__init__([])
+        self.seconds = seconds
+
+    def get(self, url, timeout=None):
+        _time.sleep(self.seconds)
+        return super().get(url, timeout)
+
+
+class TimeoutSession:
+    def __init__(self):
+        self.calls = 0
+
+    def get(self, url, timeout=None):
+        self.calls += 1
+        raise _requests.exceptions.ReadTimeout("read timed out")
+
+
+def test_a_call_that_never_answers_is_abandoned_and_ends_the_poll():
+    session = HangingSession(seconds=5.0)
+    started = _time.monotonic()
+    readings, failures = stream.poll("http://x", 5, timeout=0.2,
+                                     session=session, budget_s=1.5)
+    elapsed = _time.monotonic() - started
+    assert elapsed < 3.0, "the poll waited for the hung call: %.1f s" % elapsed
+    assert session.calls == 1, "no second call to an API that did not answer"
+    assert readings == [] and len(failures) == 5
+    assert "abandonne" in failures[0].error
+    assert all(f.error.startswith("non tente") for f in failures[1:])
+
+
+def test_a_timeout_raised_by_requests_also_ends_the_poll():
+    session = TimeoutSession()
+    readings, failures = stream.poll("http://x", 5, session=session,
+                                     budget_s=60)
+    assert session.calls == 1 and readings == [] and len(failures) == 5
+
+
+def test_a_fast_refusal_does_not_end_the_poll():
+    """A 502 is an answer: the next call may succeed (N0 measured 5 % of
+    failures). Only silence stops the poll."""
+    readings, failures = stream.poll("http://x", 3, session=FakeSession(
+        [502, 200, 200]), budget_s=60)
+    assert len(readings) == 2 and len(failures) == 1 and failures[0].status == 502
+
+
+def test_the_calls_left_when_the_budget_runs_out_are_returned_as_failures():
+    """EC14: five asked, three read -- the two missing must be in the result,
+    not merely absent from it."""
+    readings, failures = stream.poll("http://x", 5, session=SlowSession(0.8),
+                                     budget_s=3.0)
+    assert 2 <= len(readings) <= 3
+    assert len(readings) + len(failures) == 5
+    assert failures and all("budget" in f.error for f in failures)
+
+
+def test_no_budget_keeps_the_former_behaviour():
+    session = TimeoutSession()
+    readings, failures = stream.poll("http://x", 3, session=session)
+    assert session.calls == 3 and len(failures) == 3
+
+
+def test_the_budget_fits_inside_the_dagrun_timeout():
+    """The point of the budget. A run took 47 s at worst in S3's measurements,
+    polling included; the budget must leave the tasks after poll their time."""
+    import re
+
+    import yaml
+    root = Path(__file__).resolve().parents[1]
+    realtime = yaml.safe_load((root / "governance.yml").read_text(
+        encoding="utf-8"))["realtime"]
+    dag = (root / "airflow" / "dags" / "dag_ingest.py").read_text(encoding="utf-8")
+    minutes = int(re.search(r"dagrun_timeout=dt\.timedelta\(minutes=(\d+)\)",
+                            dag).group(1))
+    assert realtime["poll_budget_seconds"] + 47 <= 60 * minutes
+    assert realtime["poll_budget_seconds"] >= realtime["timeout_seconds"]
+    assert "budget_s=settings.poll_budget_s" in dag
+
+
+def test_a_budget_below_one_call_is_refused():
+    from fraud import config
+    with pytest.raises(ValueError, match="poll_budget_seconds"):
+        config._poll_budget(20, 35)

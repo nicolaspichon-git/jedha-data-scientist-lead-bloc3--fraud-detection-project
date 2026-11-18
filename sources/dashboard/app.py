@@ -11,13 +11,19 @@ import streamlit as st
 
 st.set_page_config(page_title="Automatic Fraud Detection", layout="wide")
 
-# One entry per page.
-PAGES = [
-    st.Page("pages/report.py", title="Rapports", url_path="report", default=True),
-    st.Page("pages/frauds.py", title="Fraudes", url_path="frauds"),
-    st.Page("pages/ops.py", title="Etats", url_path="ops"),
-    st.Page("pages/operations.py", title="Contrôles", url_path="operations"),
-    st.Page("pages/performances.py", title="Performances", url_path="performances"),
-]
+PAGES = {
+    "Analyse": [
+        st.Page("pages/report.py", title="Rapports", url_path="report", default=True),
+        st.Page("pages/frauds.py", title="Fraudes", url_path="frauds"),
+    ],
+    "Exploitation": [
+        st.Page("pages/ops.py", title="Etats", url_path="ops"),
+        st.Page("pages/operations.py", title="Contrôles", url_path="operations"),
+    ],
+    "Suivi": [
+        st.Page("pages/rejects.py", title="Rejets", url_path="rejects"),
+        st.Page("pages/performances.py", title="Performances", url_path="performances"),
+    ],
+}
 
 st.navigation(PAGES).run()

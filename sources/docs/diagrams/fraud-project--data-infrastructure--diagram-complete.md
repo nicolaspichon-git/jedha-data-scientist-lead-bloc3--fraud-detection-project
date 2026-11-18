@@ -1,5 +1,5 @@
 ---
-version: v15
+version: v16
 locale: en
 project: automatic fraud detection
 description: simplified data infrastructure diagram with data flows, control flows and dependencies
@@ -38,7 +38,7 @@ flowchart
 	end
 	
 	subgraph META["Metadata"]
-		RUNS("<b>pipeline_runs</b><br/>read, valid, rejected, duplicates")
+		RUNS("<b>pipeline_runs</b><br/>read, valid, rejected")
 		OPS_ST("<b>ops_state</b><br/>(state of the four controls)")
 		MDR("<b>models registry</b><br/>(<i>MLflow</i>)")   
 	end
@@ -51,7 +51,7 @@ flowchart
 
 	subgraph G2["(4) Daily Reporting"]
 		T2(["⏱ daily 06:00"])
-		DAY{{"<b>dag_daily</b><br/>business report<br/>+ model performance<br/>+ rejections by reason"}}
+		DAY{{"<b>dag_daily</b><br/>business report<br/>+ model performance<br/>+ rejection rate"}}
 		REPORT["<b>daily report</b>"]
 	end
 	
@@ -112,7 +112,7 @@ flowchart
     OPS_ST  -->|"previous state"| ING_CHK
     ING_CHK  -->|"state of controls, on change"| OPS_ST
     TDS -->|dataset, if already built| TRN
-    ING_FCH -->|"fetch outcome : calls, http status, retries"| RUNS
+    ING_FCH -->|"fetch outcome"| RUNS
     RUNS -->|"ingestion health over the period"| TRN 
     RUNS -->|"ingestion health over the period"| DAY
     PRG -->|"delete beyond retention"| RAW 

@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import logging
+import threading
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -273,9 +274,42 @@ def fetch_one(endpoint: str, session=None,
                    reading=reading)
 
 
+def _bounded(endpoint: str, session, timeout: float, wall_s: float) -> Attempt:
+    """fetch_one, with a WALL-CLOCK bound that requests does not give.
+
+    requests' timeout is per socket operation: a server that trickles bytes
+    resets it at each one, and a DNS resolution that hangs is not covered at
+    all. On 18 November 2026 a first call stayed open for over two minutes and
+    no log line ever came out. So the call runs in a DAEMON thread and is
+    abandoned after `wall_s`: a daemon thread does not hold the task process
+    open when it exits, which a ThreadPoolExecutor's worker would.
+    """
+    box: list[Attempt] = []
+    our_ms = int(time.time() * 1000)
+    started = time.monotonic()
+    worker = threading.Thread(
+        target=lambda: box.append(fetch_one(endpoint, session=session,
+                                            timeout=timeout)),
+        name="fraud-poll", daemon=True)
+    worker.start()
+    worker.join(wall_s)
+    if box:
+        return box[0]
+    return Attempt(status=None, latency_s=time.monotonic() - started,
+                   our_ms=our_ms,
+                   error="sans reponse apres %.0f s : appel abandonne" % wall_s)
+
+
+def _timed_out(attempt: Attempt) -> bool:
+    """No answer at all, as opposed to an answer that said no."""
+    return attempt.status is None and (
+        "abandonne" in attempt.error or "Timeout" in attempt.error)
+
+
 def poll(endpoint: str, calls: int, spacing_s: float = 0.0,
          timeout: float = DEFAULT_TIMEOUT_SECONDS,
-         session=None) -> tuple[list[Reading], list[Attempt]]:
+         session=None,
+         budget_s: float | None = None) -> tuple[list[Reading], list[Attempt]]:
     """`calls` calls. Returns what was obtained and what failed, separately.
 
     The failures are RETURNED, not logged and dropped: EC14 asks that an absence
@@ -286,25 +320,67 @@ def poll(endpoint: str, calls: int, spacing_s: float = 0.0,
     thing that can happen. A 502 is not retried in the same run -- measured at
     25 s, retrying it would eat the whole minute.
 
+    A BUDGET FOR THE WHOLE POLL (realtime.poll_budget_seconds), added on
+    18 November 2026: five calls of 35 s exceed dag_ingest's two-minute
+    dagrun_timeout, so a silent API got every run killed before a failure could
+    be recorded. Now each call is bounded by the time left, the FIRST call that
+    gets no answer ends the poll, and the calls not made are returned as
+    failures too -- "5 asked, 0 read, 1 timed out, 4 not attempted" is an
+    absence the log and the journal can show. None means no budget, as before.
+
     Covers: EE02, EI01, EC14
     Lot: N1
     Competency: C2, C4
     """
     readings: list[Reading] = []
     failures: list[Attempt] = []
+    deadline = None if budget_s is None else time.monotonic() + budget_s
+
+    def left() -> float | None:
+        return None if deadline is None else deadline - time.monotonic()
+
+    def call() -> Attempt:
+        remaining = left()
+        if remaining is None:
+            return fetch_one(endpoint, session=session, timeout=timeout)
+        return _bounded(endpoint, session, min(timeout, remaining),
+                        min(timeout, remaining) + 1.0)
+
+    def not_attempted(reason: str) -> Attempt:
+        return Attempt(status=None, latency_s=0.0,
+                       our_ms=int(time.time() * 1000),
+                       error="non tente : %s" % reason)
+
     for i in range(calls):
         if i and spacing_s:
             time.sleep(spacing_s)
-        attempt = fetch_one(endpoint, session=session, timeout=timeout)
-        if not attempt.ok and attempt.refused:
+        remaining = left()
+        if remaining is not None and remaining <= 1.0:
+            failures.extend(not_attempted("budget de %.0f s epuise" % budget_s)
+                            for _ in range(calls - i))
+            log.warning("budget de %.0f s epuise : %d appel(s) non tente(s)",
+                        budget_s, calls - i)
+            break
+        attempt = call()
+        if not attempt.ok and attempt.refused and (left() is None or left() > 1.0):
             log.info("429 au %d-eme appel, nouvelle tentative immediate", i + 1)
-            attempt = fetch_one(endpoint, session=session, timeout=timeout)
+            attempt = call()
         if attempt.ok:
             readings.append(attempt.reading)
-        else:
-            failures.append(attempt)
-            log.warning("appel %d/%d en echec : %s (%.1f s)",
-                        i + 1, calls, attempt.error, attempt.latency_s)
+            continue
+        failures.append(attempt)
+        log.warning("appel %d/%d en echec : %s (%.1f s)",
+                    i + 1, calls, attempt.error, attempt.latency_s)
+        if budget_s is not None and _timed_out(attempt):
+            # An API that did not answer in 35 s will not answer the next four
+            # calls either; trying them would only burn the run's time.
+            failures.extend(not_attempted("l'API n'a pas repondu a l'appel %d"
+                                          % (i + 1))
+                            for _ in range(calls - i - 1))
+            if calls - i - 1:
+                log.warning("arret apres un appel sans reponse : %d appel(s) "
+                            "non tente(s)", calls - i - 1)
+            break
     log.info("%d lecture(s), %d echec(s) sur %d appel(s)",
              len(readings), len(failures), calls)
     return readings, failures

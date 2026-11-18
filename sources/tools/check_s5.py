@@ -158,15 +158,26 @@ def _applied(item, conn, settings):
         cur.execute(
             "SELECT store, max(ran_at), max(as_of), max(cutoff), "
             "       sum(n_deleted), sum(n_refused) "
-            "FROM fd_purges GROUP BY store ORDER BY store")
+            # RETENTION PURGES ONLY. A targeted forget (Q7) records its
+            # batch's last row as cutoff: compared with ninety days it reads
+            # "0 jours" and fails a purge that never happened.
+            "FROM fd_purges WHERE batch_id IS NULL "
+            "GROUP BY store ORDER BY store")
         rows = cur.fetchall()
+        cur.execute("SELECT count(DISTINCT batch_id), coalesce(sum(n_deleted), 0) "
+                    "FROM fd_purges WHERE batch_id IS NOT NULL")
+        forgotten, forgotten_rows = cur.fetchone()
+
+    if forgotten:
+        yield item("info oublis cibles (forget), hors retention", "mesure",
+                   "%d lot(s), %d ligne(s)" % (forgotten, forgotten_rows))
 
     if not rows:
         # NOT a criterion that passes: at ninety days of retention with batches
         # loaded this month, the first purge with anything to remove is months
         # away. Reported, so that nobody reads silence as compliance.
-        yield item("info purges enregistrees", "mesure",
-                   "aucune : rien n'a encore ete purge")
+        yield item("info purges de retention enregistrees", "mesure",
+                   "aucune : rien n'a encore atteint la duree declaree")
         return
 
     expected = {"fd_raw_events": settings.raw_retention_days,

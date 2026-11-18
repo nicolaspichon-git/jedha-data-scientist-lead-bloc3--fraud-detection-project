@@ -74,7 +74,8 @@ def main(argv=None) -> int:
     # --- collect (N1)
     readings, failures = stream.poll(settings.api_endpoint, calls,
                                      spacing_s=settings.call_spacing_s,
-                                     timeout=settings.api_timeout_s)
+                                     timeout=settings.api_timeout_s,
+                                     budget_s=settings.poll_budget_s)
     if args.corrupt and readings:
         corrupt(readings[-1])
         log.warning("la derniere lecture a ete corrompue volontairement (EC25)")

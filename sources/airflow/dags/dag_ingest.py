@@ -150,9 +150,12 @@ def ingest_realtime():
         settings = config.load()
         batch_id = raw.batch_id_for(run_id)
 
+        # budget_s: the whole poll stays inside the dagrun_timeout, so a silent
+        # API ends in a recorded failure and not in a SIGTERM (18 Nov 2026).
         readings, failures = stream.poll(
             settings.api_endpoint, settings.calls_per_run,
-            spacing_s=settings.call_spacing_s, timeout=settings.api_timeout_s)
+            spacing_s=settings.call_spacing_s, timeout=settings.api_timeout_s,
+            budget_s=settings.poll_budget_s)
 
         for attempt in failures:
             log.warning("appel en echec : HTTP %s, %.1f s, %s",

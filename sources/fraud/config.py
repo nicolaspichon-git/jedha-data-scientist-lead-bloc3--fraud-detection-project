@@ -73,6 +73,7 @@ class Settings:
     report_schedule: str
     api_endpoint: str
     api_timeout_s: float
+    poll_budget_s: float
     realtime_schedule: str
     calls_per_run: int
     call_spacing_s: float
@@ -199,6 +200,20 @@ def _as_utc(value) -> dt.datetime:
 # would be a second implementation of something Airflow already does, and a
 # wrong one would answer a question about the calibration with a guess.
 EVERY_N_MINUTES = re.compile(r"^\*(?:/(\d+))? \* \* \* \*$")
+
+
+def _poll_budget(budget, timeout) -> float:
+    """realtime.poll_budget_seconds, refused below one call's timeout.
+
+    A budget shorter than timeout_seconds would cut off a call that was about
+    to succeed -- N0 measured a 502 at 25 s, which is why the timeout is 35.
+    """
+    budget, timeout = float(budget), float(timeout)
+    if budget < timeout:
+        raise ValueError(
+            "realtime.poll_budget_seconds is %g s, below timeout_seconds (%g s): "
+            "a single slow call could not complete within the poll" % (budget, timeout))
+    return budget
 
 
 def runs_per_day(schedule: str) -> int:
@@ -488,6 +503,8 @@ def load(path: Path | None = None) -> Settings:
         report_schedule=str(g["report"]["schedule"]),
         api_endpoint=str(g["realtime"]["endpoint"]),
         api_timeout_s=float(g["realtime"]["timeout_seconds"]),
+        poll_budget_s=_poll_budget(g["realtime"]["poll_budget_seconds"],
+                                   g["realtime"]["timeout_seconds"]),
         realtime_schedule=str(g["realtime"]["schedule"]),
         calls_per_run=int(g["realtime"]["calls_per_run"]),
         call_spacing_s=float(g["realtime"]["spacing_seconds"]),

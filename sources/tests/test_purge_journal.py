@@ -323,3 +323,18 @@ def test_every_process_of_the_project_is_in_the_check():
         assert "%s_acceptance.sql" % process in block, process
     for checker in ("check_s2.py", "check_s3.py", "check_s4.py", "check_s5.py"):
         assert checker in block, checker
+
+
+def test_a_forget_is_not_read_as_a_retention_purge():
+    """FOUND ON A SOUND STACK, 18 November 2026. Four targeted forgets (Q7)
+    made S5's acceptance fail twice: their cutoff -- the forgotten batch's last
+    row -- was read as a boundary, so 556,560 rows "survived" it; and each
+    journalled one store, read as a purge that forgot the other. A forget is
+    batch_id IS NOT NULL; every retention criterion reads batch_id IS NULL."""
+    text = _sql(ACCEPT)
+    for cte in ("applied AS (", "runs_journalled AS ("):
+        body = text.split(cte)[1].split("\n),")[0]
+        assert "batch_id IS NULL" in body, cte
+    assert "batch_id IS NOT NULL" in text.split("forgets AS (")[1].split("\n),")[0]
+    source = CHECKER.read_text(encoding="utf-8")
+    assert "FROM fd_purges WHERE batch_id IS NULL" in source

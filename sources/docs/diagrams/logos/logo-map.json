@@ -1,0 +1,49 @@
+{
+  "defaults": {
+    "size": 18,
+    "margin": 6,
+    "corner": "top-right",
+    "opacity": "0.95"
+  },
+  "excludeFiles": [
+    "*--diagram-legends*"
+  ],
+  "byLogo": {
+    "python": {
+      "dy": -18,
+      "dx": -6
+    }
+  },
+  "byId": {
+    "G1_API": "http",
+    "HDL_CSV": "http",
+    "HDL_LOAD": "python",
+    "G1_ING_FCH": "python",
+    "G1_ING_PRC": "python",
+    "TRN": "python",
+    "DAY": "python",
+    "PRG": "python",
+    "DL": "postgresql",
+    "BRONZE2": "postgresql",
+    "BRONZE": "postgresql",
+    "SILVER": "postgresql",
+    "RUNS": "postgresql",
+    "MD_RUNS": "postgresql",
+    "TDS": "parquet",
+    "MDR": "mlflow",
+    "MR": "mlflow",
+    "HDL": "airflow",
+    "MT": "airflow",
+    "G1": "airflow",
+    "G2": "airflow",
+    "RTN": "airflow",
+    "G1_FCH": "airflow",
+    "G1_PRC": "airflow",
+    "G1_CHK": "airflow",
+    "GP_ING": "airflow",
+    "GP_RTN": "airflow",
+    "G1_NOTIF": "streamlit",
+    "G2_REPORT": "streamlit",
+    "MT_MDR": "parquet"
+  }
+}

@@ -26,6 +26,15 @@
 -- 8 = the margin on the weekly cadence (purge.schedule, Sunday): a purge that
 --     has not run for more than eight days has stopped running.
 --
+-- RETENTION PURGES ONLY, AND THE FILTER IS batch_id IS NULL (S6, after Q7).
+-- fd_purges holds two kinds of rows since Q7: the weekly purge, which applies a
+-- BOUNDARY to a whole store, and the targeted forget, which removes ONE named
+-- batch (batch_id set). A forget's cutoff is its batch's own last row -- not a
+-- boundary -- and it journals only the stores that held rows of that batch.
+-- Read as purges, four forgets made this file fail twice on a sound stack:
+-- 556,560 rows "survived" a cutoff nobody applied to them, and each execution
+-- journalled one store instead of two. Forgets are reported apart (ord 16).
+--
 -- What SQL cannot reach is in tools/check_s5.py: the DAG and its cadence, the
 -- declared durations against the applied cutoffs, and the files of the
 -- training sets on the disk.
@@ -60,6 +69,7 @@ purged AS (
 applied AS (
     SELECT store, max(cutoff) AS cutoff, max(ran_at) AS ran_at
     FROM   fd_purges
+    WHERE  batch_id IS NULL                 -- retention purges, not forgets
     GROUP  BY store
 ),
 survivors AS (
@@ -101,6 +111,14 @@ runs_journalled AS (
            sum(n_deleted) AS deleted,
            count(*) FILTER (WHERE before_date IS NOT NULL) AS overridden
     FROM   fd_purges
+    WHERE  batch_id IS NULL                 -- retention purges, not forgets
+),
+-- The targeted forgets of Q7, kept apart: a figure, not a criterion.
+forgets AS (
+    SELECT count(DISTINCT batch_id) AS batches,
+           coalesce(sum(n_deleted), 0) AS deleted
+    FROM   fd_purges
+    WHERE  batch_id IS NOT NULL
 ),
 criteria AS (
     SELECT 1 AS ord,
@@ -173,6 +191,10 @@ criteria AS (
     UNION ALL
     SELECT 15, 'info purges a borne surchargee (demonstration)', 'mesure',
            (SELECT overridden::text FROM runs_journalled)
+    UNION ALL
+    SELECT 16, 'info oublis cibles (forget), hors retention', 'mesure',
+           (SELECT batches::text || ' lot(s), ' || deleted::text || ' ligne(s)'
+              FROM forgets)
 )
 SELECT ord, criterion, expected, actual,
        CASE WHEN expected = 'mesure' THEN 'info'

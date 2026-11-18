@@ -102,9 +102,12 @@ def test_a_clean_alert_file_passes(tmp_path):
     rows = _rows(tmp_path)
     assert rows["N5 aucun champ nominatif dans une alerte"] == ("aucun",
                                                                 "aucun")
-    assert rows["N5 chaque ligne est du JSON"] == ("0 illisible", "0")
-    assert rows["N5 chaque alerte porte sa tracabilite"] == ("0 incomplete",
-                                                             "0")
+    # THE VERDICT, and not the pair: this test once asserted
+    # ("0 illisible", "0") and passed while the report said ECHEC.
+    for name in ("N5 aucun champ nominatif dans une alerte",
+                 "N5 chaque ligne est du JSON",
+                 "N5 chaque alerte porte sa tracabilite"):
+        assert cs3.verdict(*rows[name]) == "OK", (name, rows[name])
 
 
 def test_a_leaked_name_is_caught(tmp_path):
@@ -138,8 +141,9 @@ def test_an_unreadable_line_is_counted(tmp_path):
     path = _write(tmp_path, [CLEAN])
     with open(path, "a", encoding="utf-8") as handle:
         handle.write("pas du json\n")
-    assert _rows(tmp_path)["N5 chaque ligne est du JSON"] == ("0 illisible",
-                                                              "1")
+    row = _rows(tmp_path)["N5 chaque ligne est du JSON"]
+    assert row == ("0 illisible", "1 illisible")
+    assert cs3.verdict(*row) == "<<< ECHEC"
 
 
 def test_an_alert_without_its_traceability_is_counted(tmp_path):
@@ -147,8 +151,9 @@ def test_an_alert_without_its_traceability_is_counted(tmp_path):
     and that is the first question of the first incident."""
     partial = {k: v for k, v in CLEAN.items() if k != "model_version"}
     _write(tmp_path, [CLEAN, partial])
-    assert _rows(tmp_path)["N5 chaque alerte porte sa tracabilite"] \
-        == ("0 incomplete", "1")
+    row = _rows(tmp_path)["N5 chaque alerte porte sa tracabilite"]
+    assert row == ("0 incomplete", "1 incomplete")
+    assert cs3.verdict(*row) == "<<< ECHEC"
 
 
 def test_an_absent_file_is_reported_as_unverified_and_not_as_passed(tmp_path):
@@ -223,9 +228,10 @@ def test_a_clean_operations_file_passes(tmp_path):
     rows = _rows(tmp_path)
     assert rows["N9 aucune transaction dans un message d'exploitation"] \
         == ("aucune", "aucune")
-    assert rows["N9 chaque ligne est du JSON"] == ("0 illisible", "0")
-    assert rows["N9 chaque message nomme son controle et son changement"] \
-        == ("0 incomplet", "0")
+    for name in ("N9 aucune transaction dans un message d'exploitation",
+                 "N9 chaque ligne est du JSON",
+                 "N9 chaque message nomme son controle et son changement"):
+        assert cs3.verdict(*rows[name]) == "OK", (name, rows[name])
 
 
 def test_a_transaction_in_an_operations_message_is_caught(tmp_path):
@@ -362,3 +368,18 @@ def test_the_cadences_are_read_when_the_directory_is_found(tmp_path):
                                                          "* * * * *")
     assert rows["N6 cadence de dag_ingest_verdicts distincte de la minute"] \
         == ("oui", "oui")
+
+
+# --- every criterion of a healthy project passes ---------------------------------
+
+def test_a_healthy_project_fails_no_criterion(tmp_path):
+    """THE TEST THAT WOULD HAVE CAUGHT IT. Four criteria wrote their actual
+    without the unit of their expected -- "0" against "0 illisible" -- and the
+    per-criterion tests asserted the pair, so the checker failed on clean files
+    while every test passed. Here the report's own rule judges every row of a
+    clean project: a format mismatch anywhere fails it."""
+    _write(tmp_path, [CLEAN, dict(CLEAN, txn_id="def:1")])
+    _write_ops(tmp_path, [CLEAN_OPS])
+    failed = {name: pair for name, pair in _rows(tmp_path).items()
+              if cs3.verdict(*pair) == "<<< ECHEC"}
+    assert not failed, failed

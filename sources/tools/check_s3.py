@@ -197,12 +197,16 @@ def _alert_file(item, settings, channel):
                    "NON VERIFIE : fichier vide")
         return
 
-    yield item("N5 chaque ligne est du JSON", "0 illisible", "%d" % bad_json)
+    # THE ACTUAL CARRIES THE UNIT OF THE EXPECTED, or the two never compare
+    # equal: "0" against "0 illisible" failed on a clean file. check_s4.py
+    # writes "%d absent" for the same reason.
+    yield item("N5 chaque ligne est du JSON", "0 illisible",
+               "%d illisible" % bad_json)
     # THE criterion of this file.
     yield item("N5 aucun champ nominatif dans une alerte", "aucun",
                ", ".join(sorted(leaked)) or "aucun")
     yield item("N5 chaque alerte porte sa tracabilite",
-               "0 incomplete", "%d" % missing)
+               "0 incomplete", "%d incomplete" % missing)
 
 
 def _ops_file(item, settings):
@@ -238,12 +242,32 @@ def _ops_file(item, settings):
                    "mesure", "NON VERIFIE : fichier vide")
         return
 
-    yield item("N9 chaque ligne est du JSON", "0 illisible", "%d" % bad_json)
+    yield item("N9 chaque ligne est du JSON", "0 illisible",
+               "%d illisible" % bad_json)
     # THE criterion of this file.
     yield item("N9 aucune transaction dans un message d'exploitation", "aucune",
                ", ".join(sorted(leaked)) or "aucune")
     yield item("N9 chaque message nomme son controle et son changement",
-               "0 incomplet", "%d" % missing)
+               "0 incomplet", "%d incomplet" % missing)
+
+
+def verdict(expected: str, actual: str) -> str:
+    """The verdict of one row: "info", "OK" or "<<< ECHEC". ONE RULE.
+
+    Out of main() so the tests apply the rule the report applies. They used to
+    assert the (expected, actual) pair -- ("0 illisible", "0") -- and passed
+    while the report said ECHEC on the same pair: a test named "a clean file
+    passes" that never asked whether it passed.
+
+    "mesure" marks a figure, not a criterion -- the same convention
+    sql/checks/s3_acceptance.sql uses. A figure that failed would be a check
+    refusing reality.
+    """
+    if expected == "mesure":
+        return "info"
+    ok = expected == actual or (expected.startswith("au moins")
+                                and not actual.startswith("AUCUN"))
+    return "OK" if ok else "<<< ECHEC"
 
 
 def main(argv) -> int:
@@ -260,19 +284,11 @@ def main(argv) -> int:
     width = max(len(c) for _, c, _, _ in rows)
     failures = informative = 0
     for _, criterion, expected, actual in rows:
-        # "mesure" marks a figure, not a criterion -- the same convention
-        # sql/checks/s3_acceptance.sql uses. A figure that failed would be a
-        # check refusing reality.
-        if expected == "mesure":
-            informative += 1
-            verdict = "info"
-        else:
-            ok = expected == actual or (expected.startswith("au moins")
-                                        and not actual.startswith("AUCUN"))
-            failures += 0 if ok else 1
-            verdict = "OK" if ok else "<<< ECHEC"
+        said = verdict(expected, actual)
+        informative += said == "info"
+        failures += said == "<<< ECHEC"
         print("  %-*s | %-30s | %-30s | %s"
-              % (width, criterion, expected, actual, verdict))
+              % (width, criterion, expected, actual, said))
     print()
     print("%d critere(s) en echec sur %d, et %d chiffre(s) informatif(s)"
           % (failures, len(rows) - informative, informative))
