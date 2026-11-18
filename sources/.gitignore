@@ -5,7 +5,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .local_cache/
+*.bak
 # Parquet datasets: data, not code. The registry in fd_datasets is what makes
 # them findable again, and the recipe digest is what makes them rebuildable.
-runtime/datasets/
 
