@@ -1,5 +1,5 @@
 ---
-version: v15
+version: v16
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 1. Data Infrastructure Design
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v15 --- 2026/11/16.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v16 --- 2026/11/16.*
 ---
 
 ## 1.1. Vue d'ensemble 
@@ -24,37 +24,44 @@ tags:
  *Object :* présenter les principaux composants de l'infrastructure, processus et bases de données, les flux de données entre eux, les flux de contrôles et les dépendances.  
  
 ###### Diagramme
-![[diagrams/fraud-project--data-infrastructure--diagram-0.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-0.md]]
 
-> Les numéros portés par les blocs de pipeline ((1) à (5)) renvoient aux diagrammes détaillés des processus (S1 à S5).
+> _\> Les numéros portés par les blocs de pipeline ((1) à (5)) renvoient aux diagrammes détaillés des processus (S1 à S5)._
+
 <div style="page-break-after: always;"></div>
 
 ###### Remarques
-- L'ensemble est formé de trois familles de sous-systèmes :
-	- Pipelines portant des transactions : 
-		- *Historical Data Loading*, *Transactions Ingestion*, *Models Training*, *Daily Reporting*, *Data Retention*.
-	- Bases de données opérationnelles :
-		- *Bronze*, *Silver*
-	- Données transversales : 
-		- *Metadata* (*Runs* et *Models Registry*), *Governance Policy*.
-- L'ensemble des processus est organisé autour de la couche de données centrale *Bronze//Silver/Runs*
-- La boucle du modèle est fermée : 
-	- *Models Training (2)* → *Models Registry* → *Transactions Ingestion (3b)*.
-	- > L'entraînement produit un champion et l'ingestion le consomme.
-- Le processus d'ingestion, qui comprend également la phase de notification en cas de détection de fraude, est décomposé en ses 3 sous-processus pour clarifier les flux de données : (3a) écrit tout de suite les évènements bruts dans le *Bronze* avec de passer la main à (3b) ; (3b) reprend les évènements bruts, les traite, prédit un score de fraude, notifie une fraude détectée, puis passe la main à (3c) ; (3c) compare les évènements bruts avec les logs d'exécution dans *Runs* pour repérer les transactions perdues et notifie un canal d'opérateur en cas d'erreur. La séquence peut éventuellement être rejoué à partir de (3b).
+**R1.** L'ensemble est formé de trois familles de sous-systèmes :
+- Pipelines portant des transactions : 
+	- *Historical Data Loading*, *Transactions Ingestion*, *Models Training*, *Daily Reporting*, *Data Retention*.
+- Bases de données opérationnelles :
+	- *Bronze*, *Silver*
+- Données transversales : 
+	- *Metadata* (*Runs* et *Models Registry*), *Governance Policy*.
+
+**R2.** L'ensemble des processus est organisé autour de la couche de données centrale *Bronze//Silver/Runs*
+
+**R3.** La boucle du modèle est fermée : 
+- *Models Training (2)* → *Models Registry* → *Transactions Ingestion (3b)*.
+	- \> L'entraînement produit un champion et l'ingestion le consomme.
+
+**R4.** Le processus d'ingestion, qui comprend également la phase de notification en cas de détection de fraude, est décomposé en ses 3 sous-processus pour clarifier les flux de données : (3a) écrit tout de suite les évènements bruts dans le *Bronze* avec de passer la main à (3b) ; (3b) reprend les évènements bruts, les traite, prédit un score de fraude, notifie une fraude détectée, puis passe la main à (3c) ; (3c) compare les évènements bruts avec les logs d'exécution dans *Runs* pour repérer les transactions perdues et notifie un canal d'opérateur en cas d'erreur. La séquence peut éventuellement être rejoué à partir de (3b).
+
 ## 1.2. Chargement des données historiques
 
 *Object :* amorcer le système : charger les transactions historiques pour disposer d'un jeu
 d'entraînement et d'un historique comportemental.
 
 ###### Diagramme détaillé : S1
-![[diagrams/fraud-project--data-infrastructure--diagram-1.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-1.md]]
+
+<div style="page-break-after: always;"></div>
 
 ## 1.3. Entrainement du modèle de scoring de fraude
 *Object :* produire et enregistrer un modèle à partir des transactions et des verdicts connus à partir d'une certaine date de coupure.
 
 ###### Diagramme détaillé : S2
-![[diagrams/fraud-project--data-infrastructure--diagram-2.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-2.md]]
 
 <div style="page-break-after: always;"></div>
 
@@ -64,7 +71,7 @@ d'entraînement et d'un historique comportemental.
 *Objet :* Récupérer les transactions du simulateur une par une (API \[R4\]) et les stocker en l'état dans le magasin *Raw Events*.
 
 ###### Diagramme détaillé : S3.1
-![[step-1/diagrams/fraud-project--data-infrastructure--diagram-3-1.svg]]
+![[step-1/diagrams/fraud-project--data-infrastructure--diagram-3-1.md]]
 
 <div style="page-break-after: always;"></div>
 
@@ -72,31 +79,37 @@ d'entraînement et d'un historique comportemental.
 *Objet :* Récupérer les dernières transactions de *Raw Events* par lot, les prétraiter, les valider, les pseudonomiser, les enregistrer, prédire les scores de fraude, enregistrer les scores, journaliser la séance d'exécution dans *Runs*, notifier en cas de détection de fraude.
 
 ###### Diagramme détaillé : S3.2
-![[diagrams/fraud-project--data-infrastructure--diagram-3-2.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-3-2.md]]
 
 <div style="page-break-after: always;"></div>
 
 ### 1.4.3. Checking + Ops Alerting
 *Objet :* détecter les erreurs d'ingestion en comparant les derniers évènements bruts avec les journaux d'exécution de *Runs*.
 ###### Diagramme détaillé : S3.3
-![[diagrams/fraud-project--data-infrastructure--diagram-3-3.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-3-3.md]]
+
+<div style="page-break-after: always;"></div>
 
 ### 1.4.3. Verdicts Source
 ###### Diagramme détaillé : S3.4
-![[diagrams/fraud-project--data-infrastructure--diagram-3-4.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-3-4.md]]
 
 <div style="page-break-after: always;"></div>
 
 ## 1.5. Reporting quotidien
 *Objet :* produire périodiquement, le matin, un rapport des transactions et des fraudes prédites de la veille.
 ###### Diagramme détaillé : S4
-![[diagrams/fraud-project--data-infrastructure--diagram-4.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-4.md]]
+
+<div style="page-break-after: always;"></div>
 
 ## 1.6. Purge des données brutes et des journaux
 
 *Objet :* appliquer la politique de rétention de la politique de gouvernance : supprimer les évènements plus âgés que la durée de conservation dans *Raw Events* et dans *Quarantine* .
 ###### Diagramme détaillé : S5
-![[diagrams/fraud-project--data-infrastructure--diagram-5.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-5.md|700]]
+
+<div style="page-break-after: always;"></div>
 
 ## 1.7. Pile technique consolidée
 
@@ -110,13 +123,15 @@ d'entraînement et d'un historique comportemental.
 | **Streamlit**      | rapport quotidien, pages de notification et vues d'exploitation                                                   | Lit directement les données de rapport dans PostgreSQL                            |
 | **Docker Compose** | déploiement                                                                                                       | Reproductibilité                                                                  |
 
+*Parquet* : permet de versionner les jeux d'entraînement hors de la base.
+
 ---
 
 <div style="page-break-after: always;"></div>
 
 ## Légendes des diagrammes
 ###### Liens
-![[diagrams/fraud-project--data-infrastructure--diagram-legends.svg]]
+![[diagrams/fraud-project--data-infrastructure--diagram-legends.svg|200]]
 
 ###### Couleurs
 ![[diagrams/fraud-project--data-infrastructure--diagram-legends-2.svg]]
@@ -125,8 +140,6 @@ d'entraînement et d'un historique comportemental.
 ![[diagrams/fraud-project--data-infrastructure--diagram-legends-3.svg]]
 
 ---
-
-<div style="page-break-after: always;"></div>
 
 ## Références
 
