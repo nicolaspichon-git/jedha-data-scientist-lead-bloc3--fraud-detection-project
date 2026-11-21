@@ -1,8 +1,9 @@
 """Scoring a transaction with the model the registry holds.
 
-Covers: EE09, EI04, EC24
-Lot: N4
-Competency: C2, C3
+Block: B3.
+Lot: B3-N4.
+Competency: B3-C2, B3-C3.
+Covers: B3-EE09, B3-EI04, B3-EC24.
 
 WHAT THIS MODULE REFUSES TO DECIDE. Three things come from the model and never
 from this code:
@@ -138,7 +139,7 @@ def read_manifest(path: Path) -> dict:
             "datasets.Recipe.version(), the digest truncated to %d characters "
             "-- and never by the full digest; %r is %d characters long. "
             "Recipes present: %s. If the version is right, the model was "
-            "registered without its manifest reaching the disk: rerun S2 "
+            "registered without its manifest reaching the disk: rerun B3-S2 "
             "(.\\fd-manager.ps1 train)."
             % (registry.MANIFEST_FILE, path, datasets.VERSION_CHARS,
                path.parent.name, len(path.parent.name),
@@ -153,7 +154,7 @@ def read_manifest(path: Path) -> dict:
     chosen = payload.get("threshold") or {}
     if not chosen.get("value"):
         raise ValueError(
-            "%s carries no threshold: M6 did not choose one for this model, and "
+            "%s carries no threshold: B3-M6 did not choose one for this model, and "
             "this module will not substitute a default. 0.5 is the default of a "
             "library, and on the measured distribution it floods the analysts "
             "instead of alerting them. Set scoring.threshold_policy in "
@@ -207,7 +208,7 @@ def latest_version(client, name: str = registry.REGISTERED_NAME):
     versions = list(client.search_model_versions("name='%s'" % name))
     if not versions:
         raise LookupError(
-            "no version of model %r in the registry: S2 has not registered a "
+            "no version of model %r in the registry: B3-S2 has not registered a "
             "model yet, or the tracking server is not the one it registered "
             "with. Check MLFLOW_TRACKING_URI, then .\\fd-manager.ps1 train." % name)
     return max(versions, key=lambda version: int(version.version))
@@ -217,9 +218,9 @@ def load(settings, tracking_uri: str | None = None,
          name: str = registry.REGISTERED_NAME) -> Scorer:
     """The current model version, loaded once and kept.
 
-    Covers: EE09, EC24
-    Lot: N4
-    Competency: C3
+    Lot: B3-N4.
+    Competency: B3-C3.
+    Covers: B3-EE09, B3-EC24.
     """
     import mlflow
     import mlflow.sklearn

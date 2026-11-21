@@ -1,5 +1,8 @@
 -- The score of a transaction, and the model that produced it.
--- Covers: EE09, EI04, EC24   Lot: N4   Competency: C2, C4
+-- Block: B3.
+-- Lot: B3-N4.
+-- Competency: B3-C2, B3-C4.
+-- Covers: B3-EE09, B3-EI04, B3-EC24.
 --
 -- THE PRIMARY KEY IS (txn_id, model_version), and that is the whole design.
 --
@@ -21,8 +24,8 @@
 -- change of comparison -- strict instead of inclusive, say -- cannot silently
 -- rewrite history.
 --
--- NO verdict here. fd_ground_truth stays the only place a label lives (F02.3),
--- and N6 is where the four guarantees against reading it too early are stated.
+-- NO verdict here. fd_ground_truth stays the only place a label lives (B3-F02-3),
+-- and B3-N6 is where the four guarantees against reading it too early are stated.
 
 CREATE TABLE IF NOT EXISTS fd_scores (
     txn_id        text         NOT NULL REFERENCES fd_transactions (txn_id),
@@ -46,7 +49,7 @@ CREATE TABLE IF NOT EXISTS fd_scores (
         CHECK (flagged = (score >= threshold))
 );
 
--- The morning report of S4 reads a day of scores; the alert table of N5 reads
+-- The morning report of B3-S4 reads a day of scores; the alert table of B3-N5 reads
 -- the flagged ones. Both scan on time, so the index is on time.
 CREATE INDEX IF NOT EXISTS fd_scores_scored_at_idx ON fd_scores (scored_at);
 CREATE INDEX IF NOT EXISTS fd_scores_flagged_idx

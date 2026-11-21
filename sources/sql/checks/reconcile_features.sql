@@ -1,5 +1,8 @@
 -- Agreement between the two computation modes. MUST return zero rows.
--- Covers: EE07   Lot: L4   Competency: C5
+-- Block: B3.
+-- Lot: B3-L4.
+-- Competency: B3-C5.
+-- Covers: B3-EE07.
 --
 -- STRATIFIED, not random, and that is the whole point of this file.
 --
@@ -32,7 +35,7 @@ WITH tied AS (
 -- A first transaction has f_tx_count = 0 and f_avg_amount NULL (ruling 6), so
 -- f_tx_count IS NULL means something else entirely: the features were never
 -- written. On 2026-11-16 seven such rows existed -- stream transactions
--- ingested before N3 computed features at all -- and a 1,000-row random sample
+-- ingested before B3-N3 computed features at all -- and a 1,000-row random sample
 -- out of 555,730 had a 1.25 % chance of catching any of them.
 --
 -- The reasoning is the one that produced the tied and firsts strata: a sample

@@ -1,8 +1,9 @@
-"""R2: the morning page -- notices before the document, figures from the row.
+"""B3-R2: the morning page -- notices before the document, figures from the row.
 
-Covers: EE03, EC14
-Lot: R2
-Competency: C4
+Block: B3.
+Lot: B3-R2.
+Competency: B3-C4.
+Covers: B3-EE03, B3-EC14.
 
 Streamlit cannot be installed where this is developed. So the page is tested
 twice over: what it shows is decided by fraud/dashboard.morning_view(), held
@@ -93,7 +94,7 @@ def test_a_missing_file_shows_the_figures_and_no_text(series, tmp_path):
 
 
 def test_the_figures_come_from_the_row_never_from_the_text(series, tmp_path):
-    """The S4 plan's decision: a reworded sentence cannot change a number."""
+    """The B3-S4 plan's decision: a reworded sentence cannot change a number."""
     series["rows"] = [row(tmp_path, text="12 alertes hier\n",
                           recorded_text="12 alertes hier\n", alerts=2)]
     figures = dict(dashboard.morning_view(None, settings(tmp_path))["figures"])

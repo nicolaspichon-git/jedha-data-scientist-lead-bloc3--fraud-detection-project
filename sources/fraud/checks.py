@@ -1,12 +1,13 @@
 """Validation, in two deliberately separated classes.
 
-Covers: EC20, EC21
-Lot: L2
-Competency: C5
+Block: B3.
+Lot: B3-L2.
+Competency: B3-C5.
+Covers: B3-EC20, B3-EC21.
 
-EC20 looks at one field at a time; EC21 looks at the relation between fields of
+B3-EC20 looks at one field at a time; B3-EC21 looks at the relation between fields of
 one record. fd_quarantine.reason_class keeps that separation visible in the data,
-and F07.3 reports the breakdown over it.
+and B3-F07-3 reports the breakdown over it.
 
 WHAT THE SOURCE ACTUALLY CONTAINS, measured over the 555,719 rows of
 fraudTest.csv before any rule was written:
@@ -23,9 +24,9 @@ fraudTest.csv before any rule was written:
 Two consequences follow, and both are design decisions rather than oversights.
 
 First, the gap between the two time columns is SYSTEMATIC. Turned into a
-per-record rule it would quarantine all 555,719 rows and S1 would produce
+per-record rule it would quarantine all 555,719 rows and B3-S1 would produce
 nothing. A systematic gap is a SOURCE defect: profile_gap() measures it,
-the verdict is recorded, and the column is dropped (hypothesis H5 of D1). Only a
+the verdict is recorded, and the column is dropped (hypothesis H5 of B3-D1). Only a
 sporadic gap belongs in quarantine.
 
 Second, the seven lengths of cc_num are a trait of the synthetic generator, not
@@ -43,7 +44,7 @@ from typing import Iterable, Iterator
 
 FIELD, RECORD = "field", "record"
 
-# Closed vocabulary: a free-text reason cannot be counted, and F07.3 has to
+# Closed vocabulary: a free-text reason cannot be counted, and B3-F07-3 has to
 # report a breakdown by reason.
 MISSING_MANDATORY = "MISSING_MANDATORY"
 SCHEMA_MISSING_COLUMN = "SCHEMA_MISSING_COLUMN"
@@ -61,7 +62,7 @@ DOB_AFTER_TXN = "DOB_AFTER_TXN"
 TIME_COLUMNS_DIVERGE = "TIME_COLUMNS_DIVERGE"
 CLOCK_IMPLAUSIBLE = "CLOCK_IMPLAUSIBLE"
 
-# WHAT EACH CODE MEANS, for a human reader (the dashboard of S6, lot R7). Next
+# WHAT EACH CODE MEANS, for a human reader (the dashboard of B3-S6, lot B3-R7). Next
 # to the codes and not in the page: a code added above without a label here
 # fails tests/test_dashboard_rejects.py, so the vocabulary and its meaning
 # cannot drift apart.
@@ -123,9 +124,9 @@ class SourceProfile:
                       which is two real events. Rejecting it would throw away
                       legitimate transactions.
 
-    Covers: EC20, EC21
-    Lot: N2
-    Competency: C5
+    Lot: B3-N2.
+    Competency: B3-C5.
+    Covers: B3-EC20, B3-EC21.
     """
     name: str
     mandatory: tuple[str, ...]
@@ -248,7 +249,7 @@ def parse_epoch(value: str) -> dt.datetime | None:
 def parse_epoch_ms(value: str) -> dt.datetime | None:
     """Read current_time: epoch MILLISECONDS, UTC, or None.
 
-    Measured in N0: 1794792372826 is 2026-11-16T01:26:12.826Z. Read as seconds
+    Measured in B3-N0: 1794792372826 is 2026-11-16T01:26:12.826Z. Read as seconds
     it is out of range; read as microseconds it lands in 1970. Both mistakes are
     loud, which is why this function can afford to be simple.
     """
@@ -267,16 +268,16 @@ def check_clock(record: dict[str, str], line_no: int, our_ms: int,
 
     current_time IS the txn_ts of a real-time transaction, so an implausible
     value does not merely mislabel a row: it breaks the ordering the per-row
-    feature function depends on, and L4 proved that ordering.
+    feature function depends on, and B3-L4 proved that ordering.
 
-    Measured in N0: one call in 57 showed a gap of +818 s. The cause was OUR OWN
+    Measured in B3-N0: one call in 57 showed a gap of +818 s. The cause was OUR OWN
     process suspended -- on Linux CLOCK_MONOTONIC does not advance across a
     suspend while CLOCK_REALTIME does -- and not the server. The remedy is the
     same either way, so this function attributes no cause.
 
-    Covers: EC20, EC26
-    Lot: N2
-    Competency: C5
+    Lot: B3-N2.
+    Competency: B3-C5.
+    Covers: B3-EC20, B3-EC26.
     """
     raw = record.get("current_time", "").strip()
     if not raw:
@@ -306,9 +307,9 @@ def check_fields(record: dict[str, str], line_no: int, max_amount: float,
     useful with all its reasons, and UNIQUE (batch_id, line_no, reason_code)
     allows several rows for one line.
 
-    Covers: EC20
-    Lot: L2
-    Competency: C5
+    Lot: B3-L2.
+    Competency: B3-C5.
+    Covers: B3-EC20.
     """
     out: list[Reject] = []
     add = lambda code, detail=None: out.append(Reject(line_no, FIELD, code, detail))
@@ -365,9 +366,9 @@ def check_record(record: dict[str, str], line_no: int,
     quarantine every row -- which is exactly the trap this signature makes
     explicit rather than hiding.
 
-    Covers: EC21
-    Lot: L2
-    Competency: C5
+    Lot: B3-L2.
+    Competency: B3-C5.
+    Covers: B3-EC21.
     """
     out: list[Reject] = []
     add = lambda code, detail=None: out.append(Reject(line_no, RECORD, code, detail))
@@ -388,7 +389,7 @@ def check_record(record: dict[str, str], line_no: int,
             if dt.datetime.strptime(raw_dob, DOB_FORMAT).date() >= ts.date():
                 add(DOB_AFTER_TXN, raw_dob)
         except ValueError:
-            pass            # an unreadable dob is EC20's business, not EC21's
+            pass            # an unreadable dob is B3-EC20's business, not B3-EC21's
 
     if reject_time_gap and ts and profile.has_two_time_columns:
         epoch = parse_epoch(record.get("unix_time", "").strip())
@@ -410,9 +411,9 @@ def profile_gap(records: Iterable[dict[str, str]], systematic_share: float,
       "sporadic"   -- a record defect: quarantine it
       "absent"     -- the two columns agree
 
-    Covers: EC21
-    Lot: L2
-    Competency: C1, C5
+    Lot: B3-L2.
+    Competency: B3-C1, B3-C5.
+    Covers: B3-EC21.
     """
     gaps: collections.Counter[int] = collections.Counter()
     seen = 0
@@ -451,9 +452,9 @@ def validate_batch(records: Iterable[tuple[int, dict[str, str]]],
     Uniqueness cannot be judged one record at a time, so it is held here rather
     than in check_fields().
 
-    Covers: EC20, EC21
-    Lot: L2
-    Competency: C5
+    Lot: B3-L2.
+    Competency: B3-C5.
+    Covers: B3-EC20, B3-EC21.
     """
     seen: set[str] = set()
     for line_no, record in records:

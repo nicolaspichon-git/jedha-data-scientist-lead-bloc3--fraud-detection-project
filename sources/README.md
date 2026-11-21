@@ -6,8 +6,8 @@ sur l'historique, notifie un analyste dans une limite de capacité déclarée, e
 rend compte chaque matin de ce qui s'est passé la veille.
 
 Ce répertoire est la **réalisation**. La conception est en
-[D1](../step-1/fraud-project--d1-data-infrastructure.md), les exigences en
-[D0](../step-0/fraud-project--d0-introduction.md) §0.4. Les six processus S1 à S6
+[B3-D1](../step-1/fraud-project--d1-data-infrastructure.md), les exigences en
+[B3-D0](../step-0/fraud-project--d0-introduction.md) §0.4. Les six processus B3-S1 à B3-S6
 sont réalisés ; chacun a son plan de développement sous [`ws/`](ws/).
 
 ---
@@ -16,13 +16,13 @@ sont réalisés ; chacun a son plan de développement sous [`ws/`](ws/).
 
 | Processus | Ce qu'il produit | DAG | Cadence (heure de Paris) |
 | --- | --- | --- | --- |
-| **S1** chargement historique | la zone brute, la quarantaine, les transactions pseudonymisées et leurs features | `dag_load_history` | manuel, une fois |
-| **S2** entraînement | un jeu d'entraînement daté, un modèle, son manifeste `run.json`, sa référence M5 en base | `dag_train` | lundi 03:00 |
-| **S3** ingestion temps réel | chaque transaction validée, scorée, alertée si besoin ; les quatre contrôles d'exploitation | `dag_ingest` | chaque minute |
+| **B3-S1** chargement historique | la zone brute, la quarantaine, les transactions pseudonymisées et leurs features | `dag_load_history` | manuel, une fois |
+| **B3-S2** entraînement | un jeu d'entraînement daté, un modèle, son manifeste `run.json`, sa référence B3-M5 en base | `dag_train` | lundi 03:00 |
+| **B3-S3** ingestion temps réel | chaque transaction validée, scorée, alertée si besoin ; les quatre contrôles d'exploitation | `dag_ingest` | chaque minute |
 | | les verdicts échus, qui ferment la boucle d'apprentissage | `dag_ingest_verdicts` | chaque jour 02:00 |
-| **S4** rapport du matin | un document Markdown par journée couverte, et son empreinte en base | `dag_daily` | chaque jour 06:00 |
-| **S5** conservation | la purge de la zone brute et de la quarantaine au-delà de 90 jours, journalisée | `dag_purge` | dimanche 04:00 |
-| **S6** restitution | un tableau de bord en lecture seule | service `dashboard` | permanent |
+| **B3-S4** rapport du matin | un document Markdown par journée couverte, et son empreinte en base | `dag_daily` | chaque jour 06:00 |
+| **B3-S5** conservation | la purge de la zone brute et de la quarantaine au-delà de 90 jours, journalisée | `dag_purge` | dimanche 04:00 |
+| **B3-S6** restitution | un tableau de bord en lecture seule | service `dashboard` | permanent |
 
 Chaque DAG porte un `start_date` dans le fuseau `Europe/Paris`, et Airflow
 évalue alors sa cadence **dans ce fuseau**, changements d'heure compris : le
@@ -56,9 +56,9 @@ pip install -e ".[dev]"            # pour pytest et ruff hors conteneur
 # ouvrir Docker Desktop et attendre qu'il soit prêt
 .\fd-manager.ps1 up                # postgres, airflow, mlflow, dashboard
 .\fd-manager.ps1 init              # DDL, rôles, migrations ; rejouable
-.\fd-manager.ps1 load              # S1 : l'historique
-.\fd-manager.ps1 train             # S2 : le premier modèle
-.\fd-manager.ps1 realtime -Start   # S3 : réactive dash_ingest, à la minute
+.\fd-manager.ps1 load              # B3-S1 : l'historique
+.\fd-manager.ps1 train             # B3-S2 : le premier modèle
+.\fd-manager.ps1 realtime -Start   # B3-S3 : réactive dash_ingest, à la minute
 .\fd-manager.ps1 check             # tout : acceptation, traçabilité, tests
 ```
 
@@ -97,7 +97,7 @@ frontal qui en a une.
 | `airflow/dags/` | l'ordonnancement, mince : il appelle `fraud/` et ne calcule rien |
 | `sql/ddl/` | les magasins, les rôles et les droits ; rejouable, appliqué par `init` |
 | `sql/functions/`, `sql/backfill/` | la définition des features, en temps réel et par lot |
-| `sql/checks/` | les critères d'acceptation de S1 à S6, et les contrôles |
+| `sql/checks/` | les critères d'acceptation de B3-S1 à B3-S6, et les contrôles |
 | `sql/maintenance/` | les migrations de données (renommages, chemins) |
 | `sql/…` | une requête par fichier, rangées par usage : `frauds/`, `reports/`, `ops/`, `dashboard/`… |
 | `dashboard/` | le tableau de bord Streamlit : ses pages, son image, sa configuration |
@@ -116,7 +116,7 @@ runtime/reports/                      les rapports du matin, un fichier par jour
 runtime/datasets/                     les jeux Parquet, les modèles, les manifestes
 runtime/channels/frauds/frauds.jsonl  le canal de l'analyste
 runtime/channels/ops/ops.jsonl        le canal de l'exploitation
-runtime/observations/                 les mesures de l'API (N0)
+runtime/observations/                 les mesures de l'API (B3-N0)
 ```
 
 **Un seul montage le couvre**, `./runtime:/opt/project/runtime`. Ce projet a
@@ -145,7 +145,7 @@ plutôt que des rôles qui s'abstiennent.
 Seul `fd_dashboard` se connecte directement, avec son propre mot de passe : les
 autres n'ont pas d'attribut `LOGIN`, l'application se connecte avec le compte
 propriétaire puis émet `SET ROLE`. Le détail, et ce que chaque rôle peut lire
-colonne par colonne, est dans l'[annexe B de D1](../step-1/annexes/fraud-project--d1-annexe-b--gouvernance.md).
+colonne par colonne, est dans l'[annexe B de B3-D1](../step-1/annexes/fraud-project--d1-annexe-b--gouvernance.md).
 
 **Les données personnelles ne quittent pas la zone brute.** Le porteur y est
 nommé ; partout ailleurs il est remplacé par `client_key`, un HMAC dont le
@@ -163,7 +163,7 @@ peut porter un champ identifiant : la liste est vérifiée à l'envoi.
 
 `check` enchaîne, et s'arrête au premier échec :
 
-- les **critères d'acceptation** de S1 à S6 (`sql/checks/s*_acceptance.sql`),
+- les **critères d'acceptation** de B3-S1 à B3-S6 (`sql/checks/s*_acceptance.sql`),
   lus dans la base et non supposés ;
 - les **contrôles hors base** de chaque processus (`tools/check_s*.py`) :
   fichiers sur disque, empreintes, conteneur du tableau de bord ;
@@ -201,9 +201,9 @@ code cite une exigence qui n'existe pas.
 def notify_ops(conn, settings, report: dict) -> dict:
     """Send each transition, then record it and journal it.
 
-    Covers: EC14, EC17
-    Lot: N9
-    Competency: C3, C4
+    Covers: B3-EC14, B3-EC17
+    Lot: B3-N9
+    Competency: B3-C3, B3-C4
     """
 ```
 
@@ -213,7 +213,7 @@ pour toujours ; celui-ci peut, au pire, en envoyer une deux fois.
 
 ---
 
-## Localiser les compétences C1 à C5
+## Localiser les compétences B3-C1 à B3-C5
 
 [`TRACEABILITY.md`](TRACEABILITY.md), colonne *Code*. Généré, donc à jour par
 construction.

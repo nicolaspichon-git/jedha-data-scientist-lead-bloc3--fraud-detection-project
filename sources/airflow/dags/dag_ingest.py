@@ -1,8 +1,9 @@
-"""S3 / N7: the real-time ingestion, one run a minute.
+"""B3-S3 / B3-N7: the real-time ingestion, one run a minute.
 
-Covers: EE01, EE02, EE09, EI01, EI05, EI06, EC09, EC14, EC23, EC24
-Lot: N7
-Competency: C1, C2, C3, C4
+Block: B3.
+Lot: B3-N7.
+Competency: B3-C1, B3-C2, B3-C3, B3-C4.
+Covers: B3-EE01, B3-EE02, B3-EE09, B3-EI01, B3-EI05, B3-EI06, B3-EC09, B3-EC14, B3-EC23, B3-EC24.
 
 THE RAW ZONE IS THE HAND-OFF, and that is the design rather than a convenience.
 Airflow passes JSON between tasks, not Python objects, so the readings cannot
@@ -11,7 +12,7 @@ and append-only -- and every later task re-reads from there. Two consequences
 that matter more than the plumbing:
 
   THE POLL IS THE ONLY TASK THAT TOUCHES THE NETWORK. Five calls cost about 27
-  seconds (N0: median latency 5.4 s) and the API will never return the same five
+  seconds (B3-N0: median latency 5.4 s) and the API will never return the same five
   transactions again, so it is the one task with no retry. Everything after it
   is replayable from the table, and those tasks do retry.
 
@@ -19,10 +20,10 @@ that matter more than the plumbing:
   zone; a replay types, scores and alerts them.
 
 EIGHT TASKS, AND THE LAST TWO WERE MISSING FOR A WHOLE PROCESS. The plan named
-five; scoring was separated from typing in N7, because a tracking server that is
+five; scoring was separated from typing in B3-N7, because a tracking server that is
 down must show as a RED TASK and not as a warning line inside a green run. The
-last two are N9's, and they are stage (3c) of diagram 3.3 -- the controls and the
-operations channel -- which that diagram specified, the plan of S3 did not list,
+last two are B3-N9's, and they are stage (3c) of diagram 3.3 -- the controls and the
+operations channel -- which that diagram specified, the plan of B3-S3 did not list,
 and nobody missed until the diagram was read against the code. See fraud/health.py
 for what the traceability table could not see.
 
@@ -36,28 +37,28 @@ messages stops reading alerts.
 THE CADENCE, decided 2026-11-16 and declared in governance.yml. One run a
 minute, five calls -- 5 x 1,440 = 7,200 a day, which is exactly the rate
 threshold.py chose the threshold and the 60-alert capacity at. The limiter fired
-at 13 calls a minute in N0 and never below, so the margin is 2.6x. max_active_runs
+at 13 calls a minute in B3-N0 and never below, so the margin is 2.6x. max_active_runs
 is 1: one 502 costs 25 s and brings the worst realistic run to about 47 s, still
 inside the minute, but two would overrun -- a slow run must DELAY the next, never
 run beside it, or two collectors would write the same batch.
 
 XCOM CARRIES JSON, SO batch_id TRAVELS AS A STRING and every task that
 receives it converts back with uuid.UUID() before handing it to a function.
-dag_load_history has done this at the top of three tasks since L2; I had read
+dag_load_history has done this at the top of three tasks since B3-L2; I had read
 that and not applied it, and raw.read_batch failed on
 "'str' object has no attribute 'hex'" -- deep inside, naming nothing. It now
 refuses a non-UUID with a message that names the fix.
 
 A FAILURE IS CLOSED BY A CALLBACK ON THE DAG and not by a task carrying
-trigger_rule="one_failed", which is what N7 first wrote. That rule needs an
+trigger_rule="one_failed", which is what B3-N7 first wrote. That rule needs an
 upstream task in the failed state AND the scheduler to place one more task; the
 dagrun_timeout below fails the RUN and kills what is running, so the marking
 task could be skipped in exactly the case the two-minute timeout exists to
 catch, leaving the row in 'running' -- the hole the marking exists to close.
-dag_load_history has used the callback since L2; this DAG had invented a second
+dag_load_history has used the callback since B3-L2; this DAG had invented a second
 convention for the same job. See _mark_failed.
 
-NO VERDICT IS WRITTEN HERE. That is N6's fourth guarantee: the write lives in
+NO VERDICT IS WRITTEN HERE. That is B3-N6's fourth guarantee: the write lives in
 dag_ingest_verdicts, daily, sharing no task with the scoring. tests/test_leak.py
 reads these imports to check it.
 """
@@ -78,7 +79,7 @@ DAG_ID = "dag_ingest"
 def _mark_failed(context) -> None:
     """Close the run as FAILED. A CALLBACK MUST NEVER RAISE.
 
-    WITHOUT THIS THE GUARD OF M1 COUNTS WRONG. It reads fd_pipeline_runs and
+    WITHOUT THIS THE GUARD OF B3-M1 COUNTS WRONG. It reads fd_pipeline_runs and
     counts state = 'success' and state = 'failed'; a run abandoned in 'running'
     is in neither, so a window of 1,440 runs a day could be full of silent
     failures and still look like a window with no failure at all.
@@ -87,16 +88,16 @@ def _mark_failed(context) -> None:
     the right key: the poll records the run under str(context["run_id"]), the
     same value Airflow hands this callback.
 
-    AND WHY runs.abandon() AND NOT runs.finish(). N9 hung two control tasks
+    AND WHY runs.abandon() AND NOT runs.finish(). B3-N9 hung two control tasks
     after close_run, which records the success. One of them failing would make
     this callback overwrite that success with a failure, and the journal would
     report a failed ingestion while the transactions sit in the table -- which
-    M1's guard would then read as a reason to refuse training. abandon() closes
+    B3-M1's guard would then read as a reason to refuse training. abandon() closes
     only what is still RUNNING, i.e. what nobody closed.
 
-    Covers: EC14
-    Lot: N9
-    Competency: C4
+    Lot: B3-N9.
+    Competency: B3-C4.
+    Covers: B3-EC14.
     """
     run_id = str(context.get("run_id", "?"))
     try:
@@ -112,7 +113,7 @@ def _mark_failed(context) -> None:
 
 @dag(
     dag_id=DAG_ID,
-    description="S3/N7: real-time ingestion, scoring and alerting",
+    description="B3-S3/B3-N7: real-time ingestion, scoring and alerting",
     schedule="* * * * *",
     start_date=pendulum.datetime(2026, 11, 16, tz="Europe/Paris"),
     catchup=False,                      # 1,440 runs a day: never backfill
@@ -120,7 +121,7 @@ def _mark_failed(context) -> None:
     # About 27 s nominally, about 47 s with one 502. Past two minutes something
     # is wrong and a queue of minute-runs would build behind it.
     dagrun_timeout=dt.timedelta(minutes=2),
-    tags=["S3", "N7", "BC03", "C2", "C3", "C4"],
+    tags=["B3-S3", "B3-N7", "BC03", "B3-C2", "B3-C3", "B3-C4"],
     default_args={"retries": 1, "retry_delay": dt.timedelta(seconds=10)},
     # On the DAG and not on a task: dagrun_timeout fails the run, and a
     # one_failed task may never be scheduled then.
@@ -137,9 +138,9 @@ def ingest_realtime():
         a reading not written is a transaction nobody will see again. Better to
         fail the minute and let the next run collect.
 
-        Covers: EE01, EI01, EC23
-        Lot: N7
-        Competency: C2
+        Lot: B3-N7.
+        Competency: B3-C2.
+        Covers: B3-EE01, B3-EI01, B3-EC23.
         """
         from airflow.operators.python import get_current_context
 
@@ -168,7 +169,7 @@ def ingest_realtime():
             n_read = stream.write_batch(conn, batch_id, readings) if readings \
                 else 0
             if n_read:
-                # S5/Q1: the fingerprint is taken where the raw zone is written,
+                # B3-S5/B3-Q1: the fingerprint is taken where the raw zone is written,
                 # in the same transaction, so what was written and what was
                 # fingerprinted commit together. A purge refuses a batch
                 # without one.
@@ -177,11 +178,11 @@ def ingest_realtime():
 
         if not readings:
             # Not an error of this pipeline: the Space refused or timed out.
-            # N0 measured 5 % of calls failing, so a minute with nothing is
+            # B3-N0 measured 5 % of calls failing, so a minute with nothing is
             # expected and must not look like a defect.
             raise AssertionError(
                 "aucune lecture : %d appel(s) en echec. Rien a ingerer. "
-                "N0 a mesure 5 %% d'echecs, donc une minute vide arrive ; "
+                "B3-N0 a mesure 5 %% d'echecs, donc une minute vide arrive ; "
                 "c'est une minute perdue, pas un defaut de la chaine."
                 % len(failures))
 
@@ -196,9 +197,9 @@ def ingest_realtime():
     def validate(polled: dict) -> dict:
         """Validate the batch and write the quarantine.
 
-        Covers: EE02, EC14, EC25
-        Lot: N7
-        Competency: C2, C5
+        Lot: B3-N7.
+        Competency: B3-C2, B3-C5.
+        Covers: B3-EE02, B3-EC14, B3-EC25.
         """
         import uuid as _uuid
 
@@ -213,7 +214,7 @@ def ingest_realtime():
             # latency_ms, which the envelope carries. Calling
             # checks.validate_batch on the rows alone was the first draft, and
             # it silently dropped CLOCK_IMPLAUSIBLE from the DAG while the
-            # manual runner kept it -- the rule N0 earned by measuring one
+            # manual runner kept it -- the rule B3-N0 earned by measuring one
             # reading 818 s out, our own process suspended.
             reader = raw.read_batch(conn, batch_id)
             try:
@@ -236,9 +237,9 @@ def ingest_realtime():
     def type_and_feature(polled: dict, counts: dict) -> int:
         """Type, pseudonymise, and compute the features of the batch.
 
-        Covers: EI03, EE07, EC17
-        Lot: N7
-        Competency: C2
+        Lot: B3-N7.
+        Competency: B3-C2.
+        Covers: B3-EI03, B3-EE07, B3-EC17.
         """
         import uuid as _uuid
 
@@ -274,9 +275,9 @@ def ingest_realtime():
         but the operator must see which stage stopped rather than read a warning
         inside a green run.
 
-        Covers: EE09, EI04, EC24
-        Lot: N7
-        Competency: C3
+        Lot: B3-N7.
+        Competency: B3-C3.
+        Covers: B3-EE09, B3-EI04, B3-EC24.
         """
         import uuid as _uuid
 
@@ -309,14 +310,14 @@ def ingest_realtime():
     def raise_and_notify_fraud(scored: dict) -> dict:
         """Raise the alerts and notify THE ANALYST, within the declared capacity.
 
-        Named for its reader since N9, which added the second audience: this
+        Named for its reader since B3-N9, which added the second audience: this
         task notifies a flagged TRANSACTION and raise_and_notify_ops notifies a
         state of the CHAIN. The queue this one feeds is the one the capacity of
         60 a day exists to protect.
 
-        Covers: EI05, EC09, EC14
-        Lot: N7
-        Competency: C3, C4
+        Lot: B3-N7.
+        Competency: B3-C3, B3-C4.
+        Covers: B3-EI05, B3-EC09, B3-EC14.
         """
         from fraud import config, db, notify
 
@@ -334,12 +335,12 @@ def ingest_realtime():
     def close_run(polled: dict, counts: dict, alerted: dict) -> dict:
         """Record the volumes and close the run as a success.
 
-        Fed to fd_pipeline_runs exactly as S1 does, so M1's guard watches this
+        Fed to fd_pipeline_runs exactly as B3-S1 does, so B3-M1's guard watches this
         process too -- a window whose runs all failed must refuse to train.
 
-        Covers: EC14, EC23
-        Lot: N7
-        Competency: C4
+        Lot: B3-N7.
+        Competency: B3-C4.
+        Covers: B3-EC14, B3-EC23.
         """
         from fraud import db, runs
 
@@ -366,9 +367,9 @@ def ingest_realtime():
         infrastructure -- an unreachable database -- because that is a red task
         and not a verdict.
 
-        Covers: EC14
-        Lot: N9
-        Competency: C4
+        Lot: B3-N9.
+        Competency: B3-C4.
+        Covers: B3-EC14.
         """
         from fraud import config, db, health
 
@@ -394,9 +395,9 @@ def ingest_realtime():
         telling anybody is broken. The journal keeps its success either way:
         the ingestion did succeed, and runs.abandon() will not take that back.
 
-        Covers: EC14, EC17
-        Lot: N9
-        Competency: C3, C4
+        Lot: B3-N9.
+        Competency: B3-C3, B3-C4.
+        Covers: B3-EC14, B3-EC17.
         """
         from fraud import config, db, health
 

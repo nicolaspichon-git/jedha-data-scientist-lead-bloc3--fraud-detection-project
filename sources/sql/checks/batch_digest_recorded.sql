@@ -1,5 +1,8 @@
 -- The fingerprint RECORDED for one batch, if any.
--- Covers: EC23, EI12   Lot: Q1   Competency: C4
+-- Block: B3.
+-- Lot: B3-Q1.
+-- Competency: B3-C4.
+-- Covers: B3-EC23, B3-EI12.
 --
 -- Parameter: batch_id. The earliest run that carries one wins, which is the run
 -- that wrote the batch: a replay attaches later runs to the same batch.
@@ -8,7 +11,7 @@ SELECT (p.digests #>> '{raw_batch,rows}')::bigint AS n_rows,
        p.digests #>> '{raw_batch,digest}'         AS digest,
        p.digests #>> '{raw_batch,origin}'         AS origin,
        p.run_id,
-       -- Q3: what a purge has already done to this batch, if one started.
+       -- B3-Q3: what a purge has already done to this batch, if one started.
        -- Read HERE rather than by a query of its own: the caller that needs
        -- the fingerprint is the caller that needs to know whether a purge was
        -- interrupted, and two round trips would let the two answers come from

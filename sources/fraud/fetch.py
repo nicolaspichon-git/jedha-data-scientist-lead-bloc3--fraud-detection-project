@@ -1,8 +1,9 @@
 """Acquisition of the historical CSV.
 
-Covers: EI04, EI05
-Lot: L1
-Competency: C2
+Block: B3.
+Lot: B3-L1.
+Competency: B3-C2.
+Covers: B3-EI04, B3-EI05.
 
 Local cache with a checksum: re-downloading 143 MB on every debugging attempt is
 slow, and makes attempts irreproducible if the source moves. The checksum is not
@@ -98,7 +99,7 @@ def read_rows(path: Path) -> Iterator[dict[str, str]]:
     cc_num holds up to 19 digits: read as a number it loses its leading zeros
     and exceeds the exact range of a double, which also destroys its Luhn
     validity. The raw zone keeps what was received, not what was interpreted, so
-    no conversion happens here -- typing is L3's business.
+    no conversion happens here -- typing is B3-L3's business.
     """
     with io.open(path, encoding="utf-8", newline="") as fh:
         reader = csv.reader(fh)
@@ -108,7 +109,7 @@ def read_rows(path: Path) -> Iterator[dict[str, str]]:
         width = len(header)
         for row in reader:
             if len(row) != width:
-                # Not rejected here: the raw zone takes everything, and L2 is
-                # what decides the fate of a malformed record (EC22).
+                # Not rejected here: the raw zone takes everything, and B3-L2 is
+                # what decides the fate of a malformed record (B3-EC22).
                 row = (row + [""] * width)[:width]
             yield dict(zip(header, row))

@@ -1,8 +1,9 @@
-"""R4: the service -- what the one container a browser talks to is given.
+"""B3-R4: the service -- what the one container a browser talks to is given.
 
-Covers: EC19, EC27
-Lot: R4
-Competency: C3
+Block: B3.
+Lot: B3-R4.
+Competency: B3-C3.
+Covers: B3-EC19, B3-EC27.
 
 The service could not be started where this is developed (Streamlit is not
 installable here). What these tests hold is its DECLARATION -- the compose

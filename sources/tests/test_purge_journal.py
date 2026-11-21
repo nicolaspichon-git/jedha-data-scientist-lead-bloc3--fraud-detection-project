@@ -1,10 +1,11 @@
-"""S5 / Q6: the journal of the purges, and the acceptance of S5.
+"""B3-S5 / B3-Q6: the journal of the purges, and the acceptance of B3-S5.
 
-Covers: EC14, EC16, EC18, EC19, EC23, EC27
-Lot: Q6
-Competency: C4, C5
+Block: B3.
+Lot: B3-Q6.
+Competency: B3-C4, B3-C5.
+Covers: B3-EC14, B3-EC16, B3-EC18, B3-EC19, B3-EC23, B3-EC27.
 
-"UNE DUREE NON APPLIQUEE N'EST PAS UNE POLITIQUE" (D1, annexe B). governance.yml
+"UNE DUREE NON APPLIQUEE N'EST PAS UNE POLITIQUE" (B3-D1, annexe B). governance.yml
 claims that personal data leaves at ninety days; what turns that claim into a
 processing one can show is the record that it happened -- including the Sundays
 that found nothing, which is the ordinary case and the first thing a log loses.
@@ -67,7 +68,7 @@ def test_one_row_carries_the_decision_and_what_it_meant():
 
 
 def test_there_is_no_dry_run_column():
-    """AGAINST THE PLAN OF S5, which listed one. A dry run writes nothing --
+    """AGAINST THE PLAN OF B3-S5, which listed one. A dry run writes nothing --
     the same principle as `abandoned` and `digests`, where looking at a journal
     must not change it. A column that could only ever be false would invite
     someone to record dry runs, and "the purge ran" would stop meaning
@@ -244,7 +245,7 @@ def test_the_checker_asks_what_sql_cannot():
 
 def test_the_checker_compares_the_declaration_with_what_was_applied():
     """NEITHER SIDE CAN ANSWER THIS ALONE: the SQL cannot read governance.yml,
-    and governance.yml cannot know what ran. This is the whole of EC18."""
+    and governance.yml cannot know what ran. This is the whole of B3-EC18."""
     source = CHECKER.read_text(encoding="utf-8")
     assert "raw_retention_days" in source
     assert "(as_of - cutoff).days" in source
@@ -276,7 +277,7 @@ def test_the_checker_does_not_spell_the_dag_directory_itself():
 
 def test_the_checker_verifies_the_files_the_catalogue_names():
     """fd_datasets describes two parquet files per version. A catalogue
-    describing files that are gone is the M8 defect, and the purge is the one
+    describing files that are gone is the B3-M8 defect, and the purge is the one
     process that could cause it."""
     source = CHECKER.read_text(encoding="utf-8")
     assert "train_path" in source and "test_path" in source
@@ -304,8 +305,8 @@ def test_both_halves_of_s5_are_in_the_check():
     assert "s5_acceptance.sql" in block
     assert "check_s5.py" in block
     # and each behind its own Invoke-Step, so a failure names which half
-    assert block.count("Invoke-Step 'criteres d''acceptation de S5'") == 1
-    assert block.count("Invoke-Step 'declaration, DAG et fichiers de S5'") == 1
+    assert block.count("Invoke-Step 'criteres d''acceptation de B3-S5'") == 1
+    assert block.count("Invoke-Step 'declaration, DAG et fichiers de B3-S5'") == 1
 
 
 def test_the_acceptance_task_covers_s5_too():
@@ -315,7 +316,7 @@ def test_the_acceptance_task_covers_s5_too():
 
 
 def test_every_process_of_the_project_is_in_the_check():
-    """S1 to S5, both halves of each where there are two. Read from the script
+    """B3-S1 to B3-S5, both halves of each where there are two. Read from the script
     rather than remembered."""
     text = (ROOT / "fd-manager.ps1").read_text(encoding="utf-8")
     block = text.split("    'check' {")[1].split("\r\n    }\r\n")[0]
@@ -326,8 +327,8 @@ def test_every_process_of_the_project_is_in_the_check():
 
 
 def test_a_forget_is_not_read_as_a_retention_purge():
-    """FOUND ON A SOUND STACK, 18 November 2026. Four targeted forgets (Q7)
-    made S5's acceptance fail twice: their cutoff -- the forgotten batch's last
+    """FOUND ON A SOUND STACK, 18 November 2026. Four targeted forgets (B3-Q7)
+    made B3-S5's acceptance fail twice: their cutoff -- the forgotten batch's last
     row -- was read as a boundary, so 556,560 rows "survived" it; and each
     journalled one store, read as a purge that forgot the other. A forget is
     batch_id IS NOT NULL; every retention criterion reads batch_id IS NULL."""

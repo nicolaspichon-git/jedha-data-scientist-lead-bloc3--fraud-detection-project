@@ -1,8 +1,9 @@
-"""R0: the role the dashboard logs in as reads three tables and nothing else.
+"""B3-R0: the role the dashboard logs in as reads three tables and nothing else.
 
-Covers: EC19
-Lot: R0
-Competency: C2, C5
+Block: B3.
+Lot: B3-R0.
+Competency: B3-C2, B3-C5.
+Covers: B3-EC19.
 
 THE ONLY COMPONENT OPEN TO A BROWSER. It must be UNABLE to write, to see the
 raw zone or to learn the stack's secrets, not merely refrain from it.
@@ -14,7 +15,7 @@ verdicts and the run journal are refused; rewriting a report digest, inserting
 a report, acknowledging an alert and deleting a transaction are refused; SET
 ROLE to fd_report, fd_ingest or the owner is refused; CREATE in public is
 refused. A TEMPORARY table is allowed -- PUBLIC holds TEMP on the database --
-which opens no data and is recorded in the plan of S6 rather than revoked from
+which opens no data and is recorded in the plan of B3-S6 rather than revoked from
 every role.
 
 These tests hold the FILES, since the database is not reachable from pytest:
@@ -29,18 +30,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DDL = ROOT / "sql" / "ddl" / "140_dashboard_role.sql"
 PASSWORD_SQL = ROOT / "sql" / "roles" / "dashboard_password.sql"
 MANAGER = ROOT / "fd-manager.ps1"
-READ = {"fd_reports", "fd_frauds", "fd_transactions",      # R2, R3
-        "fd_pipeline_runs", "fd_ops_state",                   # R6
-        "fd_ops_notifications",                               # R9
-        "fd_ground_truth", "fd_scores"}                       # R10
-# R6: the quarantine BY COLUMN, for the volume invariant -- never payload,
+READ = {"fd_reports", "fd_frauds", "fd_transactions",      # B3-R2, B3-R3
+        "fd_pipeline_runs", "fd_ops_state",                   # B3-R6
+        "fd_ops_notifications",                               # B3-R9
+        "fd_ground_truth", "fd_scores"}                       # B3-R10
+# B3-R6: the quarantine BY COLUMN, for the volume invariant -- never payload,
 # never reason_detail.
-# R10: the catalogue BY COLUMN -- the reference, never the paths.
+# B3-R10: the catalogue BY COLUMN -- the reference, never the paths.
 DATASET_COLUMNS = {"recipe_digest", "version", "created_at", "base_rate_test",
                    "test_recall", "test_precision", "test_alerts_per_day",
                    "test_threshold", "measured_at"}
-QUARANTINE_COLUMNS = {"batch_id", "line_no",                # R6
-                      "reason_class", "reason_code", "rejected_at"}  # R7
+QUARANTINE_COLUMNS = {"batch_id", "line_no",                # B3-R6
+                      "reason_class", "reason_code", "rejected_at"}  # B3-R7
 
 
 def _code(path: Path) -> str:
@@ -76,7 +77,7 @@ def test_it_reads_exactly_the_tables_of_its_pages():
 
 def test_the_quarantine_is_granted_by_column_and_never_its_payload():
     """pipeline_health.sql counts the quarantined lines of each batch, and that
-    is all R6 needs. payload is the raw rejected record -- the raw zone's
+    is all B3-R6 needs. payload is the raw rejected record -- the raw zone's
     personal data -- and reason_detail may quote a raw value."""
     code = _code(DDL)
     granted = re.findall(r"GRANT\s+SELECT\s*\(([^)]*)\)\s*ON\s+fd_quarantine\s+TO\s+"
@@ -90,7 +91,7 @@ def test_the_quarantine_is_granted_by_column_and_never_its_payload():
 
 
 def test_the_catalogue_is_granted_by_column_and_never_its_paths():
-    """R10 compares with what M5 measured. The dashboard opens no dataset: the
+    """B3-R10 compares with what B3-M5 measured. The dashboard opens no dataset: the
     Parquet paths and the feature list are not its business."""
     code = _code(DDL)
     granted = re.findall(r"GRANT\s+SELECT\s*\(([^)]*)\)\s*ON\s+fd_datasets\s+TO\s+"

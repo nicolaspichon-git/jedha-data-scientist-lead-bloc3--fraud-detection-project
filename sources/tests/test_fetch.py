@@ -62,7 +62,7 @@ def test_every_line_is_yielded(csv_file):
 
 
 def test_a_short_row_is_padded_not_dropped(tmp_path):
-    """The raw zone takes everything; L2 decides an invalid record's fate (EC22)."""
+    """The raw zone takes everything; B3-L2 decides an invalid record's fate (B3-EC22)."""
     p = tmp_path / "short.csv"
     p.write_text(HEADER + "9,2020-06-21 12:00:00\n", encoding="utf-8")
     rows = list(fetch.read_rows(p))

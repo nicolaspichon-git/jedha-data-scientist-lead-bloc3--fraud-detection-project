@@ -1,11 +1,12 @@
 """What becomes of invalid records.
 
-Covers: EC22
-Lot: L2
-Competency: C5
+Block: B3.
+Lot: B3-L2.
+Competency: B3-C5.
+Covers: B3-EC22.
 
 A rejected record is neither dropped nor corrected: it is kept with its reason,
-in a store that F07.3 can report a breakdown over. One line can hold several
+in a store that B3-F07-3 can report a breakdown over. One line can hold several
 rows here -- one per reason code -- which is why sql/checks/counters_close.sql
 counts DISTINCT line_no rather than rows.
 """
@@ -40,7 +41,7 @@ def write(conn: "psycopg.Connection", batch_id,
 
     Consumed in chunks: a wholly invalid batch would otherwise hold 555,719
     payloads in memory at once. ON CONFLICT DO NOTHING keeps a replay idempotent
-    (EC23).
+    (B3-EC23).
     """
     from psycopg.types.json import Jsonb
 
@@ -78,7 +79,7 @@ def rejected_lines(conn: "psycopg.Connection", batch_id) -> set[int]:
     """The line numbers of a batch that went to the quarantine.
 
     Read back from the table rather than carried across a task boundary: the
-    DAG of N7 hands work from one task to the next through the database, and a
+    DAG of B3-N7 hands work from one task to the next through the database, and a
     set of line numbers travelling as JSON would be a second record of
     something the quarantine already holds.
 
@@ -86,9 +87,9 @@ def rejected_lines(conn: "psycopg.Connection", batch_id) -> set[int]:
     per reason -- UNIQUE (batch_id, line_no, reason_code) -- so a line with two
     defects appears twice.
 
-    Covers: EC14, EC23
-    Lot: N7
-    Competency: C3
+    Lot: B3-N7.
+    Competency: B3-C3.
+    Covers: B3-EC14, B3-EC23.
     """
     from fraud import db
 
@@ -98,11 +99,11 @@ def rejected_lines(conn: "psycopg.Connection", batch_id) -> set[int]:
 
 
 def breakdown(conn: "psycopg.Connection", batch_id) -> list[tuple]:
-    """Rejects per class and per reason. Feeds F07.3.
+    """Rejects per class and per reason. Feeds B3-F07-3.
 
-    Covers: EC15
-    Lot: L2
-    Competency: C4
+    Lot: B3-L2.
+    Competency: B3-C4.
+    Covers: B3-EC15.
     """
     with conn.cursor() as cur:
         cur.execute(

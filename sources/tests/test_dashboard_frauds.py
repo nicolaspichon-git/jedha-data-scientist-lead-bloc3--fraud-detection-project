@@ -1,11 +1,12 @@
-"""R3, R8, R11: the frauds page -- the alerts, and their notification.
+"""B3-R3, B3-R8, B3-R11: the frauds page -- the alerts, and their notification.
 
-Covers: EE03, EC17
-Lot: R3
-Competency: C4
+Block: B3.
+Lot: B3-R3.
+Competency: B3-C4.
+Covers: B3-EE03, B3-EC17.
 
 The DAY shown is a calendar day in the declared zone, like the report's; the
-CAPACITY is N5's rolling 24 hours. A capacity reached is a decision of the
+CAPACITY is B3-N5's rolling 24 hours. A capacity reached is a decision of the
 notifier, not an outage, and the page must say which.
 """
 from __future__ import annotations
@@ -207,7 +208,7 @@ def test_the_selected_period_is_what_the_view_is_asked_for(page):
     assert isinstance(picker[2]["value"], tuple), "a range picker, not a day picker"
 
 
-# --- the notification, as the page reports it (R11) -----------------------------
+# --- the notification, as the page reports it (B3-R11) -----------------------------
 
 def test_an_alert_not_yet_notified_says_non_and_names_no_channel(state):
     """"non" and not "n/a": not having been notified is a state of the alert.
@@ -227,7 +228,7 @@ def test_the_instant_of_the_notification_is_read_from_the_query():
     assert "a.notified_at," in code
 
 
-# --- the period (R8) -----------------------------------------------------------
+# --- the period (B3-R8) -----------------------------------------------------------
 
 def test_a_period_is_one_window_from_first_midnight_to_after_last(state):
     last = DAY + dt.timedelta(days=6)

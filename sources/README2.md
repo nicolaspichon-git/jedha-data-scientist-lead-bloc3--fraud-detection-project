@@ -1,8 +1,8 @@
 *AUTOMATIC FRAUD DETECTION* PROJECT
 ===
 
-Code source de l'infrastructure de données réalisée pour le projet de détection de fraude automatique [D0](fraud-project--d0-introduction.pdf). 
-L'architecture des pipelines est rpésenté dans [D1](fraud-project--d1-data-infrastructure.pdf). 
+Code source de l'infrastructure de données réalisée pour le projet de détection de fraude automatique [B3-D0](fraud-project--d0-introduction.pdf). 
+L'architecture des pipelines est rpésenté dans [B3-D1](fraud-project--d1-data-infrastructure.pdf). 
 
 ## Démarrer
 
@@ -42,9 +42,9 @@ Le mode `--check` vérifie la tracabilité dans les deux sens.
 def check_record(record: dict, line_no: int) -> list[Reject]:
     """Coherence entre champs d'un meme enregistrement.
 
-    Couvre: EC21
-    Lot: L2
-    Competence: C5
+    Couvre: B3-EC21
+    Lot: B3-L2
+    Competence: B3-C5
     """
 ```
 

@@ -1,8 +1,9 @@
-"""R5: the acceptance of S6 -- the catalogue, and the container as it runs.
+"""B3-R5: the acceptance of B3-S6 -- the catalogue, and the container as it runs.
 
-Covers: EC19, EC27
-Lot: R5
-Competency: C4, C5
+Block: B3.
+Lot: B3-R5.
+Competency: B3-C4, B3-C5.
+Covers: B3-EC19, B3-EC27.
 
 s6_acceptance.sql was run on PostgreSQL 16 three ways: sound (10 OK, exit 0);
 damaged by making fd_dashboard a member of fd_report and granting it the
@@ -13,7 +14,7 @@ filter -- which only a CASE prevents.
 
 check_s6.py cannot meet Docker here, so its logic is held against `docker
 inspect` and probe answers shaped like the real ones: a sound container, and
-the one the plan of S6 warns about, built on the x-airflow-common anchor.
+the one the plan of B3-S6 warns about, built on the x-airflow-common anchor.
 """
 from __future__ import annotations
 
@@ -47,7 +48,7 @@ def test_the_expected_tables_are_the_ones_r0_grants():
     whole = re.search(r"GRANT\s+SELECT\s+ON\s+(.+?)\s+TO\s+fd_dashboard", ddl,
                       re.I | re.S).group(1)
     by_column = re.findall(r"GRANT\s+SELECT\s*\([^)]*\)\s*ON\s+(\w+)", ddl, re.I)
-    expected = re.search(r"'R0 tables lisibles, colonnes comprises',\s*'([^']+)'",
+    expected = re.search(r"'B3-R0 tables lisibles, colonnes comprises',\s*'([^']+)'",
                          SQL).group(1)
     assert sorted({t.strip() for t in whole.split(",")} | set(by_column)) == \
         [t.strip() for t in expected.split(",")]
@@ -58,7 +59,7 @@ def test_the_quarantine_columns_expected_are_the_ones_granted():
         encoding="utf-8"))
     granted = re.search(r"GRANT\s+SELECT\s*\(([^)]*)\)\s*ON\s+fd_quarantine", ddl,
                         re.I).group(1)
-    expected = re.search(r"'R6 colonnes lisibles de la quarantaine',\s*'([^']+)'",
+    expected = re.search(r"'B3-R6 colonnes lisibles de la quarantaine',\s*'([^']+)'",
                          SQL).group(1)
     assert sorted(c.strip() for c in granted.split(",")) == \
         [c.strip() for c in expected.split(",")]
@@ -83,7 +84,7 @@ def test_a_missing_role_is_named_before_anything_else_fails():
 
 
 def test_psql_exits_non_zero_on_any_failure():
-    assert "RAISE EXCEPTION 'S6 : % critere(s) en echec" in SQL
+    assert "RAISE EXCEPTION 'B3-S6 : % critere(s) en echec" in SQL
 
 
 # --- the running container ----------------------------------------------------
@@ -159,21 +160,21 @@ def test_the_container_built_on_the_airflow_anchor_is_caught(tmp_path):
     seen = {"uid": 0, "reports_write": "ACCEPTEE", "fraud_write": "ACCEPTEE",
             "session_error": "WrongIdentity: SUPER-UTILISATEUR", "health": "ok"}
     failed = failures(verdicts(answers(bad, seen), tmp_path))
-    for expected in ("R4 poivre absent de l'environnement",
-                     "R4 mot de passe du proprietaire absent de l'environnement",
-                     "R4 POSTGRES_USER du service",
-                     "R4 port publie sur cette machine seulement",
-                     "R4 montages en lecture seule",
-                     "R5 processus non root (uid vu de l'interieur)",
-                     "R5 ecriture dans reports/ refusee par le noyau",
-                     "R5 identite de la session PostgreSQL"):
+    for expected in ("B3-R4 poivre absent de l'environnement",
+                     "B3-R4 mot de passe du proprietaire absent de l'environnement",
+                     "B3-R4 POSTGRES_USER du service",
+                     "B3-R4 port publie sur cette machine seulement",
+                     "B3-R4 montages en lecture seule",
+                     "B3-R5 processus non root (uid vu de l'interieur)",
+                     "B3-R5 ecriture dans reports/ refusee par le noyau",
+                     "B3-R5 identite de la session PostgreSQL"):
         assert expected in failed, expected
 
 
 def test_a_stopped_service_says_how_to_start_it(tmp_path):
     rows = verdicts(answers(inspect(), running=False), tmp_path)
-    assert list(rows) == ["R4 service dashboard en marche"]
-    assert "fd-manager.ps1 dashboard" in rows["R4 service dashboard en marche"][1]
+    assert list(rows) == ["B3-R4 service dashboard en marche"]
+    assert "fd-manager.ps1 dashboard" in rows["B3-R4 service dashboard en marche"][1]
 
 
 def test_an_altered_or_relocated_report_fails(tmp_path):
@@ -183,15 +184,15 @@ def test_an_altered_or_relocated_report_fails(tmp_path):
                                               "verdict": "differente",
                                               "relocated": True}}
     failed = failures(verdicts(answers(inspect(), seen), tmp_path))
-    assert "R5 dernier rapport conforme a son empreinte" in failed
-    assert "R5 dernier rapport lu au chemin ou Airflow l'a ecrit" in failed
+    assert "B3-R5 dernier rapport conforme a son empreinte" in failed
+    assert "B3-R5 dernier rapport lu au chemin ou Airflow l'a ecrit" in failed
 
 
 def test_a_page_unreachable_from_this_machine_fails(tmp_path):
     def down(url):
         raise OSError("refused")
     failed = failures(verdicts(answers(inspect()), tmp_path, get=down))
-    assert failed == ["R5 page servie, vue de cette machine"]
+    assert failed == ["B3-R5 page servie, vue de cette machine"]
 
 
 def test_no_secret_is_ever_printed(tmp_path, capsys, monkeypatch):

@@ -114,7 +114,7 @@ def test_the_report_lists_the_features_in_order():
 
 
 def test_the_threshold_is_presented_as_a_reference_not_a_verdict():
-    """M6 decides the threshold. M5 only reports at a stated one."""
+    """B3-M6 decides the threshold. B3-M5 only reports at a stated one."""
     assert "pas un verdict" in render_report(evaluation())
 
 

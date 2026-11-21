@@ -1,28 +1,29 @@
-"""S3 / N6: write the withheld verdicts. A DAG of its own, deliberately.
+"""B3-S3 / B3-N6: write the withheld verdicts. A DAG of its own, deliberately.
 
-Covers: EE03, EI03, EI06, EI12, EC14, EC23
-Lot: N6
-Competency: C1, C3, C4
+Block: B3.
+Lot: B3-N6.
+Competency: B3-C1, B3-C3, B3-C4.
+Covers: B3-EE03, B3-EI03, B3-EI06, B3-EI12, B3-EC14, B3-EC23.
 
 WHY A SEPARATE DAG, when the ingestion already had the payload in hand. The API
 delivers is_fraud in the SAME payload as the features -- so the label sits one
 line of code away from the scoring, and no code review proves it did not get
-there. Three of N6's four guarantees are structural and already hold; this DAG
+there. Three of B3-N6's four guarantees are structural and already hold; this DAG
 is the fourth: the verdict write shares no task, no transaction and no object
 with the scoring. It starts again from the raw zone, the only append-only copy
 of what the API said.
 
 It is DEFENCE IN DEPTH and not the primary mechanism. What actually withholds a
 verdict is label_ts = txn_ts + delay together with every consumer filtering on
-label_ts <= cut_off -- the mechanism M3's training set and L4's reconciliation
+label_ts <= cut_off -- the mechanism B3-M3's training set and B3-L4's reconciliation
 already rest on, exercised on 555,719 rows. This DAG adds that a change to the
 scoring cannot reach the verdict code even by accident, which a shared task
 cannot promise.
 
-A DISTINCT CADENCE, which EI06 asks for: the ingestion runs every minute, this
+A DISTINCT CADENCE, which B3-EI06 asks for: the ingestion runs every minute, this
 runs once a day. Nothing is lost by waiting -- the verdict is not due for the
 declared delay anyway -- and a daily run that repairs every batch missing a
-verdict is self-healing, like N5's alert raising.
+verdict is self-healing, like B3-N5's alert raising.
 """
 from __future__ import annotations
 
@@ -38,12 +39,12 @@ DAG_ID = "dag_ingest_verdicts"
 
 @dag(
     dag_id=DAG_ID,
-    description="S3/N6: write the withheld verdicts of the stream",
+    description="B3-S3/B3-N6: write the withheld verdicts of the stream",
     schedule="0 2 * * *",               # daily, 02:00 -- a cadence of its own
     start_date=pendulum.datetime(2026, 1, 5, tz="Europe/Paris"),
     catchup=False,
     max_active_runs=1,
-    tags=["S3", "N6", "BC03", "C3", "C4"],
+    tags=["B3-S3", "B3-N6", "BC03", "B3-C3", "B3-C4"],
     default_args={"retries": 0},
 )
 def write_verdicts():
@@ -52,9 +53,9 @@ def write_verdicts():
     def write() -> dict:
         """Write every missing verdict of the stream, and count the band.
 
-        Covers: EI03, EI12, EC23
-        Lot: N6
-        Competency: C3, C4
+        Lot: B3-N6.
+        Competency: B3-C3, B3-C4.
+        Covers: B3-EI03, B3-EI12, B3-EC23.
         """
         from fraud import config, db, stream, verdicts
 

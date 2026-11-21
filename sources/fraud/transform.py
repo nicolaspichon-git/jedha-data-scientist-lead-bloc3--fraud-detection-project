@@ -1,14 +1,15 @@
 """Typing and pseudonymisation.
 
-Covers: EC17, EE08, EI03
-Lot: L3
-Competency: C2, C4
+Block: B3.
+Lot: B3-L3.
+Competency: B3-C2, B3-C4.
+Covers: B3-EC17, B3-EE08, B3-EI03.
 
 Typing means converting, constraining and deciding: amt as numeric(12,2) rather
 than a float, txn_ts as timestamptz, cc_num read as text and never stored.
 
 MEASURED ON THE SOURCE, before writing any of this:
-  - the amounts total 38,562,903.11, which L3's acceptance criterion checks to
+  - the amounts total 38,562,903.11, which B3-L3's acceptance criterion checks to
     the cent;
   - 55,452 amounts carry one decimal and 500,267 carry two, so quantising to two
     widens and never rounds -- no value is altered;
@@ -81,9 +82,9 @@ def client_key(cc_num: str, pepper: str) -> str:
     digest is inverted by trying all of them. The pepper lives in the
     environment, never in governance.yml and never in the repository.
 
-    Covers: EC17
-    Lot: L3
-    Competency: C4
+    Lot: B3-L3.
+    Competency: B3-C4.
+    Covers: B3-EC17.
     """
     if not cc_num:
         raise ValueError("empty cc_num: nothing to pseudonymise")
@@ -96,7 +97,7 @@ def home_distance_km(home_lat: str | None, home_long: str | None,
                      ) -> Decimal | None:
     """Great-circle distance between the cardholder's home and the merchant.
 
-    This is the minimisation EC17 allows: the home coordinates are read from the
+    This is the minimisation B3-EC17 allows: the home coordinates are read from the
     raw zone, consumed here, and never written to the exploited layer. A
     distance does not give back an address -- it describes a circle around the
     merchant, not a point.
@@ -104,9 +105,9 @@ def home_distance_km(home_lat: str | None, home_long: str | None,
     Returns None if any coordinate is missing: absence is not a distance of
     zero, which would read as "the merchant is at the cardholder's door".
 
-    Covers: EC17
-    Lot: L3
-    Competency: C4
+    Lot: B3-L3.
+    Competency: B3-C4.
+    Covers: B3-EC17.
     """
     try:
         lat1, lon1 = math.radians(float(home_lat)), math.radians(float(home_long))
@@ -136,14 +137,14 @@ def to_transaction(record: dict[str, str], pepper: str,
 
     The output holds OUTPUT_COLUMNS and nothing else, so no identifying field
     can reach the exploited layer by accident -- the schema of fd_transactions
-    has no column for one either (EC17).
+    has no column for one either (B3-EC17).
 
     parse_ts comes from fraud.checks rather than being written again here: how a
     source timestamp is read, time zone included, must have a single definition.
 
-    Covers: EE08, EI03, EC17
-    Lot: L3
-    Competency: C2
+    Lot: B3-L3.
+    Competency: B3-C2.
+    Covers: B3-EE08, B3-EI03, B3-EC17.
     """
     # Through the profile: the CSV writes a wall clock in
     # trans_date_trans_time, the stream epoch milliseconds in current_time.
@@ -189,7 +190,7 @@ def load_transactions(write_conn: "psycopg.Connection", batch_id,
 
     COPY into a TEMP table, then INSERT ... ON CONFLICT DO NOTHING: COPY alone
     is fast but cannot ignore a conflict, and 555,719 single inserts would take
-    minutes. The two-step keeps both speed and the idempotency EC23 requires --
+    minutes. The two-step keeps both speed and the idempotency B3-EC23 requires --
     a replay under a new batch_id meets the same txn_id and does nothing.
 
     CAUTION: `records` must NOT come from a server-side cursor on write_conn.
@@ -198,9 +199,9 @@ def load_transactions(write_conn: "psycopg.Connection", batch_id,
     connection deadlocks -- with no exception and no timeout. Give the reader its
     own connection. The parameter is named write_conn to say so.
 
-    Covers: EC23
-    Lot: L3
-    Competency: C2, C5
+    Lot: B3-L3.
+    Competency: B3-C2, B3-C5.
+    Covers: B3-EC23.
     """
     assert len(COPY_COLUMNS) == len(COPY_TYPES), "column and type lists diverged"
     columns = ", ".join(COPY_COLUMNS)

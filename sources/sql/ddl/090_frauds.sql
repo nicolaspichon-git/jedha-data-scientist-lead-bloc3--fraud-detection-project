@@ -1,5 +1,8 @@
 -- The alert raised on a scored transaction, and whether it reached anyone.
--- Covers: EE09, EI05, EC14, EC17   Lot: N5   Competency: C2, C3, C4
+-- Block: B3.
+-- Lot: B3-N5.
+-- Competency: B3-C2, B3-C3, B3-C4.
+-- Covers: B3-EE09, B3-EI05, B3-EC14, B3-EC17.
 --
 -- THE PRIMARY KEY ON txn_id IS THE IDEMPOTENCE, and it is the whole point: a
 -- transaction cannot raise two alerts, whatever the task replays. A retrain
@@ -21,10 +24,10 @@
 --                directory; a file channel fails for reasons worth recording.
 --
 -- NO IDENTIFYING COLUMN, and nothing to add here: fd_transactions holds none
--- (EC17), so an alert cannot carry a name even by accident. The analyst
+-- (B3-EC17), so an alert cannot carry a name even by accident. The analyst
 -- resolves identity INSIDE the system, never from the message.
 
--- RENAMED FROM fd_alerts ON 18 NOVEMBER 2026 (S6/R12), and this block is why a
+-- RENAMED FROM fd_alerts ON 18 NOVEMBER 2026 (B3-S6/B3-R12), and this block is why a
 -- replay of the DDL does not strand the data. `CREATE TABLE IF NOT EXISTS
 -- fd_frauds` on a database that holds fd_alerts would create a SECOND, empty
 -- table and leave every alert behind in the first -- the notifier would then

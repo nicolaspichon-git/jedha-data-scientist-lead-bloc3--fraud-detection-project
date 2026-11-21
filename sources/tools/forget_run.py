@@ -1,8 +1,9 @@
 """Forget one named batch. ROWS LEAVE THE DATABASE HERE.
 
-Covers: EC18, EC19, EC23, EC26
-Lot: Q7
-Competency: C2, C3
+Block: B3.
+Lot: B3-Q7.
+Competency: B3-C2, B3-C3.
+Covers: B3-EC18, B3-EC19, B3-EC23, B3-EC26.
 
 It plans, prints the plan, refuses on any of the plan's grounds, then deletes
 in committed slices and journals each store in fd_purges -- the purge's own
@@ -60,7 +61,7 @@ def main(argv=None) -> int:
         # TWO CONNECTIONS, TWO ROLES, and that is the property rather than a
         # nuisance: the role that decides cannot destroy, and the role that
         # destroys cannot see what the decision rests on (it holds no grant on
-        # fd_transactions, which S5's acceptance reads from the catalogue).
+        # fd_transactions, which B3-S5's acceptance reads from the catalogue).
         # forget() reads the runs again under fd_purge before deleting, so the
         # window between the two is closed where it can be.
         with db.connect("fd_ingest", settings) as reader:

@@ -17,12 +17,12 @@ tags:
 ## Appendices
 ### 1.A. Appendix A : Design Rationale
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / D1 / Annexe A : Design Rationale / v13 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe A : Design Rationale / v13 --- 2026/11/26.*
 ---
 
 ### 1.A.0. Contexte
 
-Ce document annexe présente les principes qui structurent la conception de l'infrastructure de données du cas d'étude \[D0\].
+Ce document annexe présente les principes qui structurent la conception de l'infrastructure de données du cas d'étude \[B3-D0\].
 
 ### 1.A.1. P1 : Le besoin décide de la forme
 
@@ -106,11 +106,11 @@ Une règle n'est implémentée qu'une seule fois : configuration yaml, composant
 
 #### Références
 ##### Spécifications
-- \[D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
+- \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
 ##### Livrables
-- \[D1\] [Data Infrastructure Design](fraud-project--d1-data-infrastructure.pdf)
+- \[B3-D1\] [Data Infrastructure Design](fraud-project--d1-data-infrastructure.pdf)
 ##### Annexes
-- \[D1-B\] [Data Governance Policy](fraud-project--d1-annexe-b--gouvernance.pdf)
+- \[B3-D1-B\] [Data Governance Policy](fraud-project--d1-annexe-b--gouvernance.pdf)
 #### Ressources
 - \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
 

@@ -1,7 +1,10 @@
 -- Section 2 of the morning report: yesterday's alerts, on the PAYMENT axis.
--- Covers: EE04, EI08, EC17   Lot: P1   Competency: C2
+-- Block: B3.
+-- Lot: B3-P1.
+-- Competency: B3-C2.
+-- Covers: B3-EE04, B3-EI08, B3-EC17.
 --
--- ORDERED BY EXPECTED LOSS, score x amount -- decided in P0 and written into
+-- ORDERED BY EXPECTED LOSS, score x amount -- decided in B3-P0 and written into
 -- the document, because an analyst who reviews the first 38 of a list of 60
 -- must know what he sorted on. Both factors are returned, so the order is
 -- checkable line by line rather than taken on trust.
@@ -12,14 +15,14 @@
 -- part. Returning score, amount and the product separately is what lets that be
 -- confirmed or denied on figures after a few weeks, instead of argued.
 --
--- times_usual IS THE INTERPRETABLE NUMBER, decided in P0: "this payment is 16.9
+-- times_usual IS THE INTERPRETABLE NUMBER, decided in B3-P0: "this payment is 16.9
 -- times the cardholder's habit" reads, where two raw columns ask the reader to
 -- divide forty times a morning. f_avg_amount is null for a cardholder's FIRST
 -- transaction and the guard is nullif, not a coalesce to zero -- an unknown
 -- habit must read as unknown, not as a ratio of zero.
 --
 -- NO NAME, NO ADDRESS, NO CARD NUMBER, and not by discipline: fd_transactions
--- holds no identifying column at all (EC17, decided in S1), so this query
+-- holds no identifying column at all (B3-EC17, decided in B3-S1), so this query
 -- cannot leak one even by mistake. The merchant and the category are triage
 -- facts; the cardholder appears only through aggregates of his own history.
 
@@ -33,10 +36,10 @@ SELECT a.txn_id,
        a.model_version,
        a.raised_at,
        a.notified_at IS NOT NULL                        AS notified,
-       a.notified_at,                                  -- read by the dashboard (S6/R11)
+       a.notified_at,                                  -- read by the dashboard (B3-S6/B3-R11)
        a.channel,
        a.attempts,
-       a.last_error,                                   -- read by the dashboard (S6/R3)
+       a.last_error,                                   -- read by the dashboard (B3-S6/B3-R3)
        t.f_tx_count,
        t.f_avg_amount,
        round(t.amt / nullif(t.f_avg_amount, 0), 1)      AS times_usual,

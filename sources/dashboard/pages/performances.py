@@ -1,11 +1,12 @@
-"""The performance of the model, as the verdicts reveal it (R10).
+"""The performance of the model, as the verdicts reveal it (B3-R10).
 
-Covers: EE04, EI02, EI03
-Lot: R10
-Competency: C2, C4
+Block: B3.
+Lot: B3-R10.
+Competency: B3-C2, B3-C4.
+Covers: B3-EE04, B3-EI02, B3-EI03.
 
 Section 3 of the morning report over a period: the verdicts that became known,
-the decisions they judge, and what M5 measured on the test set -- read from
+the decisions they judge, and what B3-M5 measured on the test set -- read from
 fd_datasets, where fit_model copies it. fraud/dashboard.performances_view()
 decides what is shown; this page only displays.
 """

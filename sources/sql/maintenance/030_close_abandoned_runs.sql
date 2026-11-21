@@ -1,17 +1,22 @@
--- Close the runs nobody closed. Covers: EC14   Lot: N9 (revu en Q6)   C4
+-- Close the runs nobody closed.
+--
+-- Block: B3.
+-- Lot: B3-N9 (revu en B3-Q6).
+-- Competency: B3-C4.
+-- Covers: B3-EC14.
 --
 -- WRITES. sql/checks/abandoned_runs.sql lists what this will touch and why,
 -- and one looks before one touches: `fd-manager abandoned` without -Apply.
 --
 -- CLOSED AS A FAILURE, never as a success. The run did not reach close_run, so
 -- nothing recorded its counters: calling that a success would put a run with
--- no volumes among the healthy ones and let the guard of M1 count a window as
+-- no volumes among the healthy ones and let the guard of B3-M1 count a window as
 -- sound on the strength of it.
 --
--- TWO CASES, AND THE SECOND WAS MISSING UNTIL Q6. The first is Airflow's own
+-- TWO CASES, AND THE SECOND WAS MISSING UNTIL B3-Q6. The first is Airflow's own
 -- verdict: the dagrun is over, so our row cannot legitimately still be open.
 -- The second is a run Airflow never heard of -- tools/ingest_once.py and the
--- digest backfill of Q1 open runs of their own -- which the earlier inner join
+-- digest backfill of B3-Q1 open runs of their own -- which the earlier inner join
 -- silently excluded. Those runs can be closed by nothing else, and the old
 -- file left them open for ever while `abandoned` reported nothing to do.
 --

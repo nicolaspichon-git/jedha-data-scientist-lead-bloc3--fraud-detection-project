@@ -1,8 +1,11 @@
 -- Notifications that went out in the last 24 hours, and what is waiting.
--- Covers: EI05, EC09   Lot: N5   Competency: C4
+-- Block: B3.
+-- Lot: B3-N5.
+-- Competency: B3-C4.
+-- Covers: B3-EI05, B3-EC09.
 --
 -- This is what turns alert_capacity_per_day from a figure used once to pick a
--- threshold into a limit that is ENFORCED. Until N5 nothing applied it: a bad
+-- threshold into a limit that is ENFORCED. Until B3-N5 nothing applied it: a bad
 -- retrain or a misplaced threshold would have drowned the analyst, which is
 -- precisely what the capacity policy exists to prevent.
 --

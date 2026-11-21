@@ -1,4 +1,4 @@
-"""The six rulings that make both feature modes agree -- EE07.
+"""The six rulings that make both feature modes agree -- B3-EE07.
 
 The proof that the two SQL expressions agree needs a database and lives in
 sql/checks/reconcile_features.sql, run by `.\\fd-manager.ps1 check`. What runs here,
@@ -212,7 +212,7 @@ def test_the_refusal_names_the_remedy():
 
 def test_the_reconciliation_has_a_stratum_for_rows_without_features():
     """7 rows carried no features on 2026-11-16 -- stream transactions ingested
-    before N3 existed -- and a 1,000-row random sample out of 555,730 had a
+    before B3-N3 existed -- and a 1,000-row random sample out of 555,730 had a
     1.25 % chance of catching any of them. Same reasoning as the tie stratum:
     a sample nearly blind to the rows most likely to be wrong proves nothing."""
     body = _without_comments(_sql("checks/reconcile_features.sql"))

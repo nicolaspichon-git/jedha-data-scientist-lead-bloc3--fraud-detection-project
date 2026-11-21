@@ -1,4 +1,4 @@
-# The dashboard of S6 (lot R4). Python 3.11, like the other images.
+# The dashboard of B3-S6 (lot B3-R4). Python 3.11, like the other images.
 #
 # WHAT IS NOT HERE MATTERS AS MUCH. No MLflow, no scikit-learn, no Airflow:
 # fraud.dashboard imports only db, notify and report, and those import only

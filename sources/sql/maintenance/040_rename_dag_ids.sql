@@ -1,17 +1,20 @@
 -- Carry the run journal across the rename of two DAGs.
--- Covers: EC12, EC14   Lot: N9   Competency: C4
+-- Block: B3.
+-- Lot: B3-N9.
+-- Competency: B3-C4.
+-- Covers: B3-EC12, B3-EC14.
 --
 -- WHY THE JOURNAL HAS TO FOLLOW. fd_pipeline_runs.dag_id is written by the DAG
 -- that made the run, so every run before the rename carries the old name. Two
 -- readers filter on it and would go blind to all of that history:
 --
 --   sql/checks/s3_acceptance.sql   its stream_runs CTE, so every criterion of
---                                  S3 about runs would see an empty journal
---   sql/checks/pipeline_health.sql the window of N9's four controls, so the
+--                                  B3-S3 about runs would see an empty journal
+--   sql/checks/pipeline_health.sql the window of B3-N9's four controls, so the
 --                                  freshness would read "jamais abouti" until
 --                                  a new run succeeded under the new name
 --
--- THE GUARD OF M1 IS NOT CONCERNED, and that is worth stating because it is the
+-- THE GUARD OF B3-M1 IS NOT CONCERNED, and that is worth stating because it is the
 -- one that could refuse to train: fraud/guard.py counts the runs of a WINDOW
 -- without filtering on dag_id, so a rename neither hides nor duplicates
 -- anything for it.

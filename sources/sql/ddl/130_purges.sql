@@ -1,8 +1,11 @@
 -- The journal of the purges: one row per store and per execution.
--- Covers: EC14, EC18, EC27   Lot: Q6   Competency: C4, C5
+-- Block: B3.
+-- Lot: B3-Q6.
+-- Competency: B3-C4, B3-C5.
+-- Covers: B3-EC14, B3-EC18, B3-EC27.
 --
 -- WHY A TABLE AND NOT A LOG LINE. "Une durée non appliquée n'est pas une
--- politique" (D1, annexe B): the declaration in governance.yml claims that
+-- politique" (B3-D1, annexe B): the declaration in governance.yml claims that
 -- personal data is removed at ninety days, and what turns that claim into a
 -- processing one can show is the record that it happened -- including the
 -- Sundays when it found nothing to remove, which is the ordinary case and the
@@ -10,10 +13,10 @@
 --
 -- ONE ROW PER STORE, NOT PER BATCH. A batch is already journalled where it
 -- belongs: in fd_pipeline_runs.digests -> purge, beside the fingerprint of
--- what it held (Q1, Q3). A second row per batch here would be the same fact
+-- what it held (B3-Q1, B3-Q3). A second row per batch here would be the same fact
 -- in two places, and 130 thousand rows a quarter of it.
 --
--- NO dry_run COLUMN, deliberately against the plan of S5, which listed one.
+-- NO dry_run COLUMN, deliberately against the plan of B3-S5, which listed one.
 -- A dry run writes nothing: `fd-manager purge` without -Apply reads, prints
 -- and returns -- the same principle as `abandoned` and `digests`, where
 -- looking at a journal must not change it. A column that could only ever be
@@ -72,12 +75,12 @@ GRANT USAGE, SELECT ON SEQUENCE fd_purges_purge_id_seq TO fd_purge;
 GRANT SELECT ON fd_purges TO fd_report;
 REVOKE UPDATE, DELETE, TRUNCATE ON fd_purges FROM fd_purge;
 
--- Q7: the batch a TARGETED forget removed. Null for a retention purge, which
+-- B3-Q7: the batch a TARGETED forget removed. Null for a retention purge, which
 -- removes whatever the cutoff caught and names no batch.
 --
 -- ONE JOURNAL, not two. "What was removed from the raw zone, and when" must
 -- have a single answer; a second table for targeted removals would be the same
--- fact in two places, and the acceptance of S5 would have to ask both.
+-- fact in two places, and the acceptance of B3-S5 would have to ask both.
 -- A forget also sets before_date, because it deletes beyond the declared
 -- retention -- which the column exists to keep recognisable for ever.
 --

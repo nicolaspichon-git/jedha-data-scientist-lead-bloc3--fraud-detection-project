@@ -1,12 +1,13 @@
-# A deployed, non-interactive configuration -- what EC27 requires for D3.
-# Covers: EC27
+# A deployed, non-interactive configuration -- what B3-EC27 requires for B3-D3.
+# Block: B3.
+# Covers: B3-EC27.
 #
 # Airflow as three services, following the official layout: init, scheduler,
 # webserver. "airflow standalone" was ruled out: it builds its own admin user
 # with a random password, and Airflow's own documentation calls it unsuitable
 # outside development. More importantly, a scheduler started in the background
 # of another process can die unnoticed -- and it is the scheduler that carries
-# the demonstration of C3.
+# the demonstration of B3-C3.
 
 name: aia-fraud-detection
 
@@ -45,8 +46,8 @@ x-airflow-common: &airflow-common
     - ./sql:/opt/project/sql
     - ./tools:/opt/project/tools
     # NO ws/ MOUNT, and the five minutes of real API calls that its absence
-    # once cost are why this line is worth a comment. N0 wrote its measurement
-    # there; since R13 it writes under runtime/observations/, which the
+    # once cost are why this line is worth a comment. B3-N0 wrote its measurement
+    # there; since B3-R13 it writes under runtime/observations/, which the
     # runtime/ mount covers. ws/ now holds only what is written by hand -- the
     # plans, the mockups -- which no container reads.
     - ./governance.yml:/opt/project/governance.yml:ro
@@ -147,7 +148,7 @@ services:
     ports:
       - "5000:5000"
 
-  # THE DASHBOARD OF S6 (lot R4). The one container a browser talks to, so it
+  # THE DASHBOARD OF B3-S6 (lot B3-R4). The one container a browser talks to, so it
   # is built to be UNABLE rather than careful:
   #
   #   - it does NOT reuse x-airflow-common. That anchor carries the owner's

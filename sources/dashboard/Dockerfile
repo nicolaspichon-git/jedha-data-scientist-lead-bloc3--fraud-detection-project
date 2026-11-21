@@ -1,4 +1,4 @@
-# The dashboard of S6 (lot R4).
+# The dashboard of B3-S6 (lot B3-R4).
 #
 # Only the dependencies are baked in. The code -- dashboard/, fraud/, sql/ --
 # and governance.yml are MOUNTED READ-ONLY by docker-compose.yml, like the

@@ -1,6 +1,9 @@
 -- Carry the RECORDED paths across the move of reports/ and datasets/ under
--- runtime/ (S6/R13).
--- Covers: EC23, EC24   Lot: R13   Competency: C4
+-- runtime/ (B3-S6/B3-R13).
+-- Block: B3.
+-- Lot: B3-R13.
+-- Competency: B3-C4.
+-- Covers: B3-EC23, B3-EC24.
 --
 -- WHY A ROW HAS TO FOLLOW A DIRECTORY. Two tables store an absolute path, and
 -- both are read to find a file that must be there:
@@ -12,7 +15,7 @@
 --                       for a file somebody moved by hand, and the wrong
 --                       answer for every past report after a declared move.
 --   fd_datasets.*_path  the Parquet sets a model learned from. This is the
---                       lineage of M8: a row pointing at a path that no longer
+--                       lineage of B3-M8: a row pointing at a path that no longer
 --                       exists breaks the chain from a model back to its rows.
 --
 -- The files themselves moved with the directory; only the strings are stale.

@@ -1,29 +1,30 @@
 """What a purge would delete, measured before anything is deleted.
 
-Covers: EC26, EI13, EC16, EC19
-Lot: Q2
-Competency: C5
+Block: B3.
+Lot: B3-Q2.
+Competency: B3-C5.
+Covers: B3-EC26, B3-EI13, B3-EC16, B3-EC19.
 
-NOTHING IN THIS MODULE DELETES. It is the dry run of S5, and S5 is the only
+NOTHING IN THIS MODULE DELETES. It is the dry run of B3-S5, and B3-S5 is the only
 process of the project that destroys: everywhere else a mistake is repaired by
 a replay, here it is permanent. So the first thing written is the thing that
-counts what would happen, and the delete of Q3 is built to consume it.
+counts what would happen, and the delete of B3-Q3 is built to consume it.
 
 FOUR PROPERTIES, EACH ANSWERING A WAY THIS GOES WRONG.
 
 ONE DEFINITION OF THE SET. sql/purge/candidates_*.sql decides what is beyond
-retention, and the delete of Q3 takes its batch_id from here instead of
+retention, and the delete of B3-Q3 takes its batch_id from here instead of
 carrying a date predicate of its own. A dry run that counts with its own
 predicate is worse than no dry run: it reports a set nobody will delete.
 
 THE INSTANT COMES FROM THE CALLER. Never now(), anywhere in this module or in
 its SQL. In the DAG it is data_interval_end, so a purge is replayable and can
 be demonstrated on a chosen date -- the `before` override exists for that, and
-Q5 keeps it out of the scheduler.
+B3-Q5 keeps it out of the scheduler.
 
 EVIDENCE BEFORE DESTRUCTION. A batch whose fingerprint was never recorded, or
-no longer matches, is refused, named, and counted apart (Q1). This is the
-structural guarantee of S5: what a batch held cannot stop being knowable
+no longer matches, is refused, named, and counted apart (B3-Q1). This is the
+structural guarantee of B3-S5: what a batch held cannot stop being knowable
 before it stops existing.
 
 THE GUARD. Beyond the declared share (purge.max_share) the plan is BLOCKED and
@@ -45,7 +46,7 @@ log = logging.getLogger(__name__)
 
 # The stores the purge DELETES rows from, and the file that selects them. The
 # order is a report's order, deliberately: the raw zone is the volume, the
-# quarantine is the store that was covered by no duration at all until Q0
+# quarantine is the store that was covered by no duration at all until B3-Q0
 # measured it.
 CANDIDATE_SQL = {
     "fd_raw_events": "purge/candidates_raw.sql",
@@ -78,13 +79,13 @@ PURGE_ORDER = ("fd_quarantine", "fd_raw_events")
 # live there; this is the size of a bite.
 CHUNK = 10_000
 
-# The journal of the purges (Q6): one row per store and per execution.
+# The journal of the purges (B3-Q6): one row per store and per execution.
 RECORD_SQL = "purge/record_purge.sql"
-# Q7, split along a privilege boundary: fd_purge may not read fd_transactions,
+# B3-Q7, split along a privilege boundary: fd_purge may not read fd_transactions,
 # so the facts it CAN see live in a file of their own and are read twice.
 STORES_SQL = "checks/batch_stores.sql"
 BATCH_RUNS_SQL = "checks/batch_runs.sql"      # the runs OF ONE BATCH.
-# Not RUNS_SQL: test_purge_plan.py forbids that name, because Q0 gave up
+# Not RUNS_SQL: test_purge_plan.py forbids that name, because B3-Q0 gave up
 # purging fd_pipeline_runs and such a constant would be the sign of a return
 # to it. The journal of executions is kept; this reads three counts from it.
 
@@ -100,10 +101,10 @@ RETENTION = {
     "fd_quarantine": "quarantine_retention_days",
 }
 
-# THE RUN JOURNAL IS NOT HERE, and that is the finding of Q4 rather than an
-# omission. The plan of S5 foresaw emptying its "detail columns" at 365 days --
+# THE RUN JOURNAL IS NOT HERE, and that is the finding of B3-Q4 rather than an
+# omission. The plan of B3-S5 foresaw emptying its "detail columns" at 365 days --
 # and fd_pipeline_runs has none: an identifier, a DAG name, dates, a state,
-# counters, and the fingerprints added by Q1. No personal field to empty.
+# counters, and the fingerprints added by B3-Q1. No personal field to empty.
 #
 # Deleting its ROWS would be worse than useless: they carry the fingerprints
 # that are all that remains of a purged batch. The process that destroys the
@@ -220,7 +221,7 @@ def cutoffs(settings, as_of: dt.datetime, before: dt.datetime | None = None
     `before`, which is the DEMONSTRATION override: at 90 days of retention and
     three batches loaded yesterday, a purge would delete nothing before
     February, and a destructive process nobody can try is one that is
-    discovered in production. Q5 keeps this override out of the scheduler: a
+    discovered in production. B3-Q5 keeps this override out of the scheduler: a
     parameter of a demonstration left in an orchestrator ends up being used.
     """
     if as_of.tzinfo is None:
@@ -298,7 +299,7 @@ def _judge(conn, candidate: Candidate, verify: bool) -> Candidate:
     The other half -- that the batch still MATCHES it -- costs an md5 over
     every row, about 555 thousand rows and 200 MB for a historical batch, so it
     is asked here only with verify=True. It is never skipped where it decides:
-    Q3 calls runs.refusal() for each batch immediately before deleting it.
+    B3-Q3 calls runs.refusal() for each batch immediately before deleting it.
     """
     if candidate.recorded_digest is None:
         return dataclasses.replace(candidate, refusal={
@@ -336,7 +337,7 @@ def plan(conn, settings, as_of: dt.datetime,
     The one thing it refuses is an instant it cannot trust (a naive datetime),
     because a boundary read in the wrong zone deletes the wrong day.
     """
-    # BEFORE THE FIRST QUERY THAT WOULD FAIL. Without the column of Q1 the
+    # BEFORE THE FIRST QUERY THAT WOULD FAIL. Without the column of B3-Q1 the
     # candidates query ends in `column p.digests does not exist`, which sends
     # the reader to the SQL rather than to the one command that fixes it.
     runs.assert_digests(conn)
@@ -370,7 +371,7 @@ def plan(conn, settings, as_of: dt.datetime,
 
 
 def assert_allowed(report: dict) -> None:
-    """Stop a caller that must not purge. The DAG's gate (Q5), and the CLI's.
+    """Stop a caller that must not purge. The DAG's gate (B3-Q5), and the CLI's.
 
     A purge of 90 % of a store may well be legitimate -- a retention shortened
     on purpose, a demonstration cutoff -- but it is never a routine, and what
@@ -405,7 +406,7 @@ def assert_allowed(report: dict) -> None:
 #      killed process leaves a batch that no longer matches its fingerprint.
 #      The marker written before the first slice is what tells that remainder
 #      from tampering -- without it, the honest reading would be "refuse for
-#      ever", and the batch would be unpurgeable exactly as Q1 set out to
+#      ever", and the batch would be unpurgeable exactly as B3-Q1 set out to
 #      prevent.
 
 def purge_batch(conn, store: str, batch_id: str, expected: int, now,
@@ -501,7 +502,7 @@ def execute(conn, settings, report: dict, now, confirm: bool = False,
             if store_report["rows"]:
                 skipped.append({"store": store, "rows": store_report["rows"],
                                 "why": "aucune suppression ecrite pour ce "
-                                       "magasin (lot Q4)"})
+                                       "magasin (lot B3-Q4)"})
             continue
         for entry in store_report["deletable"]:
             outcomes.append(purge_batch(conn, store, entry["batch_id"],
@@ -562,7 +563,7 @@ def journal(conn, settings, report: dict, store_report: dict,
         n_refused=len([o for o in mine if o["refused"]]),
         n_resumed=len([o for o in mine if o.get("resumed")]),
         # A retention purge names no batch: it removes whatever the cutoff
-        # caught. Only a targeted forget fills this (Q7).
+        # caught. Only a targeted forget fills this (B3-Q7).
         batch_id=None,
         # The share ACTUALLY removed, which is not the planned one when a batch
         # was refused at the last moment.
@@ -674,7 +675,7 @@ def render(report: dict) -> str:
     return "\n".join(lines)
 
 
-# --- Q7: forgetting ONE batch, by name ----------------------------------------
+# --- B3-Q7: forgetting ONE batch, by name ----------------------------------------
 #
 # The retention purge cuts on a date. Four interrupted loads of the same
 # historical CSV and the load that finished arrived within minutes of each
@@ -737,7 +738,7 @@ def forget_plan(conn, batch_id) -> dict:
     answer.
 
     THE CONNECTION MUST BE fd_ingest, not fd_purge. fd_purge holds no grant on
-    fd_transactions -- S5's acceptance reads that from the catalogue -- so the
+    fd_transactions -- B3-S5's acceptance reads that from the catalogue -- so the
     role that deletes cannot evaluate the refusals that look at the exploited
     layer. The role that writes those tables can read all of them and may
     delete none of them, which is exactly what deciding requires.
@@ -748,7 +749,7 @@ def forget_plan(conn, batch_id) -> dict:
     n_runs, n_success, n_running = db.query_file(
         conn, BATCH_RUNS_SQL, batch_id=batch_id)[0]
 
-    # What a purge has ALREADY done to this batch, from the marker Q3 writes in
+    # What a purge has ALREADY done to this batch, from the marker B3-Q3 writes in
     # fd_pipeline_runs.digests -> purge. Readable by fd_ingest, unlike
     # fd_purges, and it is the same source the resumption logic reads -- so
     # "already purged" is a fact here and not a guess.
@@ -777,13 +778,13 @@ def forget_plan(conn, batch_id) -> dict:
                 "ce lot ne tient aucune ligne et aucune purge ne l'a touche : "
                 "l'identifiant est probablement errone ('batches' les liste)")
     # THE TWO THAT NOTHING LIFTS. Transactions and verdicts point back at this
-    # batch, and its raw zone is what allows them to be replayed (EC24): there
+    # batch, and its raw zone is what allows them to be replayed (B3-EC24): there
     # is no state of mind in which removing it is right.
     if txn_rows:
         refusals.append(
             "%d transaction(s) de ce lot sont dans la couche exploitee : le lot "
             "a ete traite, et sa zone brute est ce qui permet de le rejouer "
-            "(EC24)" % txn_rows)
+            "(B3-EC24)" % txn_rows)
     if truth_rows:
         refusals.append(
             "%d verdict(s) portent ce lot comme source : les oublier laisserait "
@@ -852,7 +853,7 @@ def forget(conn, plan: dict, now, confirm: bool = False,
             "lot %s : l'etat a change depuis le plan : %s"
             % (batch_id, " | ".join(again)))
     outcomes = []
-    for store in PURGE_ORDER:          # quarantine BEFORE raw, as ever (Q3)
+    for store in PURGE_ORDER:          # quarantine BEFORE raw, as ever (B3-Q3)
         expected = (plan["quarantine_rows"] if store == "fd_quarantine"
                     else plan["raw_rows"])
         if not expected:

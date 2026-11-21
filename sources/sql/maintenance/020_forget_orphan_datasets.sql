@@ -1,5 +1,8 @@
 -- Forget the datasets whose Parquet files no longer exist.
--- Covers: EC23   Lot: M8   Competency: C4
+-- Block: B3.
+-- Lot: B3-M8.
+-- Competency: B3-C4.
+-- Covers: B3-EC23.
 --
 -- WHY THIS EXISTS. datasets.root was relative, so an Airflow task resolved it
 -- against /opt/airflow instead of the project: the rows were registered here
@@ -9,7 +12,7 @@
 --
 -- build_or_reuse() already rebuilds when the files are missing, so this is not
 -- strictly required -- but a registry that lists what is not there is a registry
--- nobody can trust, and the point of M8 is that it can be trusted.
+-- nobody can trust, and the point of B3-M8 is that it can be trusted.
 --
 -- Replayable: deleting a row only means the next run rebuilds and re-registers.
 

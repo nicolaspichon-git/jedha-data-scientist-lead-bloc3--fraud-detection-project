@@ -1,14 +1,17 @@
 -- The quarantined records beyond retention, by batch, with the batch fingerprint.
--- Covers: EC19, EC26   Lot: Q2   Competency: C5
+-- Block: B3.
+-- Lot: B3-Q2.
+-- Competency: B3-C5.
+-- Covers: B3-EC19, B3-EC26.
 --
 -- WHY THIS STORE AT ALL, and why at the same duration as the raw zone.
 -- fd_quarantine.payload is the raw payload of a REJECTED record: the same
--- personal data as fd_raw_events.payload. Before Q0 no duration covered it, so
+-- personal data as fd_raw_events.payload. Before B3-Q0 no duration covered it, so
 -- a rejected transaction would have kept its data for ever while an accepted
 -- one was purged at 90 days -- the opposite of limiting retention.
 --
 -- THE SAME FINGERPRINT GOVERNS IT. A quarantined row is derived from a line of
--- its batch in the raw zone, and the batch fingerprint (Q1) covers that line.
+-- its batch in the raw zone, and the batch fingerprint (B3-Q1) covers that line.
 -- So the refusal rule is the batch's: no recorded fingerprint, no purge. The
 -- quarantine is not fingerprinted a second time, which would be a second
 -- definition of the same evidence.

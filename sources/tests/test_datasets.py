@@ -192,7 +192,7 @@ def test_an_empty_drop_leaves_the_recipe_whole():
 
 
 def test_the_two_calendar_columns_can_be_dropped():
-    """The decision N4 puts to the user. Measured: the clock costs 0.155 of
+    """The decision B3-N4 puts to the user. Measured: the clock costs 0.155 of
     recall, 32 frauds out of 205."""
     kept = datasets.without(["txn_hour", "txn_weekday"])
     assert "txn_hour" not in kept
@@ -251,7 +251,7 @@ def test_an_amputated_recipe_has_a_different_digest():
 
 def test_the_dropped_columns_stay_in_the_stored_file():
     """Demoted to the status METADATA_COLUMNS already has: present in the file,
-    never fed to the model. The analyst's rule of M5 reads txn_hour -- it is a
+    never fed to the model. The analyst's rule of B3-M5 reads txn_hour -- it is a
     payment-hour rule and a legitimate baseline whichever recipe is in service
     -- and an audit should see the column a recipe chose not to use."""
     assert "txn_hour" in datasets.STORED_COLUMNS

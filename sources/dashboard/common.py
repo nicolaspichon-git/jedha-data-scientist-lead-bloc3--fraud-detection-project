@@ -1,8 +1,9 @@
 """What the pages of the dashboard share. DISPLAY ONLY.
 
-Covers: EC19
-Lot: R2
-Competency: C4
+Block: B3.
+Lot: B3-R2.
+Competency: B3-C4.
+Covers: B3-EC19.
 
 Everything a page shows is decided in fraud/dashboard.py, where pytest can hold
 it. This module only does what needs Streamlit: the cached configuration, the
@@ -20,11 +21,11 @@ from fraud import config, dashboard
 
 @st.cache_resource
 def _load():
-    """The configuration, read once per container. THE ONLY CACHE OF S6.
+    """The configuration, read once per container. THE ONLY CACHE OF B3-S6.
 
     No data is cached: st.cache_data without a lifetime would keep yesterday's
     report, or the alerts of an hour ago, until the container restarts (plan
-    S6, 7.4). The reads of this dashboard are small. A load that RAISES is not
+    B3-S6, 7.4). The reads of this dashboard are small. A load that RAISES is not
     cached, so a corrected .env is picked up on the next page load.
     """
     return config.load()

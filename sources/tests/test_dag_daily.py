@@ -1,8 +1,9 @@
 """The shape of the daily report DAG, read from its source.
 
-Covers: EE06, EI06, EC09, EC14
-Lot: P4
-Competency: C5
+Block: B3.
+Lot: B3-P4.
+Competency: B3-C5.
+Covers: B3-EE06, B3-EI06, B3-EC09, B3-EC14.
 
 Airflow is not installed in the authoring environment, so this reads the file.
 A weaker test than running the DAG, and still the one that catches what matters
@@ -109,7 +110,7 @@ def _task_source(name: str) -> str:
 
 def test_the_cadence_is_the_declared_one():
     """governance.yml declares it. The DAG must not drift from the
-    declaration, the way dag_ingest once drifted from D1 on its name."""
+    declaration, the way dag_ingest once drifted from B3-D1 on its name."""
     assert _dag_keywords()["schedule"] == config.load().report_schedule
 
 
@@ -183,7 +184,7 @@ def test_the_covered_day_is_derived_and_not_the_interval():
     midnight."""
     task = _task_source("produce")
     assert 'context["data_interval_start"].astimezone(zone).date()' in task
-    # The midnight-to-midnight rule lives in report.window_for() since S6/R1:
+    # The midnight-to-midnight rule lives in report.window_for() since B3-S6/B3-R1:
     # it was written three times, and the dashboard would have been the
     # fourth. The DAG hands over the DAY, never the interval.
     assert "report.window_for(settings, day" in task
@@ -193,7 +194,7 @@ def test_the_covered_day_is_derived_and_not_the_interval():
     # The one definition does run midnight to midnight, in the declared zone.
     import inspect
     from fraud import report
-    # window_for() is span_for() over one day since S6/R8; the rule is there.
+    # window_for() is span_for() over one day since B3-S6/B3-R8; the rule is there.
     assert "span_for(settings, day, day" in inspect.getsource(report.window_for)
     rule = inspect.getsource(report.span_for)
     assert "dt.time.min" in rule and "dt.timedelta(days=1)" in rule
@@ -258,7 +259,7 @@ def test_the_journal_records_no_invented_counts():
 # --- the failure convention --------------------------------------------------
 
 def test_a_failure_closes_the_run_and_only_if_nobody_closed_it():
-    """The convention consolidated in N9: a callback on the DAG, and
+    """The convention consolidated in B3-N9: a callback on the DAG, and
     runs.abandon so a failure after close_run cannot overwrite a success."""
     keywords = _dag_keywords()
     assert "on_failure_callback" in keywords
@@ -272,7 +273,7 @@ def test_a_failure_closes_the_run_and_only_if_nobody_closed_it():
 
 def test_every_dag_of_the_project_uses_the_same_failure_convention():
     """ONE CONVENTION FOR ONE JOB, held across the directory rather than per
-    file: N7 invented a second mechanism and nothing noticed for a lot."""
+    file: B3-N7 invented a second mechanism and nothing noticed for a lot."""
     checked = 0
     for path in sorted((ROOT / "airflow" / "dags").glob("dag_*.py")):
         code = _code(path.read_text(encoding="utf-8"))
@@ -284,4 +285,4 @@ def test_every_dag_of_the_project_uses_the_same_failure_convention():
 
 def test_the_dag_declares_its_lot_and_its_competencies():
     tags = _dag_keywords()["tags"]
-    assert "S4" in tags and "P4" in tags
+    assert "B3-S4" in tags and "B3-P4" in tags

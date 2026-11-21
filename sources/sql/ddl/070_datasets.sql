@@ -1,10 +1,13 @@
 -- Dataset registry. A recipe's identity, and the base rate that reads with it.
--- Covers: EC05, EC23, EI10   Lot: M0   Competency: C1, C5
+-- Block: B3.
+-- Lot: B3-M0.
+-- Competency: B3-C1, B3-C5.
+-- Covers: B3-EC05, B3-EC23, B3-EI10.
 --
 -- The primary key is the RECIPE DIGEST and not a version number: a version is a
 -- label stuck on afterwards, a digest is what lets the same recipe find the
 -- dataset it already produced instead of building a twin. That is what makes the
--- construction idempotent (EC23) and versioning useful -- one versions in order
+-- construction idempotent (B3-EC23) and versioning useful -- one versions in order
 -- to find again, not in order to archive.
 --
 -- The base rates are stored WITH the dataset because a precision figure cannot
@@ -48,17 +51,19 @@ CREATE INDEX IF NOT EXISTS fd_datasets_cut_off_idx ON fd_datasets (cut_off);
 GRANT SELECT, INSERT ON fd_datasets TO fd_ingest;
 GRANT SELECT ON fd_datasets TO fd_report;
 
--- WHAT M5 MEASURED ON THE TEST SET, IN THE DATABASE (S6/R10).
--- Covers: EE04, EC23   Lot: R10 (S6)   Competency: C2, C4
+-- WHAT B3-M5 MEASURED ON THE TEST SET, IN THE DATABASE (B3-S6/B3-R10).
+-- Lot: B3-R10 (B3-S6).
+-- Competency: B3-C2, B3-C4.
+-- Covers: B3-EE04, B3-EC23.
 --
--- Until R10 the figures lived only in the recipe's run.json, beside the
+-- Until B3-R10 the figures lived only in the recipe's run.json, beside the
 -- dataset: the morning report read the file, and a dashboard in another
 -- container would have needed the datasets directory mounted to compare
--- anything. The file stays -- it is M8's record and survives a database
+-- anything. The file stays -- it is B3-M8's record and survives a database
 -- rebuild -- and the database holds a COPY of the five figures the comparison
 -- uses, written by the same task in the same breath (registry.record_reference,
 -- called by dag_train.fit_model right after write_manifest). Datasets registered
--- before R10 are filled once from their run.json: .\fd-manager.ps1 reference.
+-- before B3-R10 are filled once from their run.json: .\fd-manager.ps1 reference.
 --
 -- Null until the dataset has been fitted: a recipe is registered by
 -- build_dataset, measured by fit_model, and the two are separate tasks.

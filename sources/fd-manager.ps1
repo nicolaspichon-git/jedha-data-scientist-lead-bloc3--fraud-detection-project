@@ -19,8 +19,9 @@
     .\fd-manager.ps1 train -CutOff 2020-11-30
 
 .NOTES
-    Couvre: EC06
-    Lot: L0
+    Block: B3.
+    Lot: B3-L0.
+    Covers: B3-EC06.
 #>
 [CmdletBinding()]
 param(
@@ -54,7 +55,7 @@ param(
 
     [string]$CutOff,
 
-    # N4: train a recipe without the named features. Omitted, the run follows
+    # B3-N4: train a recipe without the named features. Omitted, the run follows
     # scoring.drop_features in governance.yml, which is where the decision
     # lives. -Drop none asks for the FULL recipe, the only way back to it since
     # a drop list can never add a column.
@@ -78,7 +79,7 @@ param(
     # which is a poor default for a task one runs in order to read an error.
     [switch]$Follow,
 
-    # Only used by 'ingest': break the last reading on purpose, for EC25.
+    # Only used by 'ingest': break the last reading on purpose, for B3-EC25.
     [switch]$Corrupt,
 
     # Only used by 'realtime': a DAG that runs 1,440 times a day has to be
@@ -206,7 +207,7 @@ function Write-ConfFile {
         quotes but splits on whitespace -- and the pairs are joined without a
         space after the comma for the same reason.
 
-        Several keys since N4: a run may carry both a cut-off and an amputated
+        Several keys since B3-N4: a run may carry both a cut-off and an amputated
         feature list. A comma-separated list of column names holds no space, so
         it travels through this route unchanged.  #>
     param(
@@ -259,8 +260,8 @@ switch ($Task) {
             @{ n = 'psql';         d = 'session psql interactive sur la base' }
             @{ n = 'airflow-user'; d = 'liste les comptes Airflow et remet admin / admin' }
             @{ n = 'init';         d = 'applique le DDL et la fonction (rejouable)' }
-            @{ n = 'load';         d = 'declenche S1 (chargement historique)' }
-            @{ n = 'train';        d = 'declenche S2 : .\fd-manager.ps1 train [-CutOff 2020-11-30] [-Drop none]' }
+            @{ n = 'load';         d = 'declenche B3-S1 (chargement historique)' }
+            @{ n = 'train';        d = 'declenche B3-S2 : .\fd-manager.ps1 train [-CutOff 2020-11-30] [-Drop none]' }
             @{ n = 'cleanup';      d = 'supprime roles et tables de l''ancien nommage (sans prefixe)' }
             @{ n = 'progress';     d = 'ou en sont les executions, tache par tache' }
             @{ n = 'observe';      d = 'observe et mesure l''API [R4], rapporte sous runtime/observations/' }
@@ -273,7 +274,7 @@ switch ($Task) {
             @{ n = 'check-leak';   d = 'exige le meme score avec is_fraud=0 et is_fraud=1' }
             @{ n = 'realtime';     d = 'etat du DAG a la minute : .\fd-manager.ps1 realtime [-Start|-Stop]' }
             @{ n = 'backfill';     d = 'recalcule les features stockees et reconcilie les deux modes' }
-            @{ n = 'reference';    d = 'copie en base les mesures M5 des run.json anterieurs a R10 (-- --dry-run)' }
+            @{ n = 'reference';    d = 'copie en base les mesures B3-M5 des run.json anterieurs a B3-R10 (-- --dry-run)' }
             @{ n = 'measure-hour'; d = 'ce que txn_hour fait au modele sur le flux' }
             @{ n = 'rechoose-threshold'; d = 'rechoisit le seuil sur la distribution du flux' }
             @{ n = 'compare-recipes';    d = 'compare deux recettes : --against <version>' }
@@ -290,7 +291,7 @@ switch ($Task) {
             @{ n = 'test';         d = 'tests unitaires, sans base ni Airflow' }
             @{ n = 'lint';         d = 'ruff' }
             @{ n = 'traceability'; d = 'regenere TRACEABILITY.md' }
-            @{ n = 'accept';       d = 'criteres d''acceptation chiffres de S1' }
+            @{ n = 'accept';       d = 'criteres d''acceptation chiffres de B3-S1' }
             @{ n = 'check';        d = 'tout : acceptation, tracabilite, tests, concordance' }
         ) | ForEach-Object { Write-Host ("  {0,-13} {1}" -f $_.n, $_.d) }
         Write-Host ''
@@ -323,9 +324,9 @@ switch ($Task) {
             Write-Host "  FRAUD_PEPPER genere et inscrit" -ForegroundColor Green
         }
 
-        # THE DASHBOARD'S PASSWORD (S6/R0). Generated like the pepper, and for
+        # THE DASHBOARD'S PASSWORD (B3-S6/B3-R0). Generated like the pepper, and for
         # the same reason it is never versioned. The line is ADDED when absent:
-        # every .env made before S6 lacks it, and a replace-only loop would
+        # every .env made before B3-S6 lacks it, and a replace-only loop would
         # silently leave the dashboard without a password -- unable to log in,
         # which is safe, but for no reason anybody would guess.
         $lines = @(Get-Content '.env')
@@ -341,7 +342,7 @@ switch ($Task) {
             }
             else {
                 $lines += ''
-                $lines += '# Password of fd_dashboard, the role the dashboard logs in as (S6).'
+                $lines += '# Password of fd_dashboard, the role the dashboard logs in as (B3-S6).'
                 $lines += "FD_DASHBOARD_PASSWORD=$d"
             }
             [System.IO.File]::WriteAllLines(
@@ -515,7 +516,7 @@ switch ($Task) {
 
         $keys = @()
         $values = @()
-        $label = 'declenchement de S2'
+        $label = 'declenchement de B3-S2'
 
         if ($CutOff) {
             # A bare date is normalised to an explicit instant rather than left
@@ -615,7 +616,7 @@ switch ($Task) {
         Write-Host "Ce qui est CONSERVE : datasets/, les Parquet, model.joblib," -ForegroundColor Green
         Write-Host "                      run.json, requirements.lock, et la base" -ForegroundColor Green
         Write-Host "                      PostgreSQL. La chaine de tracabilite de" -ForegroundColor Green
-        Write-Host "                      M8 vit sur le disque, pas dans MLflow." -ForegroundColor Green
+        Write-Host "                      B3-M8 vit sur le disque, pas dans MLflow." -ForegroundColor Green
         Write-Host ""
         $answer = Read-Host "Taper OUI pour continuer"
         if ($answer -ne 'OUI') {
@@ -655,10 +656,10 @@ switch ($Task) {
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N2 : un cycle d'ingestion temps reel, a la main." -ForegroundColor Cyan
-        Write-Host "Le DAG est le lot N7 ; ceci eprouve la chaine N1-N3." -ForegroundColor DarkGray
+        Write-Host "B3-N2 : un cycle d'ingestion temps reel, a la main." -ForegroundColor Cyan
+        Write-Host "Le DAG est le lot B3-N7 ; ceci eprouve la chaine B3-N1-B3-N3." -ForegroundColor DarkGray
         Write-Host ""
-        Write-Host "  -Corrupt casse volontairement la derniere lecture (EC25)." -ForegroundColor DarkGray
+        Write-Host "  -Corrupt casse volontairement la derniere lecture (B3-EC25)." -ForegroundColor DarkGray
         Write-Host ""
         $extra = @()
         if ($Corrupt) { $extra += '--corrupt' }
@@ -671,7 +672,7 @@ switch ($Task) {
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N4 : effet de txn_hour sur le flux." -ForegroundColor Cyan
+        Write-Host "B3-N4 : effet de txn_hour sur le flux." -ForegroundColor Cyan
         Write-Host "Rescore un modele existant, 26 scenarios. Il ne reentraine rien," -ForegroundColor DarkGray
         Write-Host "donc il ne peut pas changer ce qu'il mesure. Quelques secondes." -ForegroundColor DarkGray
         Write-Host ""
@@ -684,7 +685,7 @@ switch ($Task) {
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N4 : le seuil rechoisi sur la distribution du flux." -ForegroundColor Cyan
+        Write-Host "B3-N4 : le seuil rechoisi sur la distribution du flux." -ForegroundColor Cyan
         Write-Host "Le seuil 0.93 a ete choisi sur l'heure du PAIEMENT. Sur le flux" -ForegroundColor DarkGray
         Write-Host "il rend 31 alertes/jour au lieu de 38 : la capacite de 60 est" -ForegroundColor DarkGray
         Write-Host "employee a moitie, et de la capacite inemployee est du rappel" -ForegroundColor DarkGray
@@ -703,7 +704,7 @@ switch ($Task) {
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N4 : comparaison appariee de deux recettes." -ForegroundColor Cyan
+        Write-Host "B3-N4 : comparaison appariee de deux recettes." -ForegroundColor Cyan
         Write-Host "  .\fd-manager.ps1 compare-recipes --against <version>" -ForegroundColor DarkGray
         Write-Host "  (la version est le nom du repertoire sous datasets/," -ForegroundColor DarkGray
         Write-Host "   12 caracteres, jamais l'empreinte complete de 64)" -ForegroundColor DarkGray
@@ -771,7 +772,7 @@ switch ($Task) {
         }
 
         Write-Host ""
-        Write-Host "N7 : etat du DAG temps reel." -ForegroundColor Cyan
+        Write-Host "B3-N7 : etat du DAG temps reel." -ForegroundColor Cyan
         Write-Host ""
         & docker compose exec -T airflow-scheduler `
             airflow dags details $dagId
@@ -797,7 +798,7 @@ ORDER  BY state;
 '@
         Write-Host ""
         Write-Host "Une execution restee en 'running' est une execution que la" -ForegroundColor DarkGray
-        Write-Host "garde de M1 ne compte ni en succes ni en echec : la tache" -ForegroundColor DarkGray
+        Write-Host "garde de B3-M1 ne compte ni en succes ni en echec : la tache" -ForegroundColor DarkGray
         Write-Host "mark_failed existe pour qu'il n'y en ait pas." -ForegroundColor DarkGray
         Write-Host ""
     }
@@ -806,11 +807,11 @@ ORDER  BY state;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N6 : le verdict fuit-il vers le scoring ?" -ForegroundColor Cyan
+        Write-Host "B3-N6 : le verdict fuit-il vers le scoring ?" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "La meme charge utile scoree deux fois, une fois is_fraud=0 et" -ForegroundColor DarkGray
         Write-Host "une fois is_fraud=1, avec le modele enregistre : le MEME score" -ForegroundColor DarkGray
-        Write-Host "est exige. C'est le seul critere de S3 qui mesure une ABSENCE," -ForegroundColor DarkGray
+        Write-Host "est exige. C'est le seul critere de B3-S3 qui mesure une ABSENCE," -ForegroundColor DarkGray
         Write-Host "parce qu'une fuite ne laisse aucune trace dans les metriques :" -ForegroundColor DarkGray
         Write-Host "un modele qui lit l'etiquette score magnifiquement." -ForegroundColor DarkGray
         Write-Host ""
@@ -823,7 +824,7 @@ ORDER  BY state;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N9 : les quatre controles du pipeline, stade (3c)." -ForegroundColor Cyan
+        Write-Host "B3-N9 : les quatre controles du pipeline, stade (3c)." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Fraicheur, executions vides, taux de rejet, invariant de volume." -ForegroundColor DarkGray
         Write-Host "Le DAG les passe chaque minute et ne notifie QUE les changements" -ForegroundColor DarkGray
@@ -850,10 +851,10 @@ ORDER BY state DESC, control;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N9 : les executions que personne n'a fermees." -ForegroundColor Cyan
+        Write-Host "B3-N9 : les executions que personne n'a fermees." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Une execution morte entre runs.start() et close_run reste en" -ForegroundColor DarkGray
-        Write-Host "'running' pour toujours. La garde de M1 compte les 'success' et" -ForegroundColor DarkGray
+        Write-Host "'running' pour toujours. La garde de B3-M1 compte les 'success' et" -ForegroundColor DarkGray
         Write-Host "les 'failed' : une ligne en 'running' n'est dans aucun des deux," -ForegroundColor DarkGray
         Write-Host "donc ce n'est pas un echec qu'elle voit -- c'est une execution" -ForegroundColor DarkGray
         Write-Host "qui n'a silencieusement jamais eu lieu." -ForegroundColor DarkGray
@@ -895,7 +896,7 @@ ORDER BY state DESC, control;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "S4 : le rapport du matin." -ForegroundColor Cyan
+        Write-Host "B3-S4 : le rapport du matin." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Quatre sections sur DEUX axes de temps : les paiements et les" -ForegroundColor DarkGray
         Write-Host "alertes sur l'axe du paiement, les verdicts sur celui de la" -ForegroundColor DarkGray
@@ -916,14 +917,14 @@ ORDER BY state DESC, control;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N6 : ecriture des verdicts retenus." -ForegroundColor Cyan
+        Write-Host "B3-N6 : ecriture des verdicts retenus." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Le verdict est REEL : rien n'est simule. Il est ecrit avec" -ForegroundColor DarkGray
         Write-Host "label_ts = txn_ts + delai, et ce qui le retient est que tout" -ForegroundColor DarkGray
         Write-Host "consommateur filtre sur label_ts <= coupure." -ForegroundColor DarkGray
         Write-Host ""
         Write-Host "Cette tache ne partage rien avec le scoring : c'est la" -ForegroundColor DarkGray
-        Write-Host "quatrieme garantie de N6. --dry-run compte sans ecrire." -ForegroundColor DarkGray
+        Write-Host "quatrieme garantie de B3-N6. --dry-run compte sans ecrire." -ForegroundColor DarkGray
         Write-Host ""
         & docker compose exec -T airflow-scheduler `
             python3 /opt/project/tools/write_verdicts.py @Rest
@@ -934,7 +935,7 @@ ORDER BY state DESC, control;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "N5 : les alertes et leur notification." -ForegroundColor Cyan
+        Write-Host "B3-N5 : les alertes et leur notification." -ForegroundColor Cyan
         Write-Host ""
         & docker @Psql -c @'
 SELECT a.notified_at IS NOT NULL AS notifiee, a.channel, count(*) AS alertes,
@@ -978,8 +979,8 @@ LIMIT  10;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "R10 : copie en base des mesures de M5 (rappel, precision, alertes/jour)." -ForegroundColor Cyan
-        Write-Host "Une seule fois, pour les recettes entrainees avant R10 : depuis," -ForegroundColor DarkGray
+        Write-Host "B3-R10 : copie en base des mesures de B3-M5 (rappel, precision, alertes/jour)." -ForegroundColor Cyan
+        Write-Host "Une seule fois, pour les recettes entrainees avant B3-R10 : depuis," -ForegroundColor DarkGray
         Write-Host "fit_model les ecrit lui-meme a cote de run.json." -ForegroundColor DarkGray
         Write-Host ""
         Write-Host "  --dry-run lit les manifestes sans rien ecrire ; --all reecrit tout." -ForegroundColor DarkGray
@@ -992,7 +993,7 @@ LIMIT  10;
     'observe' {
         Assert-Docker
         Write-Host ""
-        Write-Host "N0 : observation de l'API temps reel." -ForegroundColor Cyan
+        Write-Host "B3-N0 : observation de l'API temps reel." -ForegroundColor Cyan
         Write-Host "Environ 5 minutes. La mesure est ecrite sous runtime/observations/." -ForegroundColor DarkGray
         Write-Host ""
         Write-Host "Le fichier produit ne contient AUCUNE donnee nominative :" -ForegroundColor DarkGray
@@ -1008,7 +1009,7 @@ LIMIT  10;
         Write-Host ""
         Write-Host "Releve des versions reellement resolues par pip." -ForegroundColor Cyan
         Write-Host "airflow/requirements.txt porte des PLANCHERS ; ce verrou dit" -ForegroundColor DarkGray
-        Write-Host "ce qui a tourne. C'est lui qui fait la reproductibilite (M8)." -ForegroundColor DarkGray
+        Write-Host "ce qui a tourne. C'est lui qui fait la reproductibilite (B3-M8)." -ForegroundColor DarkGray
         Write-Host ""
         $out = Join-Path $PWD 'airflow/requirements.lock'
         $text = & docker compose exec -T airflow-scheduler python3 -m pip freeze
@@ -1053,12 +1054,12 @@ LIMIT  10;
         Assert-Docker
         Write-Host ""
         if ($Apply) {
-            Write-Host "S5 / Q3 : la purge. Des lignes vont etre SUPPRIMEES." -ForegroundColor Yellow
+            Write-Host "B3-S5 / B3-Q3 : la purge. Des lignes vont etre SUPPRIMEES." -ForegroundColor Yellow
         } else {
-            Write-Host "S5 / Q2 : la purge a blanc. Rien n'est supprime." -ForegroundColor Cyan
+            Write-Host "B3-S5 / B3-Q2 : la purge a blanc. Rien n'est supprime." -ForegroundColor Cyan
         }
         Write-Host ""
-        Write-Host "S5 est le seul processus qui DETRUIT : ailleurs une erreur se" -ForegroundColor DarkGray
+        Write-Host "B3-S5 est le seul processus qui DETRUIT : ailleurs une erreur se" -ForegroundColor DarkGray
         Write-Host "repare par un rejeu, ici elle est definitive. Ce mode compte ce" -ForegroundColor DarkGray
         Write-Host "qui partirait, nomme les lots refuses faute d'empreinte relevee," -ForegroundColor DarkGray
         Write-Host "et signale le depassement de la part declaree." -ForegroundColor DarkGray
@@ -1087,7 +1088,7 @@ LIMIT  10;
         Assert-Env
         Assert-Docker
         Write-Host ""
-        Write-Host "S5 / Q1 : l'empreinte des lots de la zone brute." -ForegroundColor Cyan
+        Write-Host "B3-S5 / B3-Q1 : l'empreinte des lots de la zone brute." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "La purge refuse un lot dont l'empreinte n'a pas ete relevee : on ne" -ForegroundColor DarkGray
         Write-Host "detruit pas la preuve avant de l'avoir prise. Les ecritures actuelles" -ForegroundColor DarkGray
@@ -1126,12 +1127,12 @@ LIMIT  10;
         Invoke-Step 'fonction fd_client_features' {
             & docker @Psql -f '/work/sql/functions/fd_client_features.sql'
         }
-        # The recorded paths follow the directories they name (S6/R13).
+        # The recorded paths follow the directories they name (B3-S6/B3-R13).
         # Idempotent: a path already under runtime/ matches nothing.
         Invoke-Step 'chemins enregistres sous runtime/' {
             & docker @Psql -f '/work/sql/maintenance/050_move_runtime_paths.sql'
         }
-        # The dashboard's password lives in .env, never in sql/ddl (S6/R0).
+        # The dashboard's password lives in .env, never in sql/ddl (B3-S6/B3-R0).
         # Without it fd_dashboard exists but cannot log in -- said, not hidden.
         if ($env:FD_DASHBOARD_PASSWORD) {
             if ($env:FD_DASHBOARD_PASSWORD -notmatch '^[0-9a-f]{64}$') {
@@ -1152,7 +1153,7 @@ LIMIT  10;
 
     'load' {
         Assert-Env; Assert-Docker
-        Invoke-Step 'declenchement de S1' {
+        Invoke-Step 'declenchement de B3-S1' {
             & docker compose exec -T airflow-scheduler airflow dags trigger dag_load_history
         }
     }
@@ -1349,51 +1350,51 @@ LIMIT  10;
         Write-Host ""
         Write-Host "Criteres d'acceptation. Tous doivent lire OK." -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "=== S1 : chargement historique (L0 a L8)"
+        Write-Host "=== B3-S1 : chargement historique (B3-L0 a B3-L8)"
         & docker @Psql -f '/work/sql/checks/s1_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S2 : jeu d'entrainement (M0 a M4)"
+        Write-Host "=== B3-S2 : jeu d'entrainement (B3-M0 a B3-M4)"
         & docker @Psql -f '/work/sql/checks/s2_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S2 : artefacts et chaine de tracabilite (M5 a M8)"
+        Write-Host "=== B3-S2 : artefacts et chaine de tracabilite (B3-M5 a B3-M8)"
         & docker compose exec -T airflow-scheduler `
             python3 /opt/project/tools/check_s2.py /opt/project/runtime/datasets
 
         Write-Host ""
-        Write-Host "=== S3 : ingestion temps reel (N1 a N9)"
+        Write-Host "=== B3-S3 : ingestion temps reel (B3-N1 a B3-N9)"
         & docker @Psql -f '/work/sql/checks/s3_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S4 : rapport du matin (P1 a P5)"
+        Write-Host "=== B3-S4 : rapport du matin (B3-P1 a B3-P5)"
         & docker @Psql -f '/work/sql/checks/s4_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S4 : documents, empreintes et decomptes recalcules"
+        Write-Host "=== B3-S4 : documents, empreintes et decomptes recalcules"
         & docker compose exec -T airflow-scheduler `
             python3 /opt/project/tools/check_s4.py
 
         Write-Host ""
-        Write-Host "=== S3 : fichiers et declarations (N8)"
+        Write-Host "=== B3-S3 : fichiers et declarations (B3-N8)"
         & docker compose exec -T airflow-scheduler `
             python3 /opt/project/tools/check_s3.py
 
         Write-Host ""
-        Write-Host "=== S5 : purge et retention (Q1 a Q6)"
+        Write-Host "=== B3-S5 : purge et retention (B3-Q1 a B3-Q6)"
         & docker @Psql -f '/work/sql/checks/s5_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S5 : declaration, DAG et fichiers des jeux"
+        Write-Host "=== B3-S5 : declaration, DAG et fichiers des jeux"
         & docker compose exec -T airflow-scheduler `
             python3 /opt/project/tools/check_s5.py
 
         Write-Host ""
-        Write-Host "=== S6 : le role fd_dashboard, lu dans le catalogue (R0 a R5)"
+        Write-Host "=== B3-S6 : le role fd_dashboard, lu dans le catalogue (B3-R0 a B3-R5)"
         & docker @Psql -f '/work/sql/checks/s6_acceptance.sql'
 
         Write-Host ""
-        Write-Host "=== S6 : le conteneur du tableau de bord, tel qu'il tourne"
+        Write-Host "=== B3-S6 : le conteneur du tableau de bord, tel qu'il tourne"
         # On the HOST, not in the scheduler: there is no Docker inside a container.
         & python tools/check_s6.py
 
@@ -1402,11 +1403,11 @@ LIMIT  10;
         if (Test-Path 'datasets') {
             Get-ChildItem -Path 'datasets' -Recurse -Filter '*.parquet' |
                 ForEach-Object {
-                    Write-Host ("  {0,10:N0} octets  {1}" -f $_.Length,
+                    Write-Host ("  {0,10:B3-N0} octets  {1}" -f $_.Length,
                                 $_.FullName.Substring($PWD.Path.Length + 1))
                 }
             if (-not (Get-ChildItem -Path 'datasets' -Recurse -Filter '*.parquet')) {
-                Write-Host "  aucun fichier Parquet : S2 n'a pas encore construit de jeu"
+                Write-Host "  aucun fichier Parquet : B3-S2 n'a pas encore construit de jeu"
             }
         }
         else {
@@ -1417,41 +1418,41 @@ LIMIT  10;
 
     'check' {
         Assert-Env; Assert-Docker
-        Invoke-Step 'criteres d''acceptation de S1' {
+        Invoke-Step 'criteres d''acceptation de B3-S1' {
             & docker @Psql -f '/work/sql/checks/s1_acceptance.sql'
         }
-        Invoke-Step 'criteres d''acceptation de S2' {
+        Invoke-Step 'criteres d''acceptation de B3-S2' {
             & docker @Psql -f '/work/sql/checks/s2_acceptance.sql'
         }
-        Invoke-Step 'artefacts et chaine de S2' {
+        Invoke-Step 'artefacts et chaine de B3-S2' {
             & docker compose exec -T airflow-scheduler `
                 python3 /opt/project/tools/check_s2.py /opt/project/runtime/datasets
         }
-        Invoke-Step 'criteres d''acceptation de S3' {
+        Invoke-Step 'criteres d''acceptation de B3-S3' {
             & docker @Psql -f '/work/sql/checks/s3_acceptance.sql'
         }
-        Invoke-Step 'fichiers et declarations de S3' {
+        Invoke-Step 'fichiers et declarations de B3-S3' {
             & docker compose exec -T airflow-scheduler `
                 python3 /opt/project/tools/check_s3.py
         }
-        Invoke-Step 'criteres d''acceptation de S4' {
+        Invoke-Step 'criteres d''acceptation de B3-S4' {
             & docker @Psql -f '/work/sql/checks/s4_acceptance.sql'
         }
-        Invoke-Step 'documents et decomptes de S4' {
+        Invoke-Step 'documents et decomptes de B3-S4' {
             & docker compose exec -T airflow-scheduler `
                 python3 /opt/project/tools/check_s4.py
         }
-        Invoke-Step 'criteres d''acceptation de S5' {
+        Invoke-Step 'criteres d''acceptation de B3-S5' {
             & docker @Psql -f '/work/sql/checks/s5_acceptance.sql'
         }
-        Invoke-Step 'declaration, DAG et fichiers de S5' {
+        Invoke-Step 'declaration, DAG et fichiers de B3-S5' {
             & docker compose exec -T airflow-scheduler `
                 python3 /opt/project/tools/check_s5.py
         }
-        Invoke-Step 'criteres d''acceptation de S6' {
+        Invoke-Step 'criteres d''acceptation de B3-S6' {
             & docker @Psql -f '/work/sql/checks/s6_acceptance.sql'
         }
-        Invoke-Step 'conteneur du tableau de bord (S6)' {
+        Invoke-Step 'conteneur du tableau de bord (B3-S6)' {
             & python tools/check_s6.py
         }
         Invoke-Step 'absence de fuite du verdict' {

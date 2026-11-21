@@ -1,5 +1,8 @@
 -- Roles and append-only.
--- Covers: EC19   Lot: L0   Competency: C4
+-- Block: B3.
+-- Lot: B3-L0.
+-- Competency: B3-C4.
+-- Covers: B3-EC19.
 --
 -- The append-only property of fd_raw_events comes FROM A REVOCATION, not from a
 -- convention: the role that ingests has no right to rewrite what it wrote.
@@ -31,7 +34,7 @@ GRANT SELECT, INSERT, UPDATE ON fd_pipeline_runs TO fd_ingest;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO fd_ingest;
 
 -- UPDATE on the FEATURE COLUMNS ONLY, and this is the point rather than a
--- convenience. The backfill of L4 is an UPDATE over fd_transactions, so the
+-- convenience. The backfill of B3-L4 is an UPDATE over fd_transactions, so the
 -- ingesting role needs the privilege -- but granting it on the whole table would
 -- also let it rewrite an amount, a timestamp, a client_key or a merchant.
 --

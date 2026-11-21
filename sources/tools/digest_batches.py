@@ -1,10 +1,11 @@
 """Fingerprint the batches of the raw zone that have none.
 
-Covers: EC23, EI12
-Lot: Q1
-Competency: C4
+Block: B3.
+Lot: B3-Q1.
+Competency: B3-C4.
+Covers: B3-EC23, B3-EI12.
 
-WHY THIS EXISTS. The purge of S5 refuses a batch whose fingerprint was never
+WHY THIS EXISTS. The purge of B3-S5 refuses a batch whose fingerprint was never
 recorded: evidence is not destroyed before it has been taken. Every writer of
 the raw zone now records one when it writes -- but the batches loaded before the
 column existed have none, and left alone they would be unpurgeable for ever.

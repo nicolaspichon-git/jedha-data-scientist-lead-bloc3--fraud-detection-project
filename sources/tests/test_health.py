@@ -1,12 +1,13 @@
 """The four controls, and the one property that makes the channel usable.
 
-Covers: EC14, EC17
-Lot: N9
-Competency: C5
+Block: B3.
+Lot: B3-N9.
+Competency: B3-C5.
+Covers: B3-EC14, B3-EC17.
 
 The controls are pure functions of a Facts record, so every verdict here is
 exercised without a database: that split is the point of fraud/health.py and it
-is what lets the thresholds be tested against the figures N0 measured rather
+is what lets the thresholds be tested against the figures B3-N0 measured rather
 than against a mock.
 
 The decisions worth testing are the ones this module makes -- which control
@@ -38,7 +39,7 @@ SQL_ORDER = ("seconds_since_success", "runs_ended", "runs_failed", "runs_empty",
 LIMIT_S, MAX_EMPTY, MAX_REJECT = 600.0, 0.10, 0.05
 
 # The window facts_of() is handed. EXPLICIT instants and not a duration: the
-# same query serves N9's rolling hour and S4's calendar day, and only the caller
+# same query serves B3-N9's rolling hour and B3-S4's calendar day, and only the caller
 # knows which it wants.
 WINDOW_END = dt.datetime(2026, 11, 16, 17, 0, tzinfo=dt.timezone.utc)
 WINDOW_START = WINDOW_END - dt.timedelta(minutes=60)
@@ -73,7 +74,7 @@ def _by_name(facts):
 
 def test_the_controls_are_the_four_of_diagram_3_3():
     """THE OMISSION THIS LOT REPAIRS. Diagram 3.3 names freshness, empty run,
-    rejection rate and volume invariant; the plan of S3 listed five tasks and
+    rejection rate and volume invariant; the plan of B3-S3 listed five tasks and
     none was the stage carrying them. A control dropped from here must fail a
     test rather than wait for somebody to read the diagram again."""
     assert health.CONTROLS == ("freshness", "empty_run", "rejection_rate",
@@ -121,7 +122,7 @@ def test_empty_runs_fire_above_the_declared_share():
 
 
 def test_a_few_empty_runs_do_not_fire():
-    """N0 measured about 5 % of calls failing and a run makes five, so an
+    """B3-N0 measured about 5 % of calls failing and a run makes five, so an
     entirely empty run is rare but not impossible. The control must tolerate
     what the measurement predicts."""
     assert not _by_name(_facts(runs_ended=60, runs_empty=5))["empty_run"].alert
@@ -144,7 +145,7 @@ def test_the_rejection_rate_fires_above_the_declared_share():
 
 
 def test_the_measured_floor_does_not_fire():
-    """N0 saw one call in 57 (1.75 %) with an 818 s gap, which quarantines on
+    """B3-N0 saw one call in 57 (1.75 %) with an 818 s gap, which quarantines on
     the clock tolerance. The normal rate is NOT zero, and a threshold at zero
     would hold this control in permanent alert -- which is why config refuses
     a share of 0."""
@@ -199,7 +200,7 @@ def test_a_control_that_stays_red_is_announced_once_not_1440_times():
     """THE REASON fd_ops_state EXISTS, and the arithmetic that justifies the
     whole table: the DAG runs 1,440 times a day, so notifying on the CONDITION
     would send 1,440 identical messages and the channel would be ignored by the
-    second day. N5's capacity policy does not help -- it caps the volume of a
+    second day. B3-N5's capacity policy does not help -- it caps the volume of a
     day's fraud alerts, which is a different failure."""
     facts = _facts(seconds_since_success=3600)       # freshness red, and stays
     stored, sent = {}, 0
@@ -256,7 +257,7 @@ def test_the_payload_holds_only_the_declared_fields():
 
 def test_the_transition_travels_as_became_and_not_as_state():
     """FOUND BY THE WHITELIST REFUSING THE PAYLOAD, which is the whole reason
-    the whitelist is a check and not a comment. N5's FORBIDDEN_FIELDS holds
+    the whitelist is a check and not a comment. B3-N5's FORBIDDEN_FIELDS holds
     "state" -- the CARDHOLDER'S US state, one of the thirteen identifying
     columns of the source. A key named "state" would mean the control's state
     in the operations file and a person's address in the alert file, and a
@@ -277,7 +278,7 @@ def test_no_transaction_travels_on_the_operations_channel():
     analyst reads."""
     for name in ("txn_id", "amt", "merchant", "score", "threshold"):
         assert name in health.FORBIDDEN_FIELDS
-    # And N5's whole list is inherited rather than retyped.
+    # And B3-N5's whole list is inherited rather than retyped.
     from fraud import notify
     for name in notify.FORBIDDEN_FIELDS:
         assert name in health.FORBIDDEN_FIELDS
@@ -421,7 +422,7 @@ class _patched:
 
 
 def test_the_message_goes_out_before_the_state_is_recorded():
-    """THE ORDER, and the reason is N5's turned around: recording first would
+    """THE ORDER, and the reason is B3-N5's turned around: recording first would
     mark the control as announced while nobody was told, and no later run would
     announce it -- there would no longer be a transition to see. That failure is
     silent and PERMANENT; a duplicate is neither."""
@@ -472,7 +473,7 @@ def test_check_raises_on_nothing_a_control_found():
 def test_the_facts_are_read_in_the_order_the_query_returns_them():
     """facts_of() unpacks BY POSITION. A reordered SELECT would land the
     rejected lines in the read lines and every share would be wrong while every
-    number stayed plausible -- the failure mode of to_alert() in N5, which is
+    number stayed plausible -- the failure mode of to_alert() in B3-N5, which is
     guarded the same way."""
     text = (ROOT / "sql" / "checks" / "pipeline_health.sql").read_text(
         encoding="utf-8")
@@ -527,10 +528,10 @@ def test_the_facts_of_a_payload_are_only_numbers():
 # --- one query, two windows ----------------------------------------------------
 
 def test_the_window_is_the_callers_and_the_query_holds_no_clock():
-    """FOUND WHILE IMPLEMENTING P2, and it was a defect of P0's own decision.
+    """FOUND WHILE IMPLEMENTING B3-P2, and it was a defect of B3-P0's own decision.
     The report reuses this query for its section 4, and the query anchored its
     window on now() -- so a replay of 3 November would have reported the health
-    of today. The central trap of S4, in the file S4 was told to reuse.
+    of today. The central trap of B3-S4, in the file B3-S4 was told to reuse.
 
     The bounds are parameters now, and the instant of reference is one too. The
     control task passes null for as_of and gets the DATABASE clock, which is the
@@ -566,7 +567,7 @@ def test_the_control_task_asks_the_server_for_its_clock():
     assert "query:now" in fake.order
 
 
-# --- the journal of the channel (S6/R9) ---------------------------------------
+# --- the journal of the channel (B3-S6/B3-R9) ---------------------------------------
 
 def test_a_sent_message_is_journaled_with_its_state_in_one_transaction():
     """Record, journal, commit: a state without its journal row would be a

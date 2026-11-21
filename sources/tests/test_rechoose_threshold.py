@@ -1,8 +1,9 @@
 """The report of the threshold re-choice, rendered without running the sweep.
 
-Covers: EE08, EI04, EC09
-Lot: N4
-Competency: C5
+Block: B3.
+Lot: B3-N4.
+Competency: B3-C5.
+Covers: B3-EE08, B3-EI04, B3-EC09.
 
 The sweep needs sklearn and a probe fit of several minutes. render() needs
 neither, and render() is where the tool failed: it raised NameError AFTER the
@@ -84,7 +85,7 @@ def test_the_report_renders_at_all():
     """THE test. render() is a module-level function, so a name bound inside
     main() is not in scope for it -- and the failure came only after the probe
     fit and ten sweeps had run."""
-    assert _render().startswith("# N4")
+    assert _render().startswith("# B3-N4")
 
 
 def test_the_report_names_both_thresholds():
@@ -126,7 +127,7 @@ def test_a_threshold_that_does_not_move_is_a_result_and_said_so():
 
 def test_the_report_refuses_to_write_the_threshold_into_governance():
     """The operating threshold lives in the model version's manifest, which only
-    S2 writes. Two sources of truth is one too many."""
+    B3-S2 writes. Two sources of truth is one too many."""
     body = _render()
     assert "governance.yml" in body
     assert "deux sources de verite" in body

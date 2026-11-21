@@ -31,7 +31,7 @@ def altered(**changes):
     return record
 
 
-# --- EC20: one field at a time -------------------------------------------
+# --- B3-EC20: one field at a time -------------------------------------------
 
 def test_a_sound_record_yields_no_field_reject():
     assert checks.check_fields(GOOD, 1, MAX_AMOUNT) == []
@@ -108,7 +108,7 @@ def test_every_failure_is_reported_not_only_the_first():
             checks.MISSING_MANDATORY} <= codes(r)
 
 
-# --- EC21: between fields of one record -----------------------------------
+# --- B3-EC21: between fields of one record -----------------------------------
 
 def test_a_sound_record_yields_no_record_reject():
     assert checks.check_record(GOOD, 1) == []

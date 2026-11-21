@@ -1,14 +1,17 @@
 -- The mornings with no report. MUST RETURN ZERO ROWS.
--- Covers: EC14   Lot: P3   Competency: C4
+-- Block: B3.
+-- Lot: B3-P3.
+-- Competency: B3-C4.
+-- Covers: B3-EC14.
 --
--- A wrong report is seen; an absent one is not. This is EC14 -- detect the
+-- A wrong report is seen; an absent one is not. This is B3-EC14 -- detect the
 -- absence -- applied to the one deliverable of this project that a human reads.
 --
 -- IT STARTS AT THE FIRST RECORDED REPORT AND NOT THIRTY DAYS AGO, and that is
 -- the difference between a control and an alarm. A pipeline three days old
 -- would otherwise list twenty-seven missing mornings that nobody ever expected,
 -- and a check that fails on reality teaches its reader to ignore it -- the
--- lesson of criterion 13 of S3, paid for once already.
+-- lesson of criterion 13 of B3-S3, paid for once already.
 --
 -- So the span runs from the first report (or thirty days ago, whichever is
 -- later, to keep the answer readable) to YESTERDAY. Two kinds of gap are
@@ -19,7 +22,7 @@
 --
 -- AN EMPTY TABLE RETURNS NOTHING, by the HAVING below: before the first report
 -- ever produced, no morning is missing. "No report has ever been produced" is a
--- different finding, and it belongs to the acceptance criteria of P5 rather than
+-- different finding, and it belongs to the acceptance criteria of B3-P5 rather than
 -- here -- a control that fires on a system not yet started is noise.
 
 WITH span AS (

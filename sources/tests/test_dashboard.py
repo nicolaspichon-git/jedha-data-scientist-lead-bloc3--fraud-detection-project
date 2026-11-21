@@ -1,12 +1,13 @@
-"""R1: the reads behind the dashboard -- delegations, not second answers.
+"""B3-R1: the reads behind the dashboard -- delegations, not second answers.
 
-Covers: EE03, EC14, EC17
-Lot: R1
-Competency: C4
+Block: B3.
+Lot: B3-R1.
+Competency: B3-C4.
+Covers: B3-EE03, B3-EC14, B3-EC17.
 
 The dashboard decides nothing. What is tested here is mostly that it ASKS the
 definitions other processes already use, rather than answering on its own, and
-that everything it reads lies inside what R0 granted fd_dashboard.
+that everything it reads lies inside what B3-R0 granted fd_dashboard.
 """
 from __future__ import annotations
 
@@ -180,7 +181,7 @@ def test_the_alerts_are_the_reports_own_query_over_the_reports_own_day(
 
 def test_the_shown_fields_carry_nothing_personal():
     """A whitelist: a column added to the query tomorrow must be DECIDED onto
-    the page. client_key is a pseudonym the analyst has no use for (EC17)."""
+    the page. client_key is a pseudonym the analyst has no use for (B3-EC17)."""
     shown = set(dashboard.FRAUD_FIELDS)
     assert not shown & set(notify.FORBIDDEN_FIELDS)
     assert "client_key" not in shown
@@ -200,7 +201,7 @@ def test_the_head_of_the_page_counts_what_it_shows():
     assert s == {"alerts": 3, "notified": 2, "not_notified": 1}
 
 
-# --- everything read lies inside what R0 granted --------------------------------
+# --- everything read lies inside what B3-R0 granted --------------------------------
 
 def _granted() -> tuple[set[str], dict[str, set[str]]]:
     """(tables granted whole, {table: columns granted one by one})."""
@@ -216,7 +217,7 @@ def _granted() -> tuple[set[str], dict[str, set[str]]]:
 
 
 def test_every_query_the_dashboard_runs_stays_inside_its_grants():
-    """THE TEST THAT TIES R0 TO THE PAGES. A page that reached for another
+    """THE TEST THAT TIES B3-R0 TO THE PAGES. A page that reached for another
     table -- or another COLUMN of the quarantine -- would fail in the container
     with `permission denied`, found by whoever opens it first. Here it fails
     before."""
@@ -227,8 +228,8 @@ def test_every_query_the_dashboard_runs_stays_inside_its_grants():
              dashboard.STREAM_RATE_SQL,
              report.FRAUDS_SQL, notify.WINDOW_SQL,
              health.FACTS_SQL, health.STATE_SQL,
-             dashboard.OPS_SQL,                                    # R9
-             report.VERDICTS_SQL, report.REFERENCE_SQL,            # R10
+             dashboard.OPS_SQL,                                    # B3-R9
+             report.VERDICTS_SQL, report.REFERENCE_SQL,            # B3-R10
              dashboard.PERF_BY_MODEL_SQL, dashboard.PERF_BY_DAY_SQL]
     # Every column of a table granted BY COLUMN, read from its DDL: in a query
     # that reads such a table, the columns NOT granted must not appear at all
@@ -236,7 +237,7 @@ def test_every_query_the_dashboard_runs_stays_inside_its_grants():
     ddl = (ROOT / "sql" / "ddl" / "020_quarantine.sql").read_text(encoding="utf-8")
     table_columns = {"fd_quarantine": set(re.findall(
         r"^\s{4}(\w+)\s+\w", ddl.split("CREATE TABLE")[1].split(");")[0], re.M))}
-    # fd_datasets: the columns of its CREATE TABLE and those R10 ADDs.
+    # fd_datasets: the columns of its CREATE TABLE and those B3-R10 ADDs.
     ddl = (ROOT / "sql" / "ddl" / "070_datasets.sql").read_text(encoding="utf-8")
     table_columns["fd_datasets"] = set(re.findall(
         r"^\s{4}(\w+)\s+\w", ddl.split("CREATE TABLE")[1].split(");")[0], re.M)

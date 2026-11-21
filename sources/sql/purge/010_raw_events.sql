@@ -1,5 +1,8 @@
 -- Delete ONE SLICE of ONE batch of the raw zone.
--- Covers: EE05, EI11, EC19   Lot: Q3   Competency: C2, C3
+-- Block: B3.
+-- Lot: B3-Q3.
+-- Competency: B3-C2, B3-C3.
+-- Covers: B3-EE05, B3-EI11, B3-EC19.
 --
 -- NO DATE PREDICATE HERE, and that absence is the design. What is beyond
 -- retention is decided once, in sql/purge/candidates_raw.sql, and this file
@@ -8,7 +11,7 @@
 -- then describe a set nobody deletes. tests/test_purge_plan.py forbids it.
 --
 -- BY BATCH, because the batch is the unit of ingestion AND the unit of the
--- fingerprint (Q1): half a batch is a remainder no recorded digest describes.
+-- fingerprint (B3-Q1): half a batch is a remainder no recorded digest describes.
 --
 -- BY SLICES, because a historical batch holds 555 719 rows and some 200 MB of
 -- JSON. One DELETE over all of it holds a lock for minutes, inflates the
@@ -24,7 +27,7 @@
 -- purged by date belongs partitioned by month, where a purge is a DROP of a
 -- partition -- instantaneous, no row touched, no log written. fd_raw_events is
 -- not partitioned: at the volume of this demonstration that was not an error
--- in L1, but it is the first thing to change if this ever takes a real flow.
+-- in B3-L1, but it is the first thing to change if this ever takes a real flow.
 --
 -- Parameters: batch_id, chunk.
 

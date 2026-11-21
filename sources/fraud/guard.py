@@ -1,8 +1,9 @@
-"""The gate S2 passes through before it trains on anything.
+"""The gate B3-S2 passes through before it trains on anything.
 
-Covers: EC09, EC14
-Lot: M1
-Competency: C3, C5
+Block: B3.
+Lot: B3-M1.
+Competency: B3-C3, B3-C5.
+Covers: B3-EC09, B3-EC14.
 
 Two kinds of health, and the second is the one nobody thinks of.
 
@@ -14,7 +15,7 @@ that case.
 LABELLING. Measured on this source: the fraud generator stops injecting on
 2020-12-22, and the 38,147 later transactions carry is_fraud = 0 because nobody
 labelled them. A window holding no positive must stop the DAG exactly as a
-window holding no run does -- that is EC14, "detect the absence", applied to
+window holding no run does -- that is B3-EC14, "detect the absence", applied to
 labels rather than to runs.
 
 The decision is a pure function of a report, so it can be exercised without a
@@ -77,9 +78,9 @@ def verdict(report: WindowReport, min_positives: int) -> list[str]:
     A list rather than the first reason found: knowing that a window is both
     unlabelled AND incomplete is more useful than learning it twice.
 
-    Covers: EC09, EC14
-    Lot: M1
-    Competency: C5
+    Lot: B3-M1.
+    Competency: B3-C5.
+    Covers: B3-EC09, B3-EC14.
     """
     reasons: list[str] = []
 

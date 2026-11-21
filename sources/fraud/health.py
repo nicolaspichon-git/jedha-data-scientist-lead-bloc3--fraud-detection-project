@@ -1,21 +1,22 @@
 """The health of the ingestion pipeline, and telling the operator about it.
 
-Covers: EC14, EC17
-Lot: N9
-Competency: C1, C2, C4
+Block: B3.
+Lot: B3-N9.
+Competency: B3-C1, B3-C2, B3-C4.
+Covers: B3-EC14, B3-EC17.
 
 THE STAGE THE DESIGN HAD AND THE CODE DID NOT. Diagram 3.3 of the project
 specifies a third stage of the ingestion DAG -- "(3c) dag_ingest : check" --
 carrying four controls (freshness, empty run, rejection rate, volume invariant),
 reading the last runs and the last rows, and emitting a "pipeline alert" to an
-"ops channel (pipeline owner)". The development plan of S3 listed five tasks and
+"ops channel (pipeline owner)". The development plan of B3-S3 listed five tasks and
 none of them was that one, so the stage was never built: the plan recorded its
 own amputated version of the design as if it were the design.
 
 THE TRACEABILITY TABLE COULD NOT SEE IT, which is the part worth remembering.
-EC14 states three of these four controls in so many words -- "detect the
-absence: missing run, zero-row run, stale data" -- and the table showed EC14 as
-carried by code. It was: by fraud/guard.py, which is S2's TRAINING gate. That
+B3-EC14 states three of these four controls in so many words -- "detect the
+absence: missing run, zero-row run, stale data" -- and the table showed B3-EC14 as
+carried by code. It was: by fraud/guard.py, which is B3-S2's TRAINING gate. That
 code looks at a window, before training, and REFUSES TO TRAIN. This module looks
 at the last minute, after ingesting, and TELLS SOMEBODY. A requirement can be
 satisfied in a traceability table by code that does the job in another process,
@@ -33,7 +34,7 @@ CHANGE is sent -- including the change back to green, because an operator told
 that ingestion stopped and never told it resumed still has to go and look, which
 is the pull model this channel exists to replace.
 
-A DIFFERENT AUDIENCE, SO A DIFFERENT DESTINATION. The analyst's channel of N5
+A DIFFERENT AUDIENCE, SO A DIFFERENT DESTINATION. The analyst's channel of B3-N5
 notifies a flagged TRANSACTION; this one notifies a state of the CHAIN. Routing
 pipeline noise into the analyst's queue would poison exactly the queue the
 60-alerts-a-day capacity exists to protect -- an analyst who receives pipeline
@@ -42,7 +43,7 @@ JSON line" (notify.append_json_line) and nothing else: not the destination, not
 the payload, not the policy.
 
 AND NO TRANSACTION EVER TRAVELS HERE. The payload carries a control, a state, a
-sentence and counts. FORBIDDEN_FIELDS extends N5's list with txn_id, amt,
+sentence and counts. FORBIDDEN_FIELDS extends B3-N5's list with txn_id, amt,
 merchant and score: not because they are personal -- they are not -- but because
 an operations channel accumulating them would become a second, unmanaged copy of
 the alert stream, outside the capacity policy and outside the analyst's queue.
@@ -77,7 +78,7 @@ CONTROLS = ("freshness", "empty_run", "rejection_rate", "volume_invariant")
 
 # THE DAG THESE CONTROLS WATCH, named once. It was spelled in the DAG, in
 # report.py, in tools/ops_check.py and in tools/check_s3.py; the dashboard of
-# S6 would have been the fifth. tests/test_dashboard_operations.py ties the
+# B3-S6 would have been the fifth. tests/test_dashboard_operations.py ties the
 # DAG's own DAG_ID and the tools' defaults to this value.
 WATCHED_DAG = "dag_ingest"
 
@@ -86,7 +87,7 @@ WATCHED_DAG = "dag_ingest"
 # door without somebody naming it here.
 #
 # THE TRANSITION TRAVELS AS "became" AND NOT AS "state", and the reason was
-# found by the whitelist refusing the payload. FORBIDDEN_FIELDS inherits N5's
+# found by the whitelist refusing the payload. FORBIDDEN_FIELDS inherits B3-N5's
 # list, which holds "state" -- the CARDHOLDER'S US state, one of the thirteen
 # identifying columns of the source. A key named "state" would therefore mean
 # the control's state in this file and a person's address in the other, and a
@@ -95,7 +96,7 @@ WATCHED_DAG = "dag_ingest"
 OPS_FIELDS = ("control", "became", "detail", "run_id", "dag_id",
               "window_minutes", "raised_at", "facts")
 
-# N5's list, plus the transaction's own facts. See the module docstring: the
+# B3-N5's list, plus the transaction's own facts. See the module docstring: the
 # reason is not confidentiality, it is that this channel must not become a
 # second copy of the alert stream.
 FORBIDDEN_FIELDS = notify.FORBIDDEN_FIELDS + ("txn_id", "amt", "merchant",
@@ -149,8 +150,8 @@ def facts_of(conn, dag_id: str, window_start, window_end, as_of=None) -> Facts:
     """Read the facts of one DAG's runs over an EXPLICIT window.
 
     THE BOUNDS ARE THE CALLER'S, which is what lets this serve two callers that
-    need opposite windows: N9's control task wants the last hour before now,
-    S4's morning report wants the calendar day it covers and must be replayable.
+    need opposite windows: B3-N9's control task wants the last hour before now,
+    B3-S4's morning report wants the calendar day it covers and must be replayable.
     as_of=None leaves the instant of reference to the DATABASE clock, which is
     the right one for a freshness reading since the journal's timestamps are the
     server's.
@@ -215,7 +216,7 @@ def freshness(facts: Facts, limit_s: float) -> Control:
 def empty_run(facts: Facts, max_share: float) -> Control:
     """Runs that ended having stored nothing.
 
-    A share and not a count, because N0 measured about 5 % of calls failing: an
+    A share and not a count, because B3-N0 measured about 5 % of calls failing: an
     empty minute happens and must not light the channel. Five calls a run make
     an entirely empty run very unlikely, so a share above a few per cent is a
     different event -- the API down, or the chain stopping before close_run.
@@ -330,7 +331,7 @@ def stored_rows(conn) -> list[dict]:
 
     The same query as stored_state() -- sql/ops/state.sql already returns the
     four columns -- read in full for whoever must say since WHEN a control has
-    been red (the dashboard of S6).
+    been red (the dashboard of B3-S6).
     """
     return [{"control": control, "state": state, "since": since,
              "detail": detail}
@@ -350,7 +351,7 @@ def record(conn, transition: Transition, run_id: str | None) -> None:
 
 
 def journal(conn, payload: dict, channel: str) -> None:
-    """Journal a message that WAS SENT, in fd_ops_notifications (S6/R9).
+    """Journal a message that WAS SENT, in fd_ops_notifications (B3-S6/B3-R9).
 
     From the payload as it left -- checked by payload_of() -- and not from the
     transition: the journal says what the channel received.
@@ -406,7 +407,7 @@ def payload_of(transition: Transition, report: dict) -> dict:
 def send_log(payload: dict, settings) -> None:
     """A structured line in the service journal, at error level.
 
-    Distinct from N5's ALERTE prefix on purpose: one grep separates the two
+    Distinct from B3-N5's ALERTE prefix on purpose: one grep separates the two
     audiences even when both channels are the journal.
     """
     log.error("EXPLOITATION %s", json.dumps(payload, sort_keys=True,
@@ -456,9 +457,9 @@ def check(conn, settings, dag_id: str, run_id: str | None = None) -> dict:
     A red control is this function's normal output, not an error: failing the
     run on one would stop the ingestion the control exists to watch.
 
-    Covers: EC14
-    Lot: N9
-    Competency: C4
+    Lot: B3-N9.
+    Competency: B3-C4.
+    Covers: B3-EC14.
     """
     start, end = rolling_window(conn, settings.ops_window_minutes)
     facts = facts_of(conn, dag_id, start, end)
@@ -475,14 +476,14 @@ def check(conn, settings, dag_id: str, run_id: str | None = None) -> dict:
 def notify_ops(conn, settings, report: dict) -> dict:
     """Send each transition, then record it and journal it. SEND, THEN RECORD.
 
-    The order is N5's and the reason is the same, turned around: recording
+    The order is B3-N5's and the reason is the same, turned around: recording
     first would mark the control as announced while nobody was told, and no
     later run would announce it -- there would no longer be a transition to
     see. That failure is silent and permanent; a duplicate is neither.
 
-    Covers: EC14, EC17
-    Lot: N9
-    Competency: C3, C4
+    Lot: B3-N9.
+    Competency: B3-C3, B3-C4.
+    Covers: B3-EC14, B3-EC17.
     """
     channel_name = settings.ops_channel
     send = channel_of(channel_name)

@@ -1,12 +1,13 @@
-"""S5 / Q1: the fingerprint of a batch is taken, stored, and demanded.
+"""B3-S5 / B3-Q1: the fingerprint of a batch is taken, stored, and demanded.
 
-Covers: EC23, EI12
-Lot: Q1
-Competency: C4
+Block: B3.
+Lot: B3-Q1.
+Competency: B3-C4.
+Covers: B3-EC23, B3-EI12.
 
 WHY THIS LOT COMES BEFORE ANY PURGE. runs.digest() fingerprinted whole tables,
 once, at the end of the historical load, and only wrote them to the Airflow log.
-The minute DAG never computed one. The day S5 purges the raw zone and the logs
+The minute DAG never computed one. The day B3-S5 purges the raw zone and the logs
 turn over, nothing would say what a batch held -- so the fingerprint is now of
 the BATCH, taken by whoever writes it, stored on the run, and the purge refuses
 a batch that has none.
@@ -223,7 +224,7 @@ def test_the_store_digests_have_nowhere_to_go_on_a_missing_run():
 # --- the refusal ---------------------------------------------------------------------
 
 def _held(n=3, digest="d1", origin="ingest", run="run-1", purge=None):
-    # Five columns since Q3: the purge marker is read with the fingerprint,
+    # Five columns since B3-Q3: the purge marker is read with the fingerprint,
     # by the one query, so that the two answers cannot come from two instants.
     return [(n, digest, origin, run, purge)]
 

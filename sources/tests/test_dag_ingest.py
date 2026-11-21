@@ -1,8 +1,9 @@
 """The shape of the real-time DAG, read from its source.
 
-Covers: EI06, EC09, EC14, EC23
-Lot: N7
-Competency: C5
+Block: B3.
+Lot: B3-N7.
+Competency: B3-C5.
+Covers: B3-EI06, B3-EC09, B3-EC14, B3-EC23.
 
 Airflow is not installed in the authoring environment, so this reads the file.
 A weaker test than running the DAG, and still the one that catches what matters
@@ -23,7 +24,7 @@ SOURCE = ROOT / "airflow" / "dags" / "dag_ingest.py"
 
 EXPECTED_TASKS = ("poll", "validate", "type_and_feature", "score_batch",
                   "raise_and_notify_fraud", "close_run",
-                  # N9: stage (3c) of diagram 3.3, which the plan of S3 never
+                  # B3-N9: stage (3c) of diagram 3.3, which the plan of B3-S3 never
                   # listed and nobody missed for a whole process.
                   "check", "raise_and_notify_ops")
 
@@ -173,7 +174,7 @@ def test_everything_after_the_poll_may_be_retried():
 
 
 def test_a_failure_closes_the_run_as_failed():
-    """WITHOUT THIS THE GUARD OF M1 COUNTS WRONG. It counts state = 'success'
+    """WITHOUT THIS THE GUARD OF B3-M1 COUNTS WRONG. It counts state = 'success'
     and state = 'failed'; a run abandoned in 'running' is in neither, so a
     window of 1,440 runs a day could be full of silent failures and look like a
     window with none."""
@@ -182,7 +183,7 @@ def test_a_failure_closes_the_run_as_failed():
 
 
 def test_the_marking_is_not_a_task_with_a_trigger_rule():
-    """N9 REPLACED N7's TASK, and this is the regression to guard.
+    """B3-N9 REPLACED B3-N7's TASK, and this is the regression to guard.
 
     trigger_rule="one_failed" needs an upstream task in the failed state and
     the scheduler to place one more task. dagrun_timeout fails the RUN and kills
@@ -215,7 +216,7 @@ def test_the_callback_never_raises():
 
 def test_both_dags_close_a_failure_the_same_way():
     """ONE CONVENTION FOR ONE JOB. dag_load_history has used the callback since
-    L2; N7 invented a second mechanism for the same thing, and nothing held the
+    B3-L2; B3-N7 invented a second mechanism for the same thing, and nothing held the
     two files to the same answer. This does."""
     other = (ROOT / "airflow" / "dags" / "dag_load_history.py").read_text(
         encoding="utf-8")
@@ -224,16 +225,16 @@ def test_both_dags_close_a_failure_the_same_way():
 
 
 def test_the_callback_marks_only_what_nobody_closed():
-    """N9 HUNG TWO TASKS AFTER close_run, which records the success. With
+    """B3-N9 HUNG TWO TASKS AFTER close_run, which records the success. With
     runs.finish the callback would overwrite that success with a failure, and
     the journal would report a failed ingestion while the transactions sit in
-    the table -- which M1's guard reads as a reason to refuse training."""
+    the table -- which B3-M1's guard reads as a reason to refuse training."""
     called = _calls(_function("_mark_failed"))
     assert "runs.abandon" in called
     assert "runs.finish" not in called
 
 
-# --- N9: the controls and the operations channel -------------------------------
+# --- B3-N9: the controls and the operations channel -------------------------------
 
 def test_the_controls_run_after_the_run_was_closed():
     """They read fd_pipeline_runs, and close_run writes the counters and the
@@ -324,9 +325,9 @@ def test_every_stage_after_the_poll_rereads_the_raw_zone():
 
 
 def test_the_validation_task_keeps_the_clock_bound():
-    """N7's first draft called checks.validate_batch on the rows alone, which
+    """B3-N7's first draft called checks.validate_batch on the rows alone, which
     silently dropped CLOCK_IMPLAUSIBLE from the DAG while the manual runner kept
-    it -- the rule N0 earned by measuring one reading 818 s out, our own process
+    it -- the rule B3-N0 earned by measuring one reading 818 s out, our own process
     suspended. The envelope carries our_ms and latency_ms; the row does not."""
     body = _body()
     validate_task = body[body.index("def validate("):
@@ -352,10 +353,10 @@ def test_the_counters_close_on_what_reached_the_raw_zone():
     assert '"n_valid": n_read - rejected_lines' in body
 
 
-# --- N6's fourth guarantee still holds ----------------------------------------
+# --- B3-N6's fourth guarantee still holds ----------------------------------------
 
 def test_the_realtime_dag_writes_no_verdict():
-    """N6: the write lives in dag_ingest_verdicts, daily, sharing no task with
+    """B3-N6: the write lives in dag_ingest_verdicts, daily, sharing no task with
     the scoring."""
     tree = ast.parse(_body())
     imported = set()
@@ -384,8 +385,8 @@ def test_the_scoring_is_a_task_of_its_own():
 
 def test_the_dag_declares_the_lot_and_the_competencies():
     keywords = _dag_keywords()
-    assert "N7" in keywords["tags"]
-    assert "S3" in keywords["tags"]
+    assert "B3-N7" in keywords["tags"]
+    assert "B3-S3" in keywords["tags"]
 
 
 def test_the_module_header_states_the_measured_cadence():
@@ -403,7 +404,7 @@ def test_every_task_receiving_the_batch_converts_it_back_to_a_uuid():
     arrives as a string, and raw.read_batch touches .hex first thing: it failed
     on "'str' object has no attribute 'hex'", eleven frames deep, naming neither
     the parameter nor the fix. dag_load_history has converted at the top of
-    three tasks since L2; this DAG did not.
+    three tasks since B3-L2; this DAG did not.
     """
     body = _body()
     bounds = {"validate": "def type_and_feature(",

@@ -26,7 +26,7 @@ tags:
 ###### Diagramme
 ![[diagrams/fraud-project--data-infrastructure--diagram-0.md]]
 
-> _\> Les numéros portés par les blocs de pipeline ((1) à (5)) renvoient aux diagrammes détaillés des processus (S1 à S5)._
+> _\> Les numéros portés par les blocs de pipeline ((1) à (5)) renvoient aux diagrammes détaillés des processus (B3-S1 à B3-S5)._
 
 <div style="page-break-after: always;"></div>
 
@@ -52,7 +52,7 @@ tags:
 *Object :* amorcer le système : charger les transactions historiques pour disposer d'un jeu
 d'entraînement et d'un historique comportemental.
 
-###### Diagramme détaillé : S1
+###### Diagramme détaillé : B3-S1
 ![[diagrams/fraud-project--data-infrastructure--diagram-1.md]]
 
 <div style="page-break-after: always;"></div>
@@ -60,7 +60,7 @@ d'entraînement et d'un historique comportemental.
 ## 1.3. Entrainement du modèle de scoring de fraude
 *Object :* produire et enregistrer un modèle à partir des transactions et des verdicts connus à partir d'une certaine date de coupure.
 
-###### Diagramme détaillé : S2
+###### Diagramme détaillé : B3-S2
 ![[diagrams/fraud-project--data-infrastructure--diagram-2.md]]
 
 <div style="page-break-after: always;"></div>
@@ -98,7 +98,7 @@ d'entraînement et d'un historique comportemental.
 
 ## 1.5. Reporting quotidien
 *Objet :* produire périodiquement, le matin, un rapport des transactions et des fraudes prédites de la veille.
-###### Diagramme détaillé : S4
+###### Diagramme détaillé : B3-S4
 ![[diagrams/fraud-project--data-infrastructure--diagram-4.md]]
 
 <div style="page-break-after: always;"></div>
@@ -106,7 +106,7 @@ d'entraînement et d'un historique comportemental.
 ## 1.6. Purge des données brutes et des journaux
 
 *Objet :* appliquer la politique de rétention de la politique de gouvernance : supprimer les évènements plus âgés que la durée de conservation dans *Raw Events* et dans *Quarantine* .
-###### Diagramme détaillé : S5
+###### Diagramme détaillé : B3-S5
 ![[diagrams/fraud-project--data-infrastructure--diagram-5.md|700]]
 
 <div style="page-break-after: always;"></div>
@@ -115,10 +115,10 @@ d'entraînement et d'un historique comportemental.
 
 | Technologie        | Rôle                                                                                                              | Pourquoi                                                                          |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Airflow**        | orchestration des 5 traitements,<br/>à 5 cadences propres                                                         | C3 ; reprises, journaux, interface                                                |
+| **Airflow**        | orchestration des 5 traitements,<br/>à 5 cadences propres                                                         | B3-C3 ; reprises, journaux, interface                                                |
 | **PostgreSQL**     | persistence des données structurées : `raw_events`, `transactions`, `ground_truth`, `quarantine`, `pipeline_runs` | volumétrie modeste ; `JSONB` pour la zone brute ; déclencheurs pour l'immuabilité |
 | **MLflow**         | registre de modèles                                                                                               | « mise en production » exigée par l'énoncé                                        |
-| **Parquet**        | jeux d'entraînement versionnés                                                                                    | Seconde technologie de stockage ; sert C2                                         |
+| **Parquet**        | jeux d'entraînement versionnés                                                                                    | Seconde technologie de stockage ; sert B3-C2                                         |
 | **Python**         | ingestion, validation, scoring, entraînement                                                                      | *scikit-learn* ou *LightGBM*                                                      |
 | **Streamlit**      | rapport quotidien, pages de notification et vues d'exploitation                                                   | Lit directement les données de rapport dans PostgreSQL                            |
 | **Docker Compose** | déploiement                                                                                                       | Reproductibilité                                                                  |
@@ -144,7 +144,7 @@ d'entraînement et d'un historique comportemental.
 ## Références
 
 #### Spécifications
-- \[D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
+- \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
 
 #### Ressources
 - \[R3\] [Fraudulent Payments full dataset](https://lead-program-assets.s3.eu-west-3.amazonaws.com/M05-Projects/fraudTest.csv)
@@ -158,7 +158,7 @@ d'entraînement et d'un historique comportemental.
 
 ###### Les deux objectifs métier 
 
-G1 et G2 sont couverts intégralement : une transaction entre, elle est validée, enrichie, scorée, persistée, et l'analyste est notifié si la décision est « fraude » ; chaque matin, le responsable métier dispose du bilan de la veille, avec la performance réellement observée du modèle.
+B3-G1 et B3-G2 sont couverts intégralement : une transaction entre, elle est validée, enrichie, scorée, persistée, et l'analyste est notifié si la décision est « fraude » ; chaque matin, le responsable métier dispose du bilan de la veille, avec la performance réellement observée du modèle.
 
 ###### Six traitements automatisés
 
@@ -174,7 +174,7 @@ G1 et G2 sont couverts intégralement : une transaction entre, elle est validée
 Deux précisions sur ce tableau, apportées par la réalisation.
 
 **Le traitement d'écriture du verdict n'était pas dans la v12**, et son
-existence est une décision de conception prise en S3, lot N6. Le diagramme 3.2
+existence est une décision de conception prise en B3-S3, lot B3-N6. Le diagramme 3.2
 fait écrire le verdict par le stade de traitement de `dag_ingest`, et c'est
 réalisable : l'API renvoie l'étiquette, donc l'ingestion pourrait écrire
 `(txn_id, label, label_ts)` à la seconde zéro.
@@ -216,7 +216,7 @@ attendre l'analyste qui arrive à 08:00.
 | **Airflow Variables**<br/>+**YAML** | configurations et paramètres des politiques                                          |
 | **PostgreSQL**              | `raw_events` (JSONB), `transactions`, `ground_truth`, `quarantine`, `pipeline_runs`  |
 | **MLflow**                  | registre de modèles, traçabilité modèle ↔ jeu de données                             |
-| **Parquet**                 | jeux d'entraînement versionnés --- seconde technologie de stockage, au service de C2 |
+| **Parquet**                 | jeux d'entraînement versionnés --- seconde technologie de stockage, au service de B3-C2 |
 | **Python**                  | ingestion, validation, scoring, entraînement                                         |
 | **Streamlit**               | restitution du bilan quotidien et vue d'exploitation                                 |
 | **Docker Compose**          | déploiement local reproductible                                                      |

@@ -1,8 +1,9 @@
-"""S5 / Q5: the purge, once a week, on Sunday.
+"""B3-S5 / B3-Q5: the purge, once a week, on Sunday.
 
-Covers: EE06, EI06, EI11, EC09, EC14, EC19
-Lot: Q5
-Competency: C3, C4
+Block: B3.
+Lot: B3-Q5.
+Competency: B3-C3, B3-C4.
+Covers: B3-EE06, B3-EI06, B3-EI11, B3-EC09, B3-EC14, B3-EC19.
 
 THE ONLY DAG OF THIS PROJECT THAT DESTROYS. Everywhere else a mistake is
 repaired by a replay; here it is permanent, and every choice below follows from
@@ -32,7 +33,7 @@ morning report, for a sharper reason: a purge whose boundary came from now()
 could not be reasoned about after the fact ("what did the run of 22 November
 delete?") and could not be replayed in a demonstration either.
 
-AND THE OVERRIDE OF Q2 IS NOT EXPOSED HERE. fraud.purge.plan() takes a `before`
+AND THE OVERRIDE OF B3-Q2 IS NOT EXPOSED HERE. fraud.purge.plan() takes a `before`
 that moves the boundary for every store at once; it exists so that a purge can
 be tried without waiting until February 2027, and it belongs to the command
 line. A parameter of a demonstration left in an orchestrator ends up being
@@ -44,7 +45,7 @@ and it fails rather than warning afterwards: beyond the declared share
 deleted. Confirming such a purge is a human act, and it is done by hand with
 `fd-manager purge -Apply -Force`.
 
-ONE TASK FOR THE TWO STORES, deliberately against the plan of S5, which
+ONE TASK FOR THE TWO STORES, deliberately against the plan of B3-S5, which
 foresaw purge_raw and purge_quarantine side by side. The quarantined rows of a
 batch derive from its raw lines and must go FIRST (fraud/purge.py,
 PURGE_ORDER): wiring two tasks here would put that order in a second place,
@@ -72,15 +73,15 @@ DAG_ID = "dag_purge"
 def _mark_failed(context) -> None:
     """Close the run as FAILED. A CALLBACK MUST NEVER RAISE.
 
-    The convention of this repository since N9: a callback on the DAG and not a
+    The convention of this repository since B3-N9: a callback on the DAG and not a
     task carrying trigger_rule="one_failed", because dagrun_timeout fails the
     RUN and such a task could then never be scheduled. runs.abandon() marks
     only what is still RUNNING, so a failure after close_run cannot overwrite a
     recorded success.
 
-    Covers: EC14
-    Lot: Q5
-    Competency: C4
+    Lot: B3-Q5.
+    Competency: B3-C4.
+    Covers: B3-EC14.
     """
     run_id = str(context.get("run_id", "?"))
     try:
@@ -96,7 +97,7 @@ def _mark_failed(context) -> None:
 
 @dag(
     dag_id=DAG_ID,
-    description="S5/Q5: purge beyond retention, weekly",
+    description="B3-S5/B3-Q5: purge beyond retention, weekly",
     schedule="0 4 * * 0",                   # Sunday 04:00 -- see the docstring
     start_date=pendulum.datetime(2026, 11, 16, tz="Europe/Paris"),
     # NOT caught up: a missed purge has nothing to replay, and an old boundary
@@ -106,7 +107,7 @@ def _mark_failed(context) -> None:
     # read a digest the winner had just made obsolete.
     max_active_runs=1,
     dagrun_timeout=dt.timedelta(hours=2),
-    tags=["S5", "Q5", "BC03", "C2", "C3", "C4"],
+    tags=["B3-S5", "B3-Q5", "BC03", "B3-C2", "B3-C3", "B3-C4"],
     # NO RETRY. The work is idempotent and resumable -- a batch half deleted
     # carries its mark and the next run finishes it -- so a retry buys nothing
     # that waiting does not, and a destructive job should surface its failure
@@ -121,9 +122,9 @@ def purge_beyond_retention():
         """Open the pipeline journal. Under fd_ingest: the journal is the
         pipeline's, and fd_purge may not write to it.
 
-        Covers: EC14
-        Lot: Q5
-        Competency: C4
+        Lot: B3-Q5.
+        Competency: B3-C4.
+        Covers: B3-EC14.
         """
         from airflow.operators.python import get_current_context
 
@@ -145,9 +146,9 @@ def purge_beyond_retention():
         batch again immediately before deleting it -- which is the check that
         decides. Asking twice would double the cost of the one that does not.
 
-        Covers: EC26, EI13
-        Lot: Q5
-        Competency: C5
+        Lot: B3-Q5.
+        Competency: B3-C5.
+        Covers: B3-EC26, B3-EI13.
         """
         from airflow.operators.python import get_current_context
 
@@ -169,14 +170,14 @@ def purge_beyond_retention():
     def check_share(report: dict) -> dict:
         """Stop the run if the purge would exceed the declared share.
 
-        A TASK OF ITS OWN, AND IT FAILS. The plan of S5 asked for exactly this
+        A TASK OF ITS OWN, AND IT FAILS. The plan of B3-S5 asked for exactly this
         rather than purging and warning afterwards: a purge of 90 % of a store
         may be legitimate -- a retention shortened on purpose -- but it is
         never a routine, and what tells the two apart is a human saying so.
 
-        Covers: EC26, EC09
-        Lot: Q5
-        Competency: C4
+        Lot: B3-Q5.
+        Competency: B3-C4.
+        Covers: B3-EC26, B3-EC09.
         """
         from fraud import purge
 
@@ -203,9 +204,9 @@ def purge_beyond_retention():
         run that did it. A purge run by hand records a null there, which is a
         fact worth keeping rather than hiding behind an invented identifier.
 
-        Covers: EE05, EI11, EC19
-        Lot: Q5
-        Competency: C2, C3
+        Lot: B3-Q5.
+        Competency: B3-C2, B3-C3.
+        Covers: B3-EE05, B3-EI11, B3-EC19.
         """
         from airflow.operators.python import get_current_context
 
@@ -229,11 +230,11 @@ def purge_beyond_retention():
         NO COUNTS IN fd_pipeline_runs for this DAG, as for dag_daily: "lines
         read, valid, rejected" has no meaning for a purge, and n_read = rows
         deleted would be a figure invented to fill a column. What was deleted
-        is in the purge marks of the batches themselves, and Q6 journals it.
+        is in the purge marks of the batches themselves, and B3-Q6 journals it.
 
-        Covers: EC14
-        Lot: Q5
-        Competency: C4
+        Lot: B3-Q5.
+        Competency: B3-C4.
+        Covers: B3-EC14.
         """
         from fraud import db, runs
 

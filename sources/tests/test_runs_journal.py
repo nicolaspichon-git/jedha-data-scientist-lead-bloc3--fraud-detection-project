@@ -1,14 +1,15 @@
 """A run nobody closed, and the two files that find it and close it.
 
-Covers: EC12, EC14
-Lot: N9
-Competency: C4, C5
+Block: B3.
+Lot: B3-N9.
+Competency: B3-C4, B3-C5.
+Covers: B3-EC12, B3-EC14.
 
-WHY A RUN LEFT IN 'running' IS WORSE THAN AN UNTIDY TABLE. The guard of M1
+WHY A RUN LEFT IN 'running' IS WORSE THAN AN UNTIDY TABLE. The guard of B3-M1
 counts state = 'success' and state = 'failed' to decide whether a window is
 healthy enough to train on. A row in 'running' is in NEITHER, so it is not a
 failure the guard can see -- it is a run that silently never happened. One such
-row was found in the real journal by the acceptance criteria of S3, left there
+row was found in the real journal by the acceptance criteria of B3-S3, left there
 when the real-time DAG still closed its failures with a task carrying
 trigger_rule="one_failed", which cannot be scheduled while the RUN itself is
 being killed.
@@ -36,11 +37,11 @@ def test_the_verdict_comes_from_airflow_and_not_from_an_age():
     takes twenty. The project and Airflow share one database, so dag_run is
     right there -- "Airflow says this run is over" is a fact, not a guess.
 
-    AN AGE SURVIVES IN ONE PLACE ONLY, added in Q6: a run Airflow never heard
+    AN AGE SURVIVES IN ONE PLACE ONLY, added in B3-Q6: a run Airflow never heard
     of. tools/ingest_once.py and the digest backfill open runs of their own,
     and for those there is no verdict to have and no other signal -- the old
     inner join simply hid them, so `abandoned` reported nothing to close while
-    the acceptance of S3 counted one.
+    the acceptance of B3-S3 counted one.
     """
     for path in (CHECK, CLOSE):
         text = path.read_text(encoding="utf-8")
@@ -62,7 +63,7 @@ def test_a_run_airflow_still_reports_as_running_is_spared(path):
 
 def test_the_listing_shows_every_open_run_and_not_only_the_closable_ones():
     """THE DEFECT OF 17 NOVEMBER: `abandoned` reported nothing to close while
-    the acceptance of S3 failed on one open run. The inner join hid the two
+    the acceptance of B3-S3 failed on one open run. The inner join hid the two
     cases an operator most needs to see -- a run with no dag_run row, and a run
     Airflow itself holds open."""
     text = CHECK.read_text(encoding="utf-8")
@@ -88,7 +89,7 @@ def test_the_acceptance_of_s3_asks_the_same_question():
     operator with a red check and no way out."""
     text = (ROOT / "sql" / "checks" / "s3_acceptance.sql").read_text(
         encoding="utf-8")
-    criterion = text.split("N7 aucune execution que personne ne peut fermer")[1]
+    criterion = text.split("B3-N7 aucune execution que personne ne peut fermer")[1]
     criterion = criterion.split("UNION ALL")[0]
     assert "d.state <> 'running'" in criterion
     assert "NOT EXISTS" in criterion

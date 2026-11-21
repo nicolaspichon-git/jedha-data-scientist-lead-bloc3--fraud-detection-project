@@ -1,5 +1,8 @@
 -- Section 1 of the morning report: yesterday's payments, on the PAYMENT axis.
--- Covers: EE04, EI08   Lot: P1   Competency: C2
+-- Block: B3.
+-- Lot: B3-P1.
+-- Competency: B3-C2.
+-- Covers: B3-EE04, B3-EI08.
 --
 -- ONE STATEMENT, THREE READINGS, by GROUPING SETS: the total, the breakdown by
 -- category and the breakdown by local hour. Three separate queries would let
@@ -16,7 +19,7 @@
 -- THE HOUR IS LOCAL, and the zone is declared in governance.yml
 -- (report.timezone) rather than written here: a report whose hours are UTC
 -- would show the night fraud peak three hours off, and the peak is 84 per cent
--- of the frauds between 22h and 03h (measurement M5).
+-- of the frauds between 22h and 03h (measurement B3-M5).
 --
 -- RUNS UNDER fd_report, which has no access to the raw zone. Nothing here needs
 -- it: the exploited layer carries the amounts, the categories and the
@@ -43,7 +46,7 @@ SELECT CASE WHEN grouping(category)   = 0 THEN 'category'
        percentile_cont(0.5) WITHIN GROUP (ORDER BY amt)        AS median_amount
   FROM day
  GROUP BY GROUPING SETS ((), (category), (local_hour))
- -- Deterministic to the last row: the acceptance criterion of P2 is that two
+ -- Deterministic to the last row: the acceptance criterion of B3-P2 is that two
  -- runs on the same window produce the same document to the character, and an
  -- unordered result set would break it on ties alone.
  ORDER BY axis, amount DESC, bucket;

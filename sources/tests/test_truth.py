@@ -22,7 +22,7 @@ def altered(**changes):
     return record
 
 
-# --- EI02: the verdict is dated by when it became known -------------------
+# --- B3-EI02: the verdict is dated by when it became known -------------------
 
 def test_the_verdict_is_dated_after_the_transaction():
     assert truth.label_ts_for(TS, NOMINAL) == TS + NOMINAL
@@ -110,6 +110,6 @@ def test_an_unreadable_timestamp_is_refused():
 
 
 def test_the_demo_delay_makes_a_verdict_fall_due_during_a_recording():
-    """F13.1: the durations that outlast the demonstration are parameterised."""
+    """B3-F13-1: the durations that outlast the demonstration are parameterised."""
     row = truth.to_ground_truth(GOOD, DEMO, "batch-1")
     assert row["label_ts"] - row["txn_ts"] == dt.timedelta(minutes=5)

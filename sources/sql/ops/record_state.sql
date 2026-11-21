@@ -1,8 +1,11 @@
 -- Record a control's new state, AFTER the message went out.
--- Covers: EC14   Lot: N9   Competency: C4
+-- Block: B3.
+-- Lot: B3-N9.
+-- Competency: B3-C4.
+-- Covers: B3-EC14.
 --
 -- One row per control and not one per transition: this is a state, not a
--- journal. The history of the messages is fd_ops_notifications (S6/R9), one
+-- journal. The history of the messages is fd_ops_notifications (B3-S6/B3-R9), one
 -- row per message SENT -- a few per incident, not 1,440 a day -- written in the
 -- same transaction (sql/ops/journal_notification.sql).
 INSERT INTO fd_ops_state (control, state, since, detail, run_id, notified_at)

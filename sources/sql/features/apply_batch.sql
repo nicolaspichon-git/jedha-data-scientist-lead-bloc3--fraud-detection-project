@@ -1,5 +1,8 @@
 -- Apply the history features to ONE batch, in real-time mode.
--- Covers: EE07, EI03   Lot: N3   Competency: C2
+-- Block: B3.
+-- Lot: B3-N3.
+-- Competency: B3-C2.
+-- Covers: B3-EE07, B3-EI03.
 --
 -- WHY A BATCH AND NOT THE WHOLE TABLE. features_window.sql recomputes
 -- everything, and its docstring says why: a history feature depends on every
@@ -16,7 +19,7 @@
 -- unverified, a batch-scoped update would silently leave stale features behind.
 --
 -- The function is called through LATERAL rather than reimplemented: it is THE
--- definition of the features in real-time mode, and L4 proved it agrees with
+-- definition of the features in real-time mode, and B3-L4 proved it agrees with
 -- the window mode on a stratified sample. A second expression here would be a
 -- third mode to keep in step.
 --

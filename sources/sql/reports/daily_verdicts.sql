@@ -1,6 +1,9 @@
 -- Section 3 of the morning report: verdicts that fell yesterday.
 -- ON THE KNOWLEDGE AXIS, which is the whole point of this file.
--- Covers: EE04, EI02, EI03   Lot: P1   Competency: C2, C4
+-- Block: B3.
+-- Lot: B3-P1.
+-- Competency: B3-C2, B3-C4.
+-- Covers: B3-EE04, B3-EI02, B3-EI03.
 --
 -- THE SECTION A NAIVE DESIGN OMITS, and the only place in the whole system
 -- where the model's real performance becomes measurable. It filters on
@@ -13,7 +16,7 @@
 --
 -- THE CONFUSION MATRIX IS RETURNED AS FOUR COUNTS and the two ratios beside
 -- them. The counts are what the acceptance check recomputes; the ratios are
--- what the reader compares with the figures M5 measured on the test set. The
+-- what the reader compares with the figures B3-M5 measured on the test set. The
 -- base rate travels with them, because a recall compared across two different
 -- base rates compares nothing.
 --

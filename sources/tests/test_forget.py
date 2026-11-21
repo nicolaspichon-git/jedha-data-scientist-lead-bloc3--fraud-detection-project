@@ -1,8 +1,9 @@
-"""Q7: forgetting ONE batch by name, and refusing to.
+"""B3-Q7: forgetting ONE batch by name, and refusing to.
 
-Covers: EC18, EC19, EC23
-Lot: Q7
-Competency: C2, C4, C5
+Block: B3.
+Lot: B3-Q7.
+Competency: B3-C2, B3-C4, B3-C5.
+Covers: B3-EC18, B3-EC19, B3-EC23.
 
 WHY THIS EXISTS. The retention purge cuts on an instant. Four interrupted loads
 of the historical CSV and the load that finished arrived minutes apart, so no
@@ -59,7 +60,7 @@ def answers(monkeypatch):
         return state["facts"][rel]
 
     monkeypatch.setattr(db, "query_file", query)
-    # The purge marker, read from fd_pipeline_runs.digests by Q3's own reader.
+    # The purge marker, read from fd_pipeline_runs.digests by B3-Q3's own reader.
     monkeypatch.setattr(runs, "purge_state", lambda conn, batch: state["marks"])
     monkeypatch.setattr(db, "execute_file",
                         lambda conn, rel, **p: state["written"].append((rel, p)))
@@ -105,7 +106,7 @@ def test_the_data_refusals_are_lifted_by_nothing(answers):
 
 
 def test_a_running_run_is_not_liftable_either(answers):
-    """A half-batch matches no recorded fingerprint ever again (Q1): no
+    """A half-batch matches no recorded fingerprint ever again (B3-Q1): no
     confirmation makes that acceptable."""
     answers["facts"] = facts(running=1)
     plan = purge.forget_plan(Conn(), BATCH)
@@ -143,7 +144,7 @@ def test_a_run_that_finished_since_the_plan_stops_the_deletion(answers,
 
 def test_a_run_still_open_is_refused_before_anything_is_deleted(answers):
     """Deleting under a task that is still writing would leave half a batch --
-    and a half-batch matches no recorded fingerprint ever again (Q1)."""
+    and a half-batch matches no recorded fingerprint ever again (B3-Q1)."""
     answers["facts"] = facts(running=1)
     plan = purge.forget_plan(Conn(), BATCH)
     assert not plan["forgettable"]
@@ -151,7 +152,7 @@ def test_a_run_still_open_is_refused_before_anything_is_deleted(answers):
 
 
 def test_a_batch_that_reached_the_exploited_layer_is_refused(answers):
-    """Its raw zone is what allows it to be replayed (EC24)."""
+    """Its raw zone is what allows it to be replayed (B3-EC24)."""
     answers["facts"] = facts(txn=555_719, success=1)
     plan = purge.forget_plan(Conn(), BATCH)
     assert any("couche exploitee" in why for why in plan["refusals"])
@@ -184,7 +185,7 @@ def test_an_identifier_that_holds_nothing_says_so(answers):
 
 def test_a_batch_already_forgotten_is_told_so_and_not_left_guessing(answers):
     """THE REFUSAL OF 2026-11-17: "deja purge, ou identifiant errone" sent the
-    reader to check both. The database knows which: the marker Q3 writes in
+    reader to check both. The database knows which: the marker B3-Q3 writes in
     fd_pipeline_runs.digests -> purge says what left and when, and fd_ingest
     may read it (fd_purges it may not)."""
     answers["facts"] = facts(raw=0, quarantine=0)
@@ -250,7 +251,7 @@ def test_a_refused_plan_deletes_nothing_even_with_confirmation(answers,
 
 def test_the_stores_go_in_the_purges_own_order(answers, monkeypatch):
     """Quarantine before raw: the derived copy's permission rests on the raw
-    fingerprint, which cannot be recomputed once raw is gone (Q3)."""
+    fingerprint, which cannot be recomputed once raw is gone (B3-Q3)."""
     seen = []
 
     def fake(conn, store, batch_id, expected, now, chunk=None):
@@ -299,7 +300,7 @@ def test_a_refusal_stops_the_following_stores(answers, monkeypatch):
 
 def test_the_same_journal_carries_the_forget(answers, monkeypatch):
     """ONE answer to "what left the raw zone, and when". A second table would
-    be the same fact in two places, and S5's acceptance would have to ask
+    be the same fact in two places, and B3-S5's acceptance would have to ask
     both."""
     monkeypatch.setattr(purge, "purge_batch",
                         lambda conn, store, batch_id, expected, now, chunk=None: {
@@ -383,7 +384,7 @@ def test_the_facts_are_counted_table_by_table_without_a_join():
 
 
 def test_the_two_files_follow_the_privilege_boundary():
-    """fd_purge holds no grant on fd_transactions -- S5's acceptance reads that
+    """fd_purge holds no grant on fd_transactions -- B3-S5's acceptance reads that
     from the catalogue -- so the facts it may see have to be a file of their
     own, or the role that deletes cannot ask anything at all. That is what the
     InsufficientPrivilege of 2026-11-17 said."""

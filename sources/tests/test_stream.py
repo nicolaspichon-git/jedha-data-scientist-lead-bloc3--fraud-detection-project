@@ -83,7 +83,7 @@ def test_a_payload_without_columns_is_refused():
 # --- every value is text --------------------------------------------------
 
 def test_every_value_comes_out_as_text():
-    """S1's contract for the CSV, applied to the stream: both sources reach the
+    """B3-S1's contract for the CSV, applied to the stream: both sources reach the
     raw zone in the same shape."""
     row = stream.to_row(*stream.decode(body()))
     assert all(isinstance(v, str) for v in row.values())
@@ -164,7 +164,7 @@ def clock_rejects(server_ms, our_ms, latency, tolerance=120):
 
 
 def test_a_gap_of_the_order_of_the_latency_is_plausible():
-    """Measured median in N0: +5.1 s, which IS the latency -- the server stamps
+    """Measured median in B3-N0: +5.1 s, which IS the latency -- the server stamps
     when it answers, we when we call."""
     assert clock_rejects(1_000_000, 994_200, 5.8) == []
 
@@ -243,7 +243,7 @@ def test_the_reasons_point_at_the_rank_that_caused_them():
 
 
 def test_the_items_are_the_shape_quarantine_write_consumes():
-    """(line_no, payload, rejects) -- the writer S1 already has, unmodified."""
+    """(line_no, payload, rejects) -- the writer B3-S1 already has, unmodified."""
     _, items = stream.validate(
         [reading(server_ms=1_818_400, our_ms=1_000_000, latency=7.5)],
         50_000, 120)
@@ -318,7 +318,7 @@ def test_a_persistent_429_is_returned_as_a_failure():
 
 
 def test_failures_are_returned_not_dropped():
-    """EC14: a poll that quietly returned three rows where four were asked is
+    """B3-EC14: a poll that quietly returned three rows where four were asked is
     exactly the absence nobody notices."""
     readings, failures = stream.poll(
         "http://x", 4, session=FakeSession([200, 502, 500, 200]))
@@ -352,7 +352,7 @@ def test_the_payload_is_json_serialisable():
 
 
 def test_the_payload_keeps_the_nominative_fields():
-    """The raw zone holds what arrived. Minimisation happens in L3, under a role
+    """The raw zone holds what arrived. Minimisation happens in B3-L3, under a role
     that cannot read this table."""
     payload = reading().as_payload()
     assert "first" in payload["row"] and "street" in payload["row"]
@@ -379,7 +379,7 @@ def test_two_draws_of_the_same_source_row_get_distinct_ids():
 
 
 def test_the_csv_profile_still_keys_on_trans_num_alone():
-    """S1 is unchanged: one line, one transaction."""
+    """B3-S1 is unchanged: one line, one transaction."""
     record = {"trans_num": "abc", "trans_date_trans_time": "2020-06-21 12:14:25"}
     assert checks.CSV_PROFILE.event_id(record) == "abc"
 
@@ -443,7 +443,7 @@ def test_the_two_validation_doors_agree():
     """THE test that keeps the two adapters honest.
 
     validate() works on Readings held in memory, validate_raw() on the
-    envelopes the raw zone gives back -- two shapes, one rule. N7's first draft
+    envelopes the raw zone gives back -- two shapes, one rule. B3-N7's first draft
     had the DAG call checks.validate_batch alone, which dropped the clock bound
     while the manual runner kept it: the pipeline validated differently
     depending on which door the record came through.
@@ -548,7 +548,7 @@ def test_a_timeout_raised_by_requests_also_ends_the_poll():
 
 
 def test_a_fast_refusal_does_not_end_the_poll():
-    """A 502 is an answer: the next call may succeed (N0 measured 5 % of
+    """A 502 is an answer: the next call may succeed (B3-N0 measured 5 % of
     failures). Only silence stops the poll."""
     readings, failures = stream.poll("http://x", 3, session=FakeSession(
         [502, 200, 200]), budget_s=60)
@@ -556,7 +556,7 @@ def test_a_fast_refusal_does_not_end_the_poll():
 
 
 def test_the_calls_left_when_the_budget_runs_out_are_returned_as_failures():
-    """EC14: five asked, three read -- the two missing must be in the result,
+    """B3-EC14: five asked, three read -- the two missing must be in the result,
     not merely absent from it."""
     readings, failures = stream.poll("http://x", 5, session=SlowSession(0.8),
                                      budget_s=3.0)
@@ -572,7 +572,7 @@ def test_no_budget_keeps_the_former_behaviour():
 
 
 def test_the_budget_fits_inside_the_dagrun_timeout():
-    """The point of the budget. A run took 47 s at worst in S3's measurements,
+    """The point of the budget. A run took 47 s at worst in B3-S3's measurements,
     polling included; the budget must leave the tasks after poll their time."""
     import re
 

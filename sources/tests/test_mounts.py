@@ -1,25 +1,26 @@
 """Every path governance.yml declares must also be mounted into the container.
 
-Covers: EC23, EC24
-Lot: P2
-Competency: C5
+Block: B3.
+Lot: B3-P2.
+Competency: B3-C5.
+Covers: B3-EC23, B3-EC24.
 
 THE FAILURE THIS FILE EXISTS FOR, and it is the third time this project has paid
 for it:
 
-  N0   28 real observations written to ws/ inside the container, where ws/ was
+  B3-N0   28 real observations written to ws/ inside the container, where ws/ was
        not mounted. Five minutes of real API calls, gone with the container.
-  M8   a whole dataset -- Parquet, model, manifest -- written to a relative
+  B3-M8   a whole dataset -- Parquet, model, manifest -- written to a relative
        datasets/ resolved against /opt/airflow. The rows were registered in
        fd_datasets, every acceptance criterion on those rows passed, and the
        files were not there.
-  P2   report.root declared in governance.yml with no mount in
+  B3-P2   report.root declared in governance.yml with no mount in
        docker-compose.yml: "PermissionError: [Errno 13]
        /opt/project/runtime/reports",
        because /opt/project is a directory of the IMAGE and not a volume.
 
 DECLARED AND MOUNTED ARE TWO DIFFERENT THINGS. config._under_project makes a
-declared path absolute against the project, which fixed the M8 defect -- but an
+declared path absolute against the project, which fixed the B3-M8 defect -- but an
 absolute path inside the container still needs a volume behind it. Nothing held
 the two files to each other until now.
 
@@ -142,7 +143,7 @@ def test_the_writer_names_the_mount_when_it_cannot_write(tmp_path):
         report.write(settings, dt.date(2026, 11, 16), "# essai\n")
 
 
-# --- the move under runtime/ (S6/R13) -------------------------------------------
+# --- the move under runtime/ (B3-S6/B3-R13) -------------------------------------------
 
 MIGRATION = ROOT / "sql" / "maintenance" / "050_move_runtime_paths.sql"
 
@@ -179,7 +180,7 @@ def test_init_applies_the_migration_with_the_ddl():
 
 def test_no_container_mounts_the_plans_or_the_project_root():
     """ws/ HOLDS WHAT IS WRITTEN BY HAND -- plans, mockups -- and no container
-    reads it since N0's measurement moved under runtime/observations/ (R13).
+    reads it since B3-N0's measurement moved under runtime/observations/ (B3-R13).
 
     The project root is named too: mounting it read-only to let psql read a
     file by path also put .env inside that container, with the pepper and the

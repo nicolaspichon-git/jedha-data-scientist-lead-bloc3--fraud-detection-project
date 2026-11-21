@@ -1,8 +1,11 @@
 -- The line numbers of a batch that went to the quarantine.
--- Covers: EC14, EC23   Lot: N7   Competency: C3
+-- Block: B3.
+-- Lot: B3-N7.
+-- Competency: B3-C3.
+-- Covers: B3-EC14, B3-EC23.
 --
 -- WHY IT IS READ BACK RATHER THAN CARRIED. Within one process the ingestion
--- knew which lines it had rejected and passed the set along. The DAG of N7 has
+-- knew which lines it had rejected and passed the set along. The DAG of B3-N7 has
 -- no such luxury: Airflow passes JSON between tasks, and a set of line numbers
 -- that crossed that boundary would be a second record of something the
 -- quarantine table already holds -- and a second record is one too many.

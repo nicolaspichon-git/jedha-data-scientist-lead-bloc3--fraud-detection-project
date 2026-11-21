@@ -1,8 +1,9 @@
 """Dataset recipes and the registry that makes their construction idempotent.
 
-Covers: EC05, EC23, EI10
-Lot: M0
-Competency: C1, C5
+Block: B3.
+Lot: B3-M0.
+Competency: B3-C1, B3-C5.
+Covers: B3-EC05, B3-EC23, B3-EI10.
 
 A dataset's identity is the DIGEST OF ITS RECIPE, not a version number. A version
 is a label stuck on afterwards; a digest is what lets the same recipe find the
@@ -37,14 +38,14 @@ VERSION_CHARS = 12
 # trained on columns in one order cannot be fed them in another.
 #
 # Every one of them is read AS STORED or derived from txn_ts alone. Nothing is
-# recomputed from history here -- S1 persisted the history features on purpose
-# (F04.1) and L4 proved the two computation modes agree, so training reads the
+# recomputed from history here -- B3-S1 persisted the history features on purpose
+# (B3-F04-1) and B3-L4 proved the two computation modes agree, so training reads the
 # same values scoring will.
 FEATURES = (
     "amt",                   # numeric(12,2), never a float
-    "f_tx_count",            # persisted by S1, strict bound
-    "f_avg_amount",          # persisted by S1, NULL on a first transaction
-    "f_home_distance_km",    # the minimisation of lat/long (EC17)
+    "f_tx_count",            # persisted by B3-S1, strict bound
+    "f_avg_amount",          # persisted by B3-S1, NULL on a first transaction
+    "f_home_distance_km",    # the minimisation of lat/long (B3-EC17)
     "txn_hour",              # derived from txn_ts, no history
     "txn_weekday",           # derived from txn_ts, no history
     "category",              # categorical, encoded at training time
@@ -57,7 +58,7 @@ SPLIT = "split"
 def without(dropped, features: tuple[str, ...] = FEATURES) -> tuple[str, ...]:
     """The feature list minus the named columns, order preserved.
 
-    WHY A RECIPE NEEDS THIS. N4 measured that txn_hour and txn_weekday mean the
+    WHY A RECIPE NEEDS THIS. B3-N4 measured that txn_hour and txn_weekday mean the
     hour of the PAYMENT at training time and the hour of OUR CALL on the stream,
     where they are independent of the label by construction and cost 0.155 of
     recall. Deciding whether to drop them requires training a model without
@@ -69,7 +70,7 @@ def without(dropped, features: tuple[str, ...] = FEATURES) -> tuple[str, ...]:
     THE DROPPED COLUMNS STAY IN THE PARQUET, and that is deliberate rather than
     an oversight. They are demoted to the status METADATA_COLUMNS already has:
     present in the file, never fed to the model. Two reasons. The analyst's rule
-    that M5 compares the model against reads txn_hour -- it is a payment-hour
+    that B3-M5 compares the model against reads txn_hour -- it is a payment-hour
     rule, and a legitimate baseline whichever recipe is in service -- and an
     audit of a run should be able to see the column a recipe chose not to use.
     What keeps the model from seeing them is this list, not their absence from
@@ -79,9 +80,9 @@ def without(dropped, features: tuple[str, ...] = FEATURES) -> tuple[str, ...]:
     train the full recipe under a digest that claims to be amputated, and no
     figure in the report would reveal it.
 
-    Covers: EC05, EC23, EI04
-    Lot: N4
-    Competency: C1, C5
+    Lot: B3-N4.
+    Competency: B3-C1, B3-C5.
+    Covers: B3-EC05, B3-EC23, B3-EI04.
     """
     if isinstance(dropped, str):
         dropped = dropped.split(",")
@@ -106,7 +107,7 @@ def without(dropped, features: tuple[str, ...] = FEATURES) -> tuple[str, ...]:
     return kept
 
 # Stored in the Parquet but NEVER fed to the model. txn_ts earns its place in
-# schema v2: M6 chooses the threshold on a temporal validation slice of the
+# schema v2: B3-M6 chooses the threshold on a temporal validation slice of the
 # training period, and a slice cannot be cut without the time.
 #
 # They are listed apart from FEATURES precisely so that nothing can drift into
@@ -173,9 +174,9 @@ def parse_split_rule(rule: str) -> tuple[dt.datetime, dt.datetime]:
     than interpreted. A rule nobody can parse would silently become a rule
     nobody applied.
 
-    Covers: EE07
-    Lot: M4
-    Competency: C5
+    Lot: B3-M4.
+    Competency: B3-C5.
+    Covers: B3-EE07.
     """
     match = TEMPORAL_RULE.match(rule or "")
     if not match:
@@ -209,9 +210,9 @@ def assert_cut_off_usable(cut_off: dt.datetime, horizon: dt.datetime) -> None:
     unlabelled period is never fraudulent, and evaluating on them reports a
     flattering recall over a window holding nothing to find.
 
-    Covers: EC14
-    Lot: M1
-    Competency: C5
+    Lot: B3-M1.
+    Competency: B3-C5.
+    Covers: B3-EC14.
     """
     if cut_off.tzinfo is None:
         raise ValueError("cut_off must be timezone-aware")
@@ -253,9 +254,9 @@ def register(conn: "psycopg.Connection", recipe: Recipe, root: str | Path,
     holds no positive -- the December case, which no amount of row counting would
     have caught.
 
-    Covers: EC23
-    Lot: M0
-    Competency: C1
+    Lot: B3-M0.
+    Competency: B3-C1.
+    Covers: B3-EC23.
     """
     train_path, test_path = recipe.paths(root)
     rate_train = n_train_pos / n_train if n_train else 0.0

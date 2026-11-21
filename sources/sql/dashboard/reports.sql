@@ -1,8 +1,11 @@
 -- The morning reports on record, most recent first. Read by the dashboard.
--- Covers: EE03   Lot: R1   Competency: C4
+-- Block: B3.
+-- Lot: B3-R1.
+-- Competency: B3-C4.
+-- Covers: B3-EE03.
 --
 -- The counts are read HERE and never extracted from the document's prose: the
--- decision of the S4 plan, so that a reworded sentence cannot change a number.
+-- decision of the B3-S4 plan, so that a reworded sentence cannot change a number.
 --
 -- `path` is returned and NOT followed: it is a path of the Airflow container.
 -- fraud/dashboard.py compares it with report.path_for() and reports any

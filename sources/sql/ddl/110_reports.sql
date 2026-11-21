@@ -1,12 +1,15 @@
 -- The journal of the morning reports: one row per covered day.
--- Covers: EE04, EC14, EC23   Lot: P3   Competency: C2, C4
+-- Block: B3.
+-- Lot: B3-P3.
+-- Competency: B3-C2, B3-C4.
+-- Covers: B3-EE04, B3-EC14, B3-EC23.
 --
 -- A WRONG REPORT IS SEEN. AN ABSENT ONE IS NOT. The analyst who finds no
 -- document in his inbox concludes there was nothing to report, which is the
 -- worst reading available. This table is what turns that silence into a
 -- question: one row per day, and sql/checks/s4_absence.sql lists the days
--- without one. Without it the silent failure of S4 is undetectable, and that
--- is the direct application of EC14 -- detect the absence.
+-- without one. Without it the silent failure of B3-S4 is undetectable, and that
+-- is the direct application of B3-EC14 -- detect the absence.
 --
 -- THE PRIMARY KEY ON report_date IS THE IDEMPOTENCE. A replay of the 3rd of
 -- November REPLACES the row of the 3rd of November; it cannot add a second.
@@ -15,9 +18,9 @@
 -- produced_at -- and that is the one column whose change is meaningless.
 --
 -- content_digest LETS A FILE BE CHECKED AGAINST THE ROW THAT DESCRIBES IT.
--- The same reasoning as run.json beside a dataset in M8, and for the same
+-- The same reasoning as run.json beside a dataset in B3-M8, and for the same
 -- reason: a registry that describes what is not there is a registry nobody can
--- trust. P5 compares the digest of the file on disk with this column.
+-- trust. B3-P5 compares the digest of the file on disk with this column.
 --
 -- WHY fd_report MAY WRITE HERE, and it is the only table it may write. The
 -- property of that role is that it has NO ACCESS TO THE RAW ZONE -- the raw

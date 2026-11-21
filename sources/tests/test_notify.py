@@ -1,8 +1,9 @@
 """What a notification may carry, and what the capacity now enforces.
 
-Covers: EE09, EI05, EC09, EC14, EC17
-Lot: N5
-Competency: C5
+Block: B3.
+Lot: B3-N5.
+Competency: B3-C5.
+Covers: B3-EE09, B3-EI05, B3-EC09, B3-EC14, B3-EC17.
 
 The channels and the lifecycle are exercised against a fake connection: the
 decisions worth testing -- which fields leave the system, what order the send
@@ -122,7 +123,7 @@ _ROW_ORDER = ("txn_id", "score", "threshold", "model_version", "raised_at",
 # --- what may leave the system ------------------------------------------------
 
 def test_no_identifying_field_can_be_in_a_payload():
-    """fd_transactions holds none (EC17), so this cannot happen by accident --
+    """fd_transactions holds none (B3-EC17), so this cannot happen by accident --
     the check is here for a future caller who adds a column."""
     payload = _alert().payload()
     for name in notify.FORBIDDEN_FIELDS:
@@ -296,7 +297,7 @@ def test_one_failure_does_not_stop_the_others():
 # --- the capacity, now enforced -----------------------------------------------
 
 def test_the_ceiling_withholds_notification_and_keeps_the_alerts():
-    """Until N5 nothing applied alert_capacity_per_day: the figure only ever
+    """Until B3-N5 nothing applied alert_capacity_per_day: the figure only ever
     picked a threshold. A bad retrain would have drowned the analyst."""
     fake = _Fake(notified_24h=60, pending=[_alert("a"), _alert("b")])
     with _patched(fake):

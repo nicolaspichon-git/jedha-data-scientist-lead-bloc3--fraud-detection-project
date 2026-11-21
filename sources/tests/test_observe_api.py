@@ -1,8 +1,9 @@
-"""What the N0 measurement log may contain.
+"""What the B3-N0 measurement log may contain.
 
-Covers: EC17
-Lot: N0
-Competency: C5
+Block: B3.
+Lot: B3-N0.
+Competency: B3-C5.
+Covers: B3-EC17.
 
 WHY THIS FILE EXISTS. shape() was written to describe a response without
 copying what must not be copied, and the report has always consumed its output.
@@ -38,7 +39,7 @@ oa = _module()
 
 # One sentinel per identifying column, none of which may survive the write.
 SENTINELS = {
-    "cc_num": "4992346398065154184",      # the 19-digit card measured in N0
+    "cc_num": "4992346398065154184",      # the 19-digit card measured in B3-N0
     "first": "SENTINEL_PRENOM",
     "last": "SENTINEL_NOM",
     "gender": "SENTINEL_GENRE",
@@ -64,7 +65,7 @@ PUBLISHED = {
 
 
 def _payload() -> dict:
-    """A response shaped exactly like the one N0 measured: 21 columns."""
+    """A response shaped exactly like the one B3-N0 measured: 21 columns."""
     values = dict(SENTINELS)
     values.update(PUBLISHED)
     values["merch_lat"] = 39.065279

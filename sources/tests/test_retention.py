@@ -1,4 +1,4 @@
-"""S5 / Q0: every store of the project has a retention decision.
+"""B3-S5 / B3-Q0: every store of the project has a retention decision.
 
 The defect this guards was found by measurement, not by anyone's intention:
 fd_quarantine carries `payload jsonb NOT NULL`, the raw payload of a REJECTED
@@ -11,9 +11,10 @@ volume added to docker-compose.yml, must appear in governance.yml's retention
 section -- as a duration or as a store that is kept with its reason -- or a test
 here fails. Nobody has to remember.
 
-Covers: EC16, EC19, EI12
-Lot: Q0
-Competency: C1, C5
+Block: B3.
+Lot: B3-Q0.
+Competency: B3-C1, B3-C5.
+Covers: B3-EC16, B3-EC19, B3-EI12.
 """
 from __future__ import annotations
 
@@ -153,7 +154,7 @@ def test_the_non_database_stores_are_declared_too():
 
 def test_the_training_sets_are_kept_and_the_reason_says_why():
     """A FIRST VERSION DECLARED "THE FIVE LATEST VERSIONS" AMONG THE PURGED
-    STORES, and no lot of S5 deleted a parquet file: a rule of disk hygiene
+    STORES, and no lot of B3-S5 deleted a parquet file: a rule of disk hygiene
     dressed as a retention rule, which is how a declared duration becomes a
     duration nobody applies. Measured, these files carry no identifying field,
     so the decision moved to `kept` rather than growing code to enforce a rule
@@ -162,7 +163,7 @@ def test_the_training_sets_are_kept_and_the_reason_says_why():
     assert "datasets_versions" not in retention
     assert not hasattr(config.load(), "datasets_versions")
     reason = retention["kept"]["datasets_directory"]
-    assert "M8" in reason                    # the lineage it serves
+    assert "B3-M8" in reason                    # the lineage it serves
     assert "identifying" in reason or "identifiant" in reason
 
 
@@ -219,9 +220,9 @@ def test_the_purge_guard_cannot_be_declared_off(value):
 
 
 def test_the_run_journal_is_kept_and_says_why():
-    """MEASURED, NOT ASSUMED (Q4). The plan foresaw emptying its "detail
+    """MEASURED, NOT ASSUMED (B3-Q4). The plan foresaw emptying its "detail
     columns" at 365 days, and the table has none: an identifier, a DAG name,
-    dates, a state, counters, the fingerprints of Q1. Nothing personal to
+    dates, a state, counters, the fingerprints of B3-Q1. Nothing personal to
     empty -- and its rows must not go either, since those fingerprints are all
     that remains of a purged batch."""
     settings = config.load()

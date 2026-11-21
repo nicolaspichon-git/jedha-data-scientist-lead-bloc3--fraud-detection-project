@@ -1,8 +1,9 @@
 """Assembling and rendering the morning report.
 
-Covers: EE04, EI04, EC14, EC17
-Lot: P2
-Competency: C5
+Block: B3.
+Lot: B3-P2.
+Competency: B3-C5.
+Covers: B3-EE04, B3-EI04, B3-EC14, B3-EC17.
 
 THE PROPERTY WORTH TESTING IS THAT THE DOCUMENT IS A FUNCTION OF ITS DATA.
 Two runs on the same window must produce the same bytes, or comparing two
@@ -11,9 +12,9 @@ much as the data. The decision that makes it absolute rather than modulo a line
 is that the document carries NO production timestamp; this file holds it to that.
 
 render() is a pure function of a dict, so everything below runs without a
-database. The four queries were executed against a real PostgreSQL 16 in P1 and
+database. The four queries were executed against a real PostgreSQL 16 in B3-P1 and
 the gathering is exercised here against a fake connection, for the same reason
-as in N5 and N9: what is worth testing is what this module decides.
+as in B3-N5 and B3-N9: what is worth testing is what this module decides.
 """
 from __future__ import annotations
 
@@ -126,7 +127,7 @@ def test_the_covered_day_is_read_at_the_start_of_the_window():
 # --- the document is a function of its data -------------------------------
 
 def test_two_renders_of_the_same_data_are_byte_identical():
-    """The criterion of P2, and absolute rather than modulo a line because the
+    """The criterion of B3-P2, and absolute rather than modulo a line because the
     document carries no production timestamp."""
     first = report.render(_data(), _settings())
     second = report.render(_data(), _settings())
@@ -135,7 +136,7 @@ def test_two_renders_of_the_same_data_are_byte_identical():
 
 
 def test_the_document_carries_no_production_timestamp():
-    """produced_at belongs to fd_reports (P3). In the body it would change the
+    """produced_at belongs to fd_reports (B3-P3). In the body it would change the
     bytes and the digest on every run, and a diff between two mornings would
     never be empty."""
     text = report.render(_data(), _settings())
@@ -146,7 +147,7 @@ def test_the_document_carries_no_production_timestamp():
 
 
 def test_the_sentence_g2_cannot_be_answered_without_is_there_and_figured():
-    """G2 asks each morning for "yesterday's frauds". Taken at its word the
+    """B3-G2 asks each morning for "yesterday's frauds". Taken at its word the
     request is impossible, and omitting the sentence would let a reader take
     "frauds confirmed: 0" for a complete column."""
     text = report.render(_data(), _settings())
@@ -157,7 +158,7 @@ def test_the_sentence_g2_cannot_be_answered_without_is_there_and_figured():
 
 
 def test_each_section_dates_the_payments_it_covers():
-    """THE CENTRAL TRAP OF S4, SAID IN THE READER'S LANGUAGE. A report read on
+    """THE CENTRAL TRAP OF B3-S4, SAID IN THE READER'S LANGUAGE. A report read on
     the wrong timeline shows either a permanent zero or month-old frauds under
     the heading "yesterday".
 
@@ -197,7 +198,7 @@ def test_the_order_of_the_alerts_is_written_in_the_document():
 
 
 def test_the_score_range_of_the_day_is_printed():
-    """So the prediction of P0 -- that the order will follow the amount,
+    """So the prediction of B3-P0 -- that the order will follow the amount,
     the score band above the threshold being narrow -- can be denied on
     figures after a few weeks instead of argued."""
     text = report.render(_data(), _settings())
@@ -283,14 +284,14 @@ def test_a_missing_reference_degrades_and_does_not_remove_the_section():
     """A morning report that refuses to exist because a comparison is missing
     has failed at its one job."""
     text = report.render(_data(reference=None), _settings())
-    assert "R\u00e9f\u00e9rence de M5 : **indisponible**" in text
+    assert "R\u00e9f\u00e9rence de B3-M5 : **indisponible**" in text
     assert "Fraudes retrouv\u00e9es par le mod\u00e8le" in text
 
 
 def test_a_column_added_for_the_dashboard_does_not_move_the_document():
     """daily_frauds.sql serves the document AND the pages, so a column added
     for a page must leave the document byte-identical -- its digest in
-    fd_reports vouches for it. notified_at was added for S6/R11."""
+    fd_reports vouches for it. notified_at was added for B3-S6/B3-R11."""
     before = report.render(_data(), _settings())
     widened = _alert()
     widened["notified_at"] = dt.datetime(2026, 11, 17, 6, 2, tzinfo=PARIS)
@@ -353,7 +354,7 @@ def _health():
 
 
 def test_the_health_section_renders_the_controls_and_their_state():
-    """It is the fourth section, added in P0 and coming from N9: the operations
+    """It is the fourth section, added in B3-P0 and coming from B3-N9: the operations
     channel carries only what cannot wait a day, and the daily set had to go
     somewhere."""
     data = _data()
@@ -392,8 +393,8 @@ def test_the_directory_is_created_and_not_assumed(tmp_path):
 
 
 def test_the_digest_is_over_the_bytes_of_the_document(tmp_path):
-    """fd_reports stores it (P3) so a file on disk can be checked against the
-    row describing it -- the reasoning of run.json beside a dataset in M8."""
+    """fd_reports stores it (B3-P3) so a file on disk can be checked against the
+    row describing it -- the reasoning of run.json beside a dataset in B3-M8."""
     text = report.render(_data(), _settings(tmp_path))
     written = report.write(_settings(tmp_path), dt.date(2026, 11, 16), text)
     import hashlib
@@ -493,7 +494,7 @@ def test_the_pending_query_is_the_only_one_told_the_knowledge_date():
 def test_the_rows_are_named_by_the_cursor_and_not_by_position():
     """Four queries with a dozen columns between them: by position, an edit to
     a SELECT shifts a rejected count into a read count. The defect to_alert()
-    was guarded against in N5."""
+    was guarded against in B3-N5."""
     fake = _Fake({"without_verdict_row": (("transactions", "pending",
                                      "without_verdict_row", "first_due_at",
                                      "last_due_at"),

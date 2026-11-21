@@ -1,5 +1,8 @@
 -- The state of each pipeline control, so an incident is announced ONCE.
--- Covers: EC14   Lot: N9   Competency: C2, C4
+-- Block: B3.
+-- Lot: B3-N9.
+-- Competency: B3-C2, B3-C4.
+-- Covers: B3-EC14.
 --
 -- WITHOUT THIS TABLE THE OPERATIONS CHANNEL IS UNUSABLE, and the arithmetic
 -- says it plainly: the real-time DAG runs 1,440 times a day, so a freshness
@@ -7,7 +10,7 @@
 -- on the CONDITION would send 1,440 identical messages a day; notifying on the
 -- TRANSITION sends one when it breaks and one when it recovers.
 --
--- The capacity policy of N5 does not help here and was never meant to: it
+-- The capacity policy of B3-N5 does not help here and was never meant to: it
 -- caps the VOLUME of a day's fraud alerts to protect an analyst's attention.
 -- Repetition of one message is a different failure and needs a different
 -- remedy -- this one.

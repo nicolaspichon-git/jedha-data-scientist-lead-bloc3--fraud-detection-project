@@ -1,13 +1,16 @@
 -- The batches of the raw zone that are beyond retention, with their fingerprint.
--- Covers: EC19, EC26   Lot: Q2   Competency: C5
+-- Block: B3.
+-- Lot: B3-Q2.
+-- Competency: B3-C5.
+-- Covers: B3-EC19, B3-EC26.
 --
--- READ ONLY. This file decides WHAT IS PURGEABLE, and the delete of Q3 takes
+-- READ ONLY. This file decides WHAT IS PURGEABLE, and the delete of B3-Q3 takes
 -- its batch_id from here rather than carrying a date predicate of its own: one
 -- definition, so the dry run and the purge cannot disagree about the set. Two
 -- copies of a predicate is how a purge comes to delete what no dry run showed.
 --
 -- WHOLE BATCHES, AND THAT IS NOT A CONVENIENCE. The fingerprint of a batch
--- (Q1) covers its lines together. Deleting part of a batch would leave a
+-- (B3-Q1) covers its lines together. Deleting part of a batch would leave a
 -- remainder that no recorded digest describes -- unverifiable for ever, and
 -- indistinguishable from a batch someone tampered with. So the criterion is on
 -- the LAST row of the batch: the whole batch is beyond retention, or none of

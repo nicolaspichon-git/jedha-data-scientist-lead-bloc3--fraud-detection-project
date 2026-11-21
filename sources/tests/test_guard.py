@@ -1,4 +1,4 @@
-"""The gate S2 passes through. The decision is a pure function, so it is tested
+"""The gate B3-S2 passes through. The decision is a pure function, so it is tested
 without a database -- which is the point of separating inspect from verdict."""
 import datetime as dt
 

@@ -1,18 +1,19 @@
 """Writing the real verdict, and withholding it. No simulation.
 
-Covers: EE03, EI03, EI12, EC14, EC17, EC23
-Lot: N6
-Competency: C3, C4, C5
+Block: B3.
+Lot: B3-N6.
+Competency: B3-C3, B3-C4, B3-C5.
+Covers: B3-EE03, B3-EI03, B3-EI12, B3-EC14, B3-EC17, B3-EC23.
 
-WHY THIS LOT IS THE MOST SENSITIVE OF S3. The API delivers is_fraud in the SAME
-payload as the features -- N0 measured it: 21 columns, is_fraud present as a
+WHY THIS LOT IS THE MOST SENSITIVE OF B3-S3. The API delivers is_fraud in the SAME
+payload as the features -- B3-N0 measured it: 21 columns, is_fraud present as a
 str. So the label sits one line of code away from the scoring, and no amount of
 care in a code review proves it did not get there.
 
 WHAT IS NOT DONE HERE: nothing is simulated. The verdict is real. It is written
-immediately with label_ts = txn_ts + delay, exactly as S1 does, and what holds
+immediately with label_ts = txn_ts + delay, exactly as B3-S1 does, and what holds
 it back is that every consumer filters on label_ts <= cut_off. That filter is
-the mechanism M3's training set and L4's reconciliation already rest on, so the
+the mechanism B3-M3's training set and B3-L4's reconciliation already rest on, so the
 stream inherits a guarantee that has been exercised on 555,719 rows rather than
 getting a new one written for it.
 
@@ -21,7 +22,7 @@ THE FOUR GUARANTEES, and which of them this module provides:
   1. to_transaction does not know is_fraud. Already true -- fraud/transform.py
      contains neither the word is_fraud nor the word label. Not provided here;
      ASSERTED by tests/test_leak.py, which reads the module.
-  2. fd_transactions has no column to hold it. True since S1, and the strongest
+  2. fd_transactions has no column to hold it. True since B3-S1, and the strongest
      of the four: a leak would need a schema migration, so a visible decision.
   3. The scoring does not import this module. fraud/score.py imports db and
      registry and nothing else. Asserted by import analysis, not by re-reading.
@@ -53,7 +54,7 @@ def batches_awaiting(conn, source: str = "current-transactions") -> list[tuple]:
     A REPAIR question and not a due-date question: the delay is carried by
     label_ts, not by postponing the write. A batch appears here because its
     verdict write failed or because it was ingested before the write was
-    separated out -- so the daily run is self-healing, like N5's alert raising.
+    separated out -- so the daily run is self-healing, like B3-N5's alert raising.
     """
     return db.query_file(conn, AWAITING_SQL, source=source)
 
@@ -117,7 +118,7 @@ def write_for_batch(conn, batch_id, delay: dt.timedelta,
     The reader is materialised into a list before the write. raw.read_batch is
     a SERVER-SIDE cursor, and a COPY cannot share a connection with a FETCH
     without deadlocking -- the caution truth.load_ground_truth states, and the
-    deadlock L3 already paid for once.
+    deadlock B3-L3 already paid for once.
     """
     reader = raw.read_batch(conn, batch_id)
     try:
@@ -150,9 +151,9 @@ def write_due(conn, delay: dt.timedelta,
               source: str = "current-transactions") -> dict:
     """Write every missing verdict of the stream. Returns a report.
 
-    Covers: EI03, EC23
-    Lot: N6
-    Competency: C3
+    Lot: B3-N6.
+    Competency: B3-C3.
+    Covers: B3-EI03, B3-EC23.
     """
     awaiting = batches_awaiting(conn, source)
     report = {"batches": len(awaiting), "written": 0, "rows": 0}

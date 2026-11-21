@@ -1,8 +1,9 @@
 """Connections and SQL execution.
 
-Covers: EC05, EC06, EC19
-Lot: L0
-Competency: C2, C4
+Block: B3.
+Lot: B3-L0.
+Competency: B3-C2, B3-C4.
+Covers: B3-EC05, B3-EC06, B3-EC19.
 
 SQL lives under sql/, not in Python strings: that is what keeps it readable and
 comparable -- see sql/functions/ and sql/backfill/.
@@ -117,14 +118,14 @@ def query_file_columns(conn: psycopg.Connection, relative: str, **params: Any
 
     The names come from cursor.description, so a caller building a DataFrame
     does not keep a second copy of the select list in Python. That second copy
-    is the whole reason this exists: N4 scores with the column ORDER the model's
+    is the whole reason this exists: B3-N4 scores with the column ORDER the model's
     recipe asks for, and a Python tuple drifting from the SELECT would reorder
     the features silently -- scoring every row against the wrong ones without
     raising.
 
-    Covers: EE07
-    Lot: N4
-    Competency: C5
+    Lot: B3-N4.
+    Competency: B3-C5.
+    Covers: B3-EE07.
     """
     with conn.cursor() as cur:
         cur.execute(sql_path(relative).read_text(encoding="utf-8"),

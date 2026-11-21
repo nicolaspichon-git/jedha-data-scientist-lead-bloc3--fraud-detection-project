@@ -1,16 +1,19 @@
 -- Every run our journal has left open, and whether anything can close it.
--- Covers: EC14   Lot: N9 (revu en Q6)   Competency: C4
+-- Block: B3.
+-- Lot: B3-N9 (revu en B3-Q6).
+-- Competency: B3-C4.
+-- Covers: B3-EC14.
 --
 -- READ ONLY. sql/maintenance/030_close_abandoned_runs.sql closes what may be
 -- closed, and one looks before one touches.
 --
 -- WHY A ROW GETS STUCK. fd_pipeline_runs is written as the facts become known,
 -- so a run that dies between runs.start() and close_run leaves its row in
--- 'running' for ever. The DAG-level callback of N9 covers a task failure and a
+-- 'running' for ever. The DAG-level callback of B3-N9 covers a task failure and a
 -- dagrun timeout; it cannot cover the container being killed, which is what a
 -- `docker compose down` does.
 --
--- WHY THAT MATTERS MORE THAN AN UNTIDY TABLE. The guard of M1 counts
+-- WHY THAT MATTERS MORE THAN AN UNTIDY TABLE. The guard of B3-M1 counts
 -- state = 'success' and state = 'failed' to decide whether a window is healthy
 -- enough to train on. A run in 'running' is in NEITHER, so it is not a failure
 -- the guard can see -- it is a run that silently never happened.
@@ -20,9 +23,9 @@
 -- showed NOTHING for the two cases that matter most to an operator:
 --
 --   * a run with no dag_run row at all -- tools/ingest_once.py and the digest
---     backfill of Q1 open runs that Airflow knows nothing about. The join hid
+--     backfill of B3-Q1 open runs that Airflow knows nothing about. The join hid
 --     them, so `abandoned` reported "nothing to close" while the acceptance of
---     S3 counted one. Two readings of one rule, disagreeing.
+--     B3-S3 counted one. Two readings of one rule, disagreeing.
 --   * a run Airflow ALSO believes is running. Nothing here may close it --
 --     Airflow may really be running it -- but an operator must see it, because
 --     a dagrun stuck in 'running' is unblocked from the interface and from

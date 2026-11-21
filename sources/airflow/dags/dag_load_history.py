@@ -1,8 +1,9 @@
-"""S1 -- historical data load. A thin DAG: it orders, it does not compute.
+"""B3-S1 -- historical data load. A thin DAG: it orders, it does not compute.
 
-Covers: EI06, EC08, EC12
-Lot: L7
-Competency: C3
+Block: B3.
+Lot: B3-L7.
+Competency: B3-C3.
+Covers: B3-EI06, B3-EC08, B3-EC12.
 
 All the logic sits in the fraud/ package, so it can be exercised without
 starting Airflow -- that is what makes the plan's acceptance criteria runnable.
@@ -12,7 +13,7 @@ TWO ENTRY POINTS, one DAG:
   normal     -- trigger with no configuration: download, raw zone, then the rest
   replay     -- trigger with {"batch_id": "<uuid>"}: resume at validate() from
                 what fd_raw_events already holds, WITHOUT querying the source
-                again (EC24). fetch_csv() and write_raw() then do nothing and
+                again (B3-EC24). fetch_csv() and write_raw() then do nothing and
                 say so in the log.
 
 The run is journalled as the facts become known rather than all at once at the
@@ -51,13 +52,13 @@ def _replay_batch() -> str | None:
 
 @dag(
     dag_id=DAG_ID,
-    description="S1: load the 555,719 historical transactions",
-    schedule=None,                      # manual bootstrap, not a stream (EI06)
+    description="B3-S1: load the 555,719 historical transactions",
+    schedule=None,                      # manual bootstrap, not a stream (B3-EI06)
     start_date=pendulum.datetime(2026, 1, 1, tz="Europe/Paris"),
     catchup=False,
     max_active_runs=1,                  # one bootstrap at a time
-    tags=["S1", "BC03", "C2", "C5"],
-    default_args={"retries": 0},        # the retry policy belongs to S3
+    tags=["B3-S1", "BC03", "B3-C2", "B3-C5"],
+    default_args={"retries": 0},        # the retry policy belongs to B3-S3
     on_failure_callback=_mark_failed,
 )
 def load_history():
@@ -66,9 +67,9 @@ def load_history():
     def preflight() -> dict:
         """Check the plumbing before any processing.
 
-        Covers: EC12
-        Lot: L0
-        Competency: C4
+        Lot: B3-L0.
+        Competency: B3-C4.
+        Covers: B3-EC12.
         """
         from airflow.operators.python import get_current_context
 
@@ -143,13 +144,13 @@ def load_history():
     def fetch_csv() -> str:
         """Download the historical CSV, with cache and checksum. Returns its path.
 
-        Covers: EI04, EI05
-        Lot: L1
-        Competency: C2
+        Lot: B3-L1.
+        Competency: B3-C2.
+        Covers: B3-EI04, B3-EI05.
         """
         replay = _replay_batch()
         if replay:
-            log.info("replay of batch %s: the source is NOT queried again (EC24)",
+            log.info("replay of batch %s: the source is NOT queried again (B3-EC24)",
                      replay)
             return ""
 
@@ -161,9 +162,9 @@ def load_history():
     def write_raw(csv_path: str) -> str:
         """Write the payload as received. Returns the batch_id.
 
-        Covers: EC23, EC24
-        Lot: L1
-        Competency: C2
+        Lot: B3-L1.
+        Competency: B3-C2.
+        Covers: B3-EC23, B3-EC24.
         """
         import uuid as _uuid
         from pathlib import Path as _Path
@@ -201,7 +202,7 @@ def load_history():
             n_read = raw.write_batch(conn, batch_id, path.name,
                                      fetch.read_rows(path))
             runs.set_batch(conn, run_id, batch_id)
-            # S5/Q1: fingerprint what was just written, before anything else
+            # B3-S5/B3-Q1: fingerprint what was just written, before anything else
             # reads it. A purge refuses a batch without this.
             runs.record_batch_digest(conn, run_id, batch_id)
         log.info("n_read=%d", n_read)
@@ -211,9 +212,9 @@ def load_history():
     def validate(batch_id: str) -> str:
         """Validate in two classes, quarantine the rejects. Returns the batch_id.
 
-        Covers: EC20, EC21, EC22
-        Lot: L2
-        Competency: C5
+        Lot: B3-L2.
+        Competency: B3-C5.
+        Covers: B3-EC20, B3-EC21, B3-EC22.
         """
         import uuid as _uuid
 
@@ -275,9 +276,9 @@ def load_history():
     def type_and_pseudonymize(batch_id: str) -> str:
         """Type the valid records, strip identity. Returns the batch_id.
 
-        Covers: EC17, EC23
-        Lot: L3
-        Competency: C2, C4
+        Lot: B3-L3.
+        Competency: B3-C2, B3-C4.
+        Covers: B3-EC17, B3-EC23.
         """
         import uuid as _uuid
 
@@ -298,7 +299,7 @@ def load_history():
             inserted = transform.load_transactions(
                 write_conn, bid, raw.read_batch(read_conn, bid), s.pepper, skip)
 
-            # The acceptance criteria of L3, verified rather than assumed.
+            # The acceptance criteria of B3-L3, verified rather than assumed.
             with write_conn.cursor() as cur:
                 cur.execute("SELECT count(*), count(DISTINCT client_key), "
                             "       coalesce(sum(amt), 0) "
@@ -312,9 +313,9 @@ def load_history():
     def backfill_features(batch_id: str) -> int:
         """Backfill the features, then prove both modes agree.
 
-        Covers: EE07
-        Lot: L4
-        Competency: C5
+        Lot: B3-L4.
+        Competency: B3-C5.
+        Covers: B3-EE07.
         """
         from fraud import config, db, features
 
@@ -350,9 +351,9 @@ def load_history():
     def write_ground_truth(batch_id: str) -> int:
         """Write the verdict and the date it became known.
 
-        Covers: EI01, EI02, EC23
-        Lot: L5
-        Competency: C2
+        Lot: B3-L5.
+        Competency: B3-C2.
+        Covers: B3-EI01, B3-EI02, B3-EC23.
         """
         import uuid as _uuid
 
@@ -371,13 +372,13 @@ def load_history():
             inserted = truth.load_ground_truth(
                 write_conn, raw.read_batch(read_conn, bid), delay, str(bid), skip)
 
-            # The acceptance criteria of L5, verified rather than assumed.
+            # The acceptance criteria of B3-L5, verified rather than assumed.
             #
-            # SCOPED TO THIS BATCH, and it was not until N9. The query read the
-            # WHOLE of fd_ground_truth, which held only S1's verdicts when this
-            # was written -- S3 now writes the stream's there too. The delay
+            # SCOPED TO THIS BATCH, and it was not until B3-N9. The query read the
+            # WHOLE of fd_ground_truth, which held only B3-S1's verdicts when this
+            # was written -- B3-S3 now writes the stream's there too. The delay
             # happens to be 30 days on both sides today, so this passes; the
-            # day the stream carried a different delay, a REPLAY OF S1 would
+            # day the stream carried a different delay, a REPLAY OF B3-S1 would
             # fail on "the delay is not uniform" and blame the historical load
             # for a property of the stream. The same defect as in
             # s1_acceptance.sql, in a place no acceptance check looks.
@@ -424,12 +425,12 @@ def load_history():
 
         The digests are what makes a replay verifiable: run the DAG again on the
         same batch and compare. Identical digests mean the replay reproduced the
-        data exactly, which is what EC23 and EC24 ask for and what no amount of
+        data exactly, which is what B3-EC23 and B3-EC24 ask for and what no amount of
         row counting would establish.
 
-        Covers: EC12, EC23, EC24
-        Lot: L6, L7
-        Competency: C4, C5
+        Lot: B3-L6, B3-L7.
+        Competency: B3-C4, B3-C5.
+        Covers: B3-EC12, B3-EC23, B3-EC24.
         """
         from airflow.operators.python import get_current_context
 
@@ -438,7 +439,7 @@ def load_history():
         run_id = get_current_context()["run_id"]
         with db.connect("fd_ingest") as conn:
             digests = runs.digest(conn)
-            # S5/Q1: STORED, not only logged. The log rotates; the purge needs
+            # B3-S5/B3-Q1: STORED, not only logged. The log rotates; the purge needs
             # the digest of fd_transactions from before it ran to prove it did
             # not overflow.
             runs.record_store_digests(conn, run_id, digests)
@@ -453,7 +454,7 @@ def load_history():
     # from the passing of values; the only explicit >> is the preflight gate,
     # which produces nothing the rest needs.
     #
-    # Replay (EC24): trigger with {"batch_id": "<uuid>"} and the first two tasks
+    # Replay (B3-EC24): trigger with {"batch_id": "<uuid>"} and the first two tasks
     # do nothing -- the source is not queried and fd_raw_events is not written.
     counts = preflight()
     path = fetch_csv()

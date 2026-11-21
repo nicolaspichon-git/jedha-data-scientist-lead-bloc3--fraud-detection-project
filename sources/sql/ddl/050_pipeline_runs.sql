@@ -1,7 +1,10 @@
 -- Run journal, queryable.
--- Covers: EC12   Lot: L7   Competency: C4
+-- Block: B3.
+-- Lot: B3-L7.
+-- Competency: B3-C4.
+-- Covers: B3-EC12.
 --
--- The counter-closure constraint puts the L2 acceptance criterion in the
+-- The counter-closure constraint puts the B3-L2 acceptance criterion in the
 -- database: n_read = n_valid + n_rejected stops being a test to remember and
 -- becomes a structural impossibility.
 
@@ -22,9 +25,9 @@ CREATE TABLE IF NOT EXISTS fd_pipeline_runs (
                OR n_read = coalesce(n_valid, 0) + coalesce(n_rejected, 0))
 );
 
--- S5/Q1: the fingerprint of what a run wrote, STORED. Before this column the
+-- B3-S5/B3-Q1: the fingerprint of what a run wrote, STORED. Before this column the
 -- digests were only written to the Airflow log, which is neither backed up nor
--- protected, and which rotates (retention.airflow_logs_days). The day S5 purges
+-- protected, and which rotates (retention.airflow_logs_days). The day B3-S5 purges
 -- the raw zone and the logs turn over, nothing would say what a batch held.
 --
 --   {"raw_batch": {"batch_id": ..., "rows": N, "digest": md5, "origin": ...},

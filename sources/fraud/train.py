@@ -1,8 +1,9 @@
 """Training the scoring model, and reporting it.
 
-Covers: EE08, EI04
-Lot: M5
-Competency: C2, C5
+Block: B3.
+Lot: B3-M5.
+Competency: B3-C2, B3-C5.
+Covers: B3-EE08, B3-EI04.
 
 THE TRAP THIS MODULE IS BUILT AROUND. The source holds 0.414 % positives over
 the usable horizon, so A MODEL THAT NEVER PREDICTS FRAUD SCORES 99.6 %
@@ -20,7 +21,7 @@ source, the monthly rate runs from 0.185 % to 0.554 % -- a factor of three. So
 every metric is reported WITH the base rate of its own test window, or two
 weekly runs would not be comparable and the difference would be an artefact.
 
-THE THIRD RULE. The threshold is not the model (M6). This module produces
+THE THIRD RULE. The threshold is not the model (B3-M6). This module produces
 probabilities and reports threshold-free metrics first; the threshold-dependent
 figures are given at a stated threshold, as a reference rather than a verdict.
 """
@@ -61,7 +62,7 @@ class Evaluation:
     baseline_average_precision: float      # equals the base rate
     baseline_accuracy: float               # the figure that makes the trap plain
 
-    # At one stated threshold. A reference, not a verdict (M6 decides).
+    # At one stated threshold. A reference, not a verdict (B3-M6 decides).
     threshold: float
     recall: float
     precision: float
@@ -87,7 +88,7 @@ class Evaluation:
         """Frauds the model catches that the rule misses.
 
         The honest headline. The model may well have WORSE precision than the
-        rule -- that is the trade-off M6 resolves -- so the gain has to be
+        rule -- that is the trade-off B3-M6 resolves -- so the gain has to be
         stated in frauds, not in a single score.
         """
         return self.true_positives - round(self.rule_recall * self.n_test_pos)
@@ -119,9 +120,9 @@ class Evaluation:
 def render_report(ev: Evaluation) -> str:
     """The report. Carries no accuracy for the model, and never will.
 
-    Covers: EI04
-    Lot: M5
-    Competency: C5
+    Lot: B3-M5.
+    Competency: B3-C5.
+    Covers: B3-EI04.
     """
     lines = [
         "jeu          train=%d (%d pos, %.4f %%)  test=%d (%d pos, %.4f %%)"
@@ -147,7 +148,7 @@ def render_report(ev: Evaluation) -> str:
         "  precision               %.4f" % ev.rule_precision,
         "  alertes par jour        %.1f" % ev.rule_alerts_per_day,
         "",
-        "AU SEUIL %.2f -- une reference, pas un verdict (M6 decide)" % ev.threshold,
+        "AU SEUIL %.2f -- une reference, pas un verdict (B3-M6 decide)" % ev.threshold,
         "  rappel                  %.4f" % ev.recall,
         "  precision               %.4f" % ev.precision,
         "  matrice                 VP=%d  FP=%d  FN=%d  VN=%d"
@@ -171,12 +172,12 @@ def split_validation(frame, share: float):
 
     THE CUT IS ON A TIME BOUNDARY, NOT A ROW INDEX. Cutting by row would put
     transactions sharing an instant on both sides -- the same tie problem as the
-    feature reconciliation of L4, and here it would leak the validation slice
+    feature reconciliation of B3-L4, and here it would leak the validation slice
     into the fit.
 
-    Covers: EE08
-    Lot: M6
-    Competency: C2, C5
+    Lot: B3-M6.
+    Competency: B3-C2, B3-C5.
+    Covers: B3-EE08.
     """
     ordered = frame.sort_values(["txn_ts", "txn_id"])
     index = int(len(ordered) * (1.0 - share))
@@ -203,9 +204,9 @@ def load_split(path: Path):
 def rule_scores(frame, min_amount: float, night_hours: tuple[int, ...]):
     """The analyst's rule, applied to a frame: amount high AND hour nocturnal.
 
-    Covers: EI04
-    Lot: M5
-    Competency: C5
+    Lot: B3-M5.
+    Competency: B3-C5.
+    Covers: B3-EI04.
     """
     return ((frame["amt"].astype(float) > min_amount)
             & frame["txn_hour"].isin(list(night_hours)))
@@ -245,7 +246,7 @@ def fit_and_evaluate(train_path: Path, test_path: Path, threshold: float,
 
       1. split the training period in two, by time;
       2. fit on the earlier part, score the later part;
-      3. choose the threshold THERE (M6);
+      3. choose the threshold THERE (B3-M6);
       4. refit on the WHOLE training period;
       5. evaluate on test, at that threshold.
 
@@ -263,9 +264,9 @@ def fit_and_evaluate(train_path: Path, test_path: Path, threshold: float,
     each cardholder's first transaction, by the convention of ruling 6 -- and it
     is fast enough on 300,000 rows to keep a weekly cadence cheap.
 
-    Covers: EE08
-    Lot: M5
-    Competency: C2
+    Lot: B3-M5.
+    Competency: B3-C2.
+    Covers: B3-EE08.
     """
     import sklearn
     from sklearn.metrics import (average_precision_score, confusion_matrix,
@@ -343,7 +344,7 @@ def fit_and_evaluate(train_path: Path, test_path: Path, threshold: float,
 
 
 def save_model(model, directory: Path) -> Path:
-    """Write the model beside its dataset. M7 registers it in MLflow."""
+    """Write the model beside its dataset. B3-M7 registers it in MLflow."""
     import joblib
 
     path = Path(directory) / MODEL_FILE

@@ -1,10 +1,11 @@
-"""R10: the performances page, and the reference of M5 kept in the database.
+"""B3-R10: the performances page, and the reference of B3-M5 kept in the database.
 
-Covers: EE04, EI02, EI03, EC23
-Lot: R10
-Competency: C2, C4
+Block: B3.
+Lot: B3-R10.
+Competency: B3-C2, B3-C4.
+Covers: B3-EE04, B3-EI02, B3-EI03, B3-EC23.
 
-The page is section 3 of the report over a period, compared with what M5
+The page is section 3 of the report over a period, compared with what B3-M5
 measured -- which fit_model now copies into fd_datasets beside run.json, so a
 dashboard that does not mount the datasets can compare at all.
 """
@@ -94,8 +95,8 @@ def test_observed_and_reference_sit_side_by_side(state):
             dashboard.performances_view(None, settings(), DAY, DAY)["comparison"]}
     rappel = rows["Fraudes retrouvées (rappel)"]
     assert rappel["Observé"] == report._percent(0.8)
-    assert rappel["Mesuré en M5 (test)"] == report._percent(0.7512)
-    assert rows["Part de fraudes"]["Mesuré en M5 (test)"] == report._share(0.0058, 3)
+    assert rappel["Mesuré en B3-M5 (test)"] == report._percent(0.7512)
+    assert rows["Part de fraudes"]["Mesuré en B3-M5 (test)"] == report._share(0.0058, 3)
 
 
 def test_no_reference_is_said_with_its_remedy(state):
@@ -103,7 +104,7 @@ def test_no_reference_is_said_with_its_remedy(state):
     view = dashboard.performances_view(None, settings(), DAY, DAY)
     assert levels(view)[0] == dashboard.WARNING
     assert "fd-manager.ps1 reference" in view["notices"][0].text
-    assert view["comparison"][0]["Mesuré en M5 (test)"] == "indisponible"
+    assert view["comparison"][0]["Mesuré en B3-M5 (test)"] == "indisponible"
 
 
 def test_no_verdict_yet_is_explained_by_the_delay(state):
@@ -164,7 +165,7 @@ def test_the_day_series_uses_the_reports_definition_of_alerted():
     assert "%(zone)s::text" in day
 
 
-# --- the reference, in the database (R10) ---------------------------------------
+# --- the reference, in the database (B3-R10) ---------------------------------------
 
 PAYLOAD = {"written_at": "2026-11-10T03:00:00+00:00",
            "dataset": {"recipe_digest": "a" * 64, "version": "a" * 12},

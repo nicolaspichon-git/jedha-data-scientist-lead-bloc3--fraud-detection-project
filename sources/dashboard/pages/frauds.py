@@ -1,12 +1,13 @@
 """The alerts of a calendar period, as the analyst reviews them.
 
-Covers: EE03, EC17
-Lot: R3, R8
-Competency: C4
+Block: B3.
+Lot: B3-R3, B3-R8.
+Competency: B3-C4.
+Covers: B3-EE03, B3-EC17.
 
 The rows are those of the morning reports of the same days -- same query, same
 windows end to end, same order -- so the page and the documents never disagree.
-A period is one day by default; the picker takes a first and a last day (S6/R8).
+A period is one day by default; the picker takes a first and a last day (B3-S6/B3-R8).
 fraud/dashboard.frauds_view() decides what is shown; this page only displays.
 
 READS AND NOTHING ELSE. No acknowledgement, no comment, no re-send: an alert is

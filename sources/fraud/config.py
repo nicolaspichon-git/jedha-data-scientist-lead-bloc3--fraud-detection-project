@@ -1,8 +1,9 @@
 """Configuration: governance.yml and environment variables.
 
-Covers: EI12, EC19
-Lot: L0
-Competency: C4
+Block: B3.
+Lot: B3-L0.
+Competency: B3-C4.
+Covers: B3-EI12, B3-EC19.
 
 Durations that outlast the demonstration itself (verdict delay, retention) live
 here and nowhere else. Secrets never live in governance.yml: they come from the
@@ -31,9 +32,9 @@ CANDIDATES = (
 # /opt/project -- so a tool running inside the scheduler with root=/opt/project
 # finds no airflow/ directory at all.
 #
-# ONE DEFINITION, HERE, BECAUSE IT WAS WRITTEN TWICE AND WRONG TWICE. The S3
+# ONE DEFINITION, HERE, BECAUSE IT WAS WRITTEN TWICE AND WRONG TWICE. The B3-S3
 # checker derived the path under the root and read both DAGs ABSENT for a whole
-# lot; it was fixed there, with a test on ITS constant -- and the S4 checker,
+# lot; it was fixed there, with a test on ITS constant -- and the B3-S4 checker,
 # written afterwards with its own derivation, read dag_daily ABSENT the same
 # way. A test guarding one copy says nothing about the next copy. So there is
 # no copy: tools ask dags_dir(), and tests/test_dag_paths.py refuses any tool
@@ -102,13 +103,13 @@ class Settings:
     def verdict_delay(self) -> dt.timedelta:
         """The delay in force, from the single verdicts.mode switch.
 
-        S1 and S3 both call this rather than reading a figure of their own: the
+        B3-S1 and B3-S3 both call this rather than reading a figure of their own: the
         historical labels and the real-time ones must sit on the same delay, or
         the blind band differs between training and scoring.
 
-        Covers: EI02, EI12
-        Lot: L5
-        Competency: C2
+        Lot: B3-L5.
+        Competency: B3-C2.
+        Covers: B3-EI02, B3-EI12.
         """
         if self.verdict_mode == "nominal":
             return dt.timedelta(days=self.verdict_delay_days)
@@ -118,10 +119,10 @@ class Settings:
             "verdicts.mode is %r; expected 'nominal' or 'demo'" % self.verdict_mode)
 
     def observed_per_day(self) -> int:
-        """Transactions N7 will actually see in a day, from its own settings.
+        """Transactions B3-N7 will actually see in a day, from its own settings.
 
         WHY THIS IS COMPUTED AND NOT NOTED IN A COMMENT. One call returns one
-        transaction and there is no queue behind it (N0), so the cadence times
+        transaction and there is no queue behind it (B3-N0), so the cadence times
         the calls per run IS the share of the stream that gets scored -- and
         fraud/threshold.py chose the threshold and the 60-alert capacity at
         API_TXN_PER_DAY = 7200. Lower this product and every published figure
@@ -131,9 +132,9 @@ class Settings:
         later edit to the cadence or to calls_per_run fails the suite instead of
         quietly invalidating the calibration.
 
-        Covers: EI04, EC24
-        Lot: N4
-        Competency: C5
+        Lot: B3-N4.
+        Competency: B3-C5.
+        Covers: B3-EI04, B3-EC24.
         """
         return self.calls_per_run * runs_per_day(self.realtime_schedule)
 
@@ -146,9 +147,9 @@ class Settings:
         method failed the first time -- after I had read the dataclass and
         written down that it was flat.
 
-        Covers: EI04
-        Lot: M5
-        Competency: C5
+        Lot: B3-M5.
+        Competency: B3-C5.
+        Covers: B3-EI04.
         """
         return self.rule_min_amount, self.rule_night_hours
 
@@ -206,7 +207,7 @@ def _poll_budget(budget, timeout) -> float:
     """realtime.poll_budget_seconds, refused below one call's timeout.
 
     A budget shorter than timeout_seconds would cut off a call that was about
-    to succeed -- N0 measured a 502 at 25 s, which is why the timeout is 35.
+    to succeed -- B3-N0 measured a 502 at 25 s, which is why the timeout is 35.
     """
     budget, timeout = float(budget), float(timeout)
     if budget < timeout:
@@ -322,7 +323,7 @@ def _days(value, key: str) -> int:
 
 
 def _retention(section: dict) -> dict:
-    """The retention section, with the two orderings S5 depends on.
+    """The retention section, with the two orderings B3-S5 depends on.
 
     A store that may quote the raw data cannot outlive it: fd_quarantine holds
     the raw payload of a rejected record and Airflow's logs can hold a line of

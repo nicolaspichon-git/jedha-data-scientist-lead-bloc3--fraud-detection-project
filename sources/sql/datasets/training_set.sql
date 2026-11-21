@@ -1,5 +1,8 @@
 -- The training set, at a cut-off, with its temporal split.
--- Covers: EI02, EI04, EE07   Lot: M3   Competency: C2, C5
+-- Block: B3.
+-- Lot: B3-M3.
+-- Competency: B3-C2, B3-C5.
+-- Covers: B3-EI02, B3-EI04, B3-EE07.
 --
 -- THE FILTER THAT MATTERS: g.label_ts <= %(cut_off)s, and NOT t.txn_ts.
 --
@@ -11,7 +14,7 @@
 -- the arrangement.
 --
 -- The features are read AS STORED. Nothing is recomputed from history here:
--- S1 persisted them on purpose (F04.1) and L4 proved both computation modes
+-- B3-S1 persisted them on purpose (B3-F04-1) and B3-L4 proved both computation modes
 -- agree, so training reads the very values scoring will read.
 --
 -- ORDER BY txn_ts, txn_id makes the output deterministic, so two builds of one

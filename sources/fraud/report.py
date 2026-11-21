@@ -1,8 +1,9 @@
 """Assembling the morning report, and writing it as one dated document.
 
-Covers: EE04, EI04, EI08, EC14, EC17
-Lot: P2
-Competency: C2
+Block: B3.
+Lot: B3-P2.
+Competency: B3-C2.
+Covers: B3-EE04, B3-EI04, B3-EI08, B3-EC14, B3-EC17.
 
 TWO AXES OF TIME, AND CONFUSING THEM WOULD MAKE THE REPORT FALSE. A transaction
 carries the date of the payment (txn_ts) and the date its verdict became known
@@ -18,25 +19,25 @@ an omission. The plan asked that two runs on the same window produce the same
 document "to the character, bar the production timestamp". Keeping that
 timestamp out of the body makes the property ABSOLUTE instead of modulo a line:
 the document is byte-identical, its digest is stable, and a diff between two
-mornings shows only what the data did. produced_at belongs to fd_reports (P3),
+mornings shows only what the data did. produced_at belongs to fd_reports (B3-P3),
 which is where one asks when a document was made.
 
 MARKDOWN ONLY, decided 2026-11-16. A Streamlit server will present the report at
-the end of S5 and renders Markdown natively, so a derived HTML would be a third
+the end of B3-S5 and renders Markdown natively, so a derived HTML would be a third
 format to produce, test and keep consistent for a reader who would never read
 it.
 
-THE M5 COMPARISON DEGRADES RATHER THAN FAILS. Section 3 compares the observed
+THE B3-M5 COMPARISON DEGRADES RATHER THAN FAILS. Section 3 compares the observed
 recall with the one measured on the test set, which fit_model copies into
-fd_datasets beside run.json (S6/R10; until then it was read from run.json on
+fd_datasets beside run.json (B3-S6/B3-R10; until then it was read from run.json on
 disk). If the latest recipe has no figures -- never fitted, or registered
-before R10 and not yet backfilled -- the section still renders and says the
+before B3-R10 and not yet backfilled -- the section still renders and says the
 reference is unavailable. A morning report that refuses to exist
 because a comparison is missing has failed at its one job.
 
 NOTHING HERE NEEDS THE RAW ZONE, so every query runs under fd_report, which has
 no access to it. The raw payloads still carry names, addresses and card numbers;
-the exploited layer carries none (EC17), and that is what makes a report safe to
+the exploited layer carries none (B3-EC17), and that is what makes a report safe to
 hand to a human.
 """
 from __future__ import annotations
@@ -59,7 +60,7 @@ REFERENCE_SQL = "reports/reference.sql"
 PENDING_SQL = "reports/daily_pending.sql"
 RECORD_SQL = "reports/record_report.sql"
 
-# The order the document presents, and the order P0's mockup decided.
+# The order the document presents, and the order B3-P0's mockup decided.
 SECTIONS = ("volumes", "alerts", "verdicts", "pending")
 
 
@@ -130,7 +131,7 @@ def window_for(settings, day: dt.date,
     declared zone. ONE definition.
 
     It was written three times -- dag_daily, tools/daily_report.py,
-    tools/check_s4.py -- and the dashboard of S6 would have been the fourth.
+    tools/check_s4.py -- and the dashboard of B3-S6 would have been the fourth.
     Three copies agreeing today is not a guarantee; it is a coincidence that
     survives until one of them is edited.
 
@@ -143,7 +144,9 @@ def window_for(settings, day: dt.date,
     knowledge_at defaults to the end of the window: what was known when the
     day was over. dag_daily passes the end of its interval instead.
 
-    Covers: EE03   Lot: R1   Competency: C4
+    Lot: B3-R1.
+    Competency: B3-C4.
+    Covers: B3-EE03.
     """
     return span_for(settings, day, day, knowledge_at)
 
@@ -154,7 +157,7 @@ def span_for(settings, first: dt.date, last: dt.date,
     midnight after the last, in the declared zone. window_for() is the case
     first == last, so there is still one rule for what a day is.
 
-    Read by the dashboard's period selector (S6, lot R8). Every day in between
+    Read by the dashboard's period selector (B3-S6, lot B3-R8). Every day in between
     is a calendar day, 23 or 25 hours long on a clock change, for the reason
     window_for() gives.
     """
@@ -176,7 +179,7 @@ def _rows(conn, relative: str, params: dict) -> list[dict]:
 
     By NAME and not by position: four queries with twelve columns between them
     would otherwise shift a rejected count into a read count on an edit to a
-    SELECT, which is the defect to_alert() was guarded against in N5.
+    SELECT, which is the defect to_alert() was guarded against in B3-N5.
     """
     with conn.cursor() as cur:
         cur.execute(db.sql_path(relative).read_text(encoding="utf-8"), params)
@@ -215,9 +218,9 @@ def pending(conn, window: Window) -> dict:
 
 
 def reference(conn, settings) -> dict | None:
-    """What M5 measured on the test set, for section 3 to compare against.
+    """What B3-M5 measured on the test set, for section 3 to compare against.
 
-    Read from fd_datasets (S6/R10) -- the copy fit_model writes beside run.json
+    Read from fd_datasets (B3-S6/B3-R10) -- the copy fit_model writes beside run.json
     -- and not from MLflow: a tracking server that is down must not stop the
     morning report. Returns None when the latest recipe carries no figures, and
     the section then says the reference is unavailable rather than disappearing.
@@ -228,7 +231,7 @@ def reference(conn, settings) -> dict | None:
         return None
     row = rows[0]
     if row["test_recall"] is None:
-        log.warning("recette %s sans reference de M5 en base : section 3 sans "
+        log.warning("recette %s sans reference de B3-M5 en base : section 3 sans "
                     "comparaison. Remede : .\\fd-manager.ps1 reference",
                     row["version"])
         return None
@@ -258,7 +261,7 @@ def chain_health(conn, settings, window: Window) -> dict:
 
     The window is the report's and the instant of reference is its knowledge
     date, so a replay reports the health of the day replayed. That the same
-    query serves N9's rolling hour is the reason it takes bounds rather than a
+    query serves B3-N9's rolling hour is the reason it takes bounds rather than a
     duration -- see sql/checks/pipeline_health.sql.
     """
     from fraud import config, health
@@ -377,7 +380,7 @@ def render(data: dict, settings) -> str:
         % (_count(len(alerts_)), _count(data["capacity"])))
     add("")
 
-    # THE SENTENCE G2 CANNOT BE ANSWERED HONESTLY WITHOUT.
+    # THE SENTENCE B3-G2 CANNOT BE ANSWERED HONESTLY WITHOUT.
     waiting = pending_["pending"]
     add("> **%s %s de cette journée %s encore leur verdict.**"
         % (_count(waiting), _plural(waiting, "transaction"),
@@ -488,7 +491,7 @@ def render(data: dict, settings) -> str:
         add("- Alertes qui étaient de vraies fraudes : **%s** "
             "*(précision)*" % _percent(verdicts_["precision_observed"]))
         if reference_ is None:
-            add("- Référence de M5 : **indisponible** \u2014 la recette n'a "
+            add("- Référence de B3-M5 : **indisponible** \u2014 la recette n'a "
                 "pas de mesure enregistrée en base, la comparaison est "
                 "impossible sur cette édition.")
         else:
@@ -559,9 +562,9 @@ def path_for(settings, day: dt.date) -> Path:
 
 
 def digest(text: str) -> str:
-    """sha256 of the document, which fd_reports stores (P3) so that a file on
+    """sha256 of the document, which fd_reports stores (B3-P3) so that a file on
     disk can be checked against the row describing it -- the same reasoning as
-    run.json beside a dataset in M8."""
+    run.json beside a dataset in B3-M8."""
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -585,7 +588,7 @@ CONFORME, DIFFERENTE, ABSENT = "conforme", "differente", "absent"
 def check_document(path: Path, expected: str) -> DocumentCheck:
     """Is the file at `path` the document `expected` vouches for? ONE rule.
 
-    tools/check_s4.py computed it with hashlib on its own; the dashboard of S6
+    tools/check_s4.py computed it with hashlib on its own; the dashboard of B3-S6
     would have done it a third way. The digest is report.digest(), the function
     that produced the recorded value -- a check written with another function
     agrees with the producer only for as long as nobody changes either.
@@ -640,15 +643,15 @@ def write(settings, day: dt.date, text: str) -> Path:
 def record(conn, row: dict) -> None:
     """Record a produced report in fd_reports. AFTER the document, never before.
 
-    The order is N5's, turned around: recording first would leave the table
+    The order is B3-N5's, turned around: recording first would leave the table
     claiming a document nobody wrote, and the absence check -- which reads this
     table -- would then report a healthy morning. A crash between the write and
     the record leaves a document with no row, which the absence check DOES
     catch. One failure is silent, the other loud; the order picks the loud one.
 
-    Covers: EC14, EC23
-    Lot: P3
-    Competency: C2
+    Lot: B3-P3.
+    Competency: B3-C2.
+    Covers: B3-EC14, B3-EC23.
     """
     db.execute_file(conn, RECORD_SQL, **row)
 
@@ -656,14 +659,14 @@ def record(conn, row: dict) -> None:
 def preview(conn, settings, window: Window) -> str:
     """Render the document and RETURN it. Writes nothing, records nothing.
 
-    THE DEFECT THIS REPLACED, found by the acceptance of S4 on 17 November.
+    THE DEFECT THIS REPLACED, found by the acceptance of B3-S4 on 17 November.
     produce() took a journal=False switch that skipped the table and WROTE THE
     FILE ANYWAY -- so a dry run overwrote the document whose sha256 fd_reports
     vouches for, and the criterion "empreinte du document egale
     content_digest" failed on a day nobody had touched on purpose.
     
     A mode that writes is not a dry run. The project already holds that rule
-    twice -- `abandoned` and `digests` list without touching -- and S5 holds it
+    twice -- `abandoned` and `digests` list without touching -- and B3-S5 holds it
     a third time with plan() beside execute(). Two names, no flag: a writing
     command one flag away from a reading one gets typed by mistake.
     """

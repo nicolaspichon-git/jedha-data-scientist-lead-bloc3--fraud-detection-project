@@ -1,10 +1,11 @@
-"""S5 / Q2: the dry run counts what would go, and nothing goes.
+"""B3-S5 / B3-Q2: the dry run counts what would go, and nothing goes.
 
-Covers: EC26, EI13, EC16, EC19
-Lot: Q2
-Competency: C5
+Block: B3.
+Lot: B3-Q2.
+Competency: B3-C5.
+Covers: B3-EC26, B3-EI13, B3-EC16, B3-EC19.
 
-S5 is the only process of the project that DESTROYS. Everywhere else a mistake
+B3-S5 is the only process of the project that DESTROYS. Everywhere else a mistake
 is repaired by a replay; here it is permanent, and that asymmetry is what these
 tests are about. They hold five decisions, none of which a passing happy path
 would show:
@@ -103,8 +104,8 @@ def test_the_three_files_exist_and_are_the_ones_the_module_names():
     named = set(purge.CANDIDATE_SQL.values())
     for relative in named:
         assert (ROOT / "sql" / relative).is_file(), relative
-    named |= set(purge.DELETE_SQL.values())          # Q3
-    named.add(purge.RECORD_SQL)                     # Q6
+    named |= set(purge.DELETE_SQL.values())          # B3-Q3
+    named.add(purge.RECORD_SQL)                     # B3-Q6
     on_disk = {"purge/%s" % path.name for path in PURGE_SQL.glob("*.sql")}
     assert on_disk == named, (
         "a file in sql/purge/ that the module does not name, or the reverse: "
@@ -126,7 +127,7 @@ def test_the_dry_run_writes_nothing(path):
 @pytest.mark.parametrize("path", sorted(PURGE_SQL.glob("*.sql")),
                          ids=lambda p: p.name)
 def test_no_file_of_the_purge_reads_the_clock(path):
-    """THE TRAP S4 ALREADY FELL INTO ONCE. A boundary from now() cannot be
+    """THE TRAP B3-S4 ALREADY FELL INTO ONCE. A boundary from now() cannot be
     replayed and cannot be demonstrated on a chosen date; worse, a purge whose
     boundary moves between the dry run and the delete does not delete what was
     shown."""
@@ -145,7 +146,7 @@ def test_every_reading_file_takes_its_boundary_as_a_parameter(path):
                                   PURGE_SQL / "candidates_quarantine.sql"],
                          ids=lambda p: p.name)
 def test_the_criterion_is_on_the_whole_batch(path):
-    """A HALF-PURGED BATCH IS UNVERIFIABLE FOR EVER: the fingerprint of Q1
+    """A HALF-PURGED BATCH IS UNVERIFIABLE FOR EVER: the fingerprint of B3-Q1
     covers a batch's rows together, so the remainder would match no recorded
     digest and be indistinguishable from a batch someone tampered with. The
     predicate therefore bears on the batch's LAST row, after the grouping."""
@@ -162,7 +163,7 @@ def test_the_criterion_is_on_the_whole_batch(path):
 
 
 def test_a_future_delete_cannot_carry_its_own_date_predicate():
-    """SET FOR Q3, where the delete lands. One definition of the set: the
+    """SET FOR B3-Q3, where the delete lands. One definition of the set: the
     delete takes its batch_id from the candidates file. A delete with a date
     predicate of its own would make the dry run a report about another set --
     worse than no dry run at all."""
@@ -203,7 +204,7 @@ def test_each_store_is_purged_up_to_its_own_declared_duration():
     limits = purge.cutoffs(_settings(), AS_OF)
     assert limits["fd_raw_events"] == AS_OF - dt.timedelta(days=90)
     assert limits["fd_quarantine"] == AS_OF - dt.timedelta(days=90)
-    # And no boundary at all for the run journal: Q4 keeps it (governance.yml,
+    # And no boundary at all for the run journal: B3-Q4 keeps it (governance.yml,
     # retention.kept), so the purge has no business computing one.
     assert set(limits) == {"fd_raw_events", "fd_quarantine"}
 
@@ -268,7 +269,7 @@ def test_a_batch_with_a_recorded_fingerprint_is_deletable(answers):
 
 
 def test_a_batch_with_no_fingerprint_is_refused_and_named(answers):
-    """THE STRUCTURAL GUARANTEE OF S5: what a batch held cannot stop being
+    """THE STRUCTURAL GUARANTEE OF B3-S5: what a batch held cannot stop being
     knowable before it stops existing."""
     answers[purge.CANDIDATE_SQL["fd_raw_events"]] = [_candidate_row(digest=None)]
     report = _plan(answers)
@@ -279,7 +280,7 @@ def test_a_batch_with_no_fingerprint_is_refused_and_named(answers):
     assert refusal["code"] == runs.NO_DIGEST
     assert refusal["batch_id"] == A
     assert "digests -Apply" in refusal["why"]          # the way out is in it
-    # and it is NOT handed to Q3 as something to delete
+    # and it is NOT handed to B3-Q3 as something to delete
     assert raw["batch_ids"] == []
 
 
@@ -298,7 +299,7 @@ def test_a_fingerprint_that_no_longer_matches_is_refused_under_verify(
 def test_the_expensive_half_is_not_asked_by_default(answers, monkeypatch):
     """An md5 over every row of each candidate batch -- 555 thousand rows and
     some 200 MB for a historical one. Not the default here, and never skipped
-    where it decides: Q3 asks it batch by batch before deleting."""
+    where it decides: B3-Q3 asks it batch by batch before deleting."""
     answers[purge.CANDIDATE_SQL["fd_raw_events"]] = [_candidate_row()]
     called = []
     monkeypatch.setattr(runs, "refusal",
@@ -461,10 +462,10 @@ def test_assert_allowed_passes_a_plan_within_the_share(answers):
     purge.assert_allowed(_plan(answers))
 
 
-# --- the run journal is NOT part of the purge (Q4) ------------------------------
+# --- the run journal is NOT part of the purge (B3-Q4) ------------------------------
 
 def test_the_run_journal_is_no_longer_counted_by_the_purge(answers):
-    """MEASURED IN Q4: the table holds no personal field to empty, and its rows
+    """MEASURED IN B3-Q4: the table holds no personal field to empty, and its rows
     carry the fingerprints that are all that remains of a purged batch. So it
     is declared kept, and a destructive tool does not report a figure about it
     -- a number shown by a purge and never acted on is an invitation to finish
@@ -535,7 +536,7 @@ def test_the_size_is_announced_as_approximate():
 
 def test_the_runner_offers_no_way_to_delete():
     """A dry run that is a MODE of a destructive command gets mixed up with it.
-    The delete lands in Q3, behind its own task and its own flag."""
+    The delete lands in B3-Q3, behind its own task and its own flag."""
     source = (ROOT / "tools" / "purge_plan.py").read_text(encoding="utf-8")
     flags = re.findall(r'add_argument\("(--[a-z-]+)"', source)
     assert "--before" in flags and "--verify" in flags
@@ -565,7 +566,7 @@ def test_the_task_exists_and_calls_the_planner():
 # --- nothing in the module reads a clock ----------------------------------------
 
 def test_the_module_never_reads_the_clock_itself():
-    """The instant is the caller's: data_interval_end in the DAG of Q5."""
+    """The instant is the caller's: data_interval_end in the DAG of B3-Q5."""
     tree = ast.parse((ROOT / "fraud" / "purge.py").read_text(encoding="utf-8"))
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):

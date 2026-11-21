@@ -1,5 +1,8 @@
 -- The transactions of a batch, with every column a recipe may ask for.
--- Covers: EE07, EI04   Lot: N4   Competency: C2
+-- Block: B3.
+-- Lot: B3-N4.
+-- Competency: B3-C2.
+-- Covers: B3-EE07, B3-EI04.
 --
 -- A SUPERSET, deliberately. This query offers the columns; the recipe of the
 -- loaded model version chooses which of them to use and in which ORDER, and
@@ -19,7 +22,7 @@
 -- Note what that agreement rests on: extract() on a timestamptz reads the
 -- SESSION's TimeZone. Both sides run in the same container with the same
 -- setting, so they agree -- but it is an assumption, not a property of the SQL,
--- and the measurement of N4 records the setting it ran under.
+-- and the measurement of B3-N4 records the setting it ran under.
 
 SELECT t.txn_id,
        t.amt,

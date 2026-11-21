@@ -1,7 +1,10 @@
 -- The facts about the recent runs of one DAG. ONE ROW, never a judgement.
--- Covers: EC14   Lot: N9   Competency: C4
+-- Block: B3.
+-- Lot: B3-N9.
+-- Competency: B3-C4.
+-- Covers: B3-EC14.
 --
--- Gathered here, judged in fraud/health.py -- the same split as M1's guard:
+-- Gathered here, judged in fraud/health.py -- the same split as B3-M1's guard:
 -- inspect_window() collects, verdict() decides. The decision is then a pure
 -- function of these numbers and can be exercised without a database, which is
 -- what tests/test_health.py does with all four controls.
@@ -15,8 +18,8 @@
 -- THE BOUNDS ARE PARAMETERS AND THE INSTANT OF REFERENCE IS ONE TOO, which is
 -- what lets ONE query serve two callers that need opposite windows:
 --
---   N9's control task   a ROLLING window, the last hour before now
---   S4's morning report a CALENDAR window, the day it covers
+--   B3-N9's control task   a ROLLING window, the last hour before now
+--   B3-S4's morning report a CALENDAR window, the day it covers
 --
 -- The report must be replayable -- a run of 3 November has to produce the
 -- health of 3 November -- so it passes explicit instants. The control task

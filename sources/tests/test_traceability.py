@@ -1,10 +1,11 @@
 """The traceability matrix abbreviates the kind of a requirement.
 
-Covers: EC07
-Lot: L8
-Competency: C1
+Block: B3.
+Lot: B3-L8.
+Competency: B3-C1.
+Covers: B3-EC07.
 
-The matrix is read column by column against D0, and the Nature column held the
+The matrix is read column by column against B3-D0, and the Nature column held the
 requirements document's own prose -- "architecturale", "documentaire,
 architecturale", and once "critere d'acceptation, architectural", which is a
 kind and something else at the same time. One letter per kind reads at a glance;

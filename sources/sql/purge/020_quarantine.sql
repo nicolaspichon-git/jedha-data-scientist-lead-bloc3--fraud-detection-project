@@ -1,9 +1,12 @@
 -- Delete ONE SLICE of ONE batch's quarantined records.
--- Covers: EC16, EC19   Lot: Q4   Competency: C2
+-- Block: B3.
+-- Lot: B3-Q4.
+-- Competency: B3-C2.
+-- Covers: B3-EC16, B3-EC19.
 --
 -- WHY THIS STORE IS PURGED AT ALL, and at the same duration as the raw zone.
 -- fd_quarantine.payload is the raw payload of a REJECTED record: the same
--- personal data as fd_raw_events.payload. Before Q0 measured it, no duration
+-- personal data as fd_raw_events.payload. Before B3-Q0 measured it, no duration
 -- covered this table -- so a rejected transaction would have kept its data for
 -- ever while an accepted one was purged at 90 days. The inverse of what
 -- limiting retention is for, and the kind of gap that is found by listing the
@@ -11,7 +14,7 @@
 --
 -- Same shape as sql/purge/010_raw_events.sql, and for the same reasons: no
 -- date predicate (the set comes from candidates_quarantine.sql), whole batches
--- (the fingerprint of Q1 is per batch), slices on the primary key (a lock held
+-- (the fingerprint of B3-Q1 is per batch), slices on the primary key (a lock held
 -- for minutes and a write-ahead log inflated in one transaction are what a
 -- single DELETE costs).
 --

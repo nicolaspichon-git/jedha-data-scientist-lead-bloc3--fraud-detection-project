@@ -1,15 +1,16 @@
 """The journal of the reports, and the mornings it proves are missing.
 
-Covers: EC14, EC23
-Lot: P3
-Competency: C5
+Block: B3.
+Lot: B3-P3.
+Competency: B3-C5.
+Covers: B3-EC14, B3-EC23.
 
 A WRONG REPORT IS SEEN; AN ABSENT ONE IS NOT. The analyst who finds nothing in
 his inbox concludes there was nothing to report. fd_reports turns that silence
 into a question, and sql/checks/s4_absence.sql asks it.
 
 The table, its five constraints, the upsert and the absence check were executed
-against a real PostgreSQL 16 while P3 was written: every constraint was offered
+against a real PostgreSQL 16 while B3-P3 was written: every constraint was offered
 a row that breaks it and refused it by name, a day written twice left one row,
 and the check found exactly the two gaps planted in four days of reports --- one
 BETWEEN two reports and one AFTER the last. What cannot be re-run here is read
@@ -125,14 +126,14 @@ def test_the_check_starts_at_the_first_report_and_not_thirty_days_ago():
     """THE DIFFERENCE BETWEEN A CONTROL AND AN ALARM. A pipeline three days old
     would otherwise list twenty-seven missing mornings nobody ever expected, and
     a check that fails on reality teaches its reader to ignore it -- the lesson
-    of criterion 13 of S3, paid for once already."""
+    of criterion 13 of B3-S3, paid for once already."""
     code = _code(ABSENCE)
     assert "greatest(min(report_date), current_date - 30)" in code
 
 
 def test_an_empty_table_reports_nothing():
     """Before the first report ever produced, no morning is missing. "No report
-    has ever been produced" is a different finding and belongs to P5."""
+    has ever been produced" is a different finding and belongs to B3-P5."""
     assert "HAVING count(*) > 0" in _code(ABSENCE)
 
 
@@ -170,7 +171,7 @@ class _Fake:
 
 def test_the_document_is_written_before_the_row_is_recorded(monkeypatch,
                                                             tmp_path):
-    """THE ORDER, and it is N5's turned around: recording first would leave the
+    """THE ORDER, and it is B3-N5's turned around: recording first would leave the
     table claiming a document nobody wrote, and the absence check -- which reads
     that table -- would report a healthy morning. A crash between the two leaves
     a document with no row, which the check DOES catch. One failure is silent,
@@ -236,7 +237,7 @@ def test_a_dry_run_writes_nothing_at_all(monkeypatch,
 
 
 def test_producing_cannot_skip_the_table_any_more():
-    """THE DEFECT THE ACCEPTANCE OF S4 CAUGHT on 17 November: journal=False
+    """THE DEFECT THE ACCEPTANCE OF B3-S4 CAUGHT on 17 November: journal=False
     skipped fd_reports and WROTE THE FILE ANYWAY, so a dry run overwrote the
     document whose sha256 the table vouches for. The switch is gone: the
     document and its row go together, and preview() is how one looks."""

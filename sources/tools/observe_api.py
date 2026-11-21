@@ -1,19 +1,20 @@
-"""N0 --- observe the real-time API before writing a line that depends on it.
+"""B3-N0 --- observe the real-time API before writing a line that depends on it.
 
-Covers: EC25, EI14
-Lot: N0
-Competency: C5
+Block: B3.
+Lot: B3-N0.
+Competency: B3-C5.
+Covers: B3-EC25, B3-EI14.
 
-WHY THIS EXISTS. The v01 of the S3 plan asserted that the stream carried no
+WHY THIS EXISTS. The v01 of the B3-S3 plan asserted that the stream carried no
 label, from a reading of the Space's source that was accurate and an inference
 that was wrong: the code drops a column named `fraud` while the CSV column is
 named `is_fraud`, so the drop does nothing and the label comes through. One
-observed response undid a page of reasoning. Every design decision in N1 to N8
+observed response undid a page of reasoning. Every design decision in B3-N1 to B3-N8
 now rests on a figure in the file this script writes.
 
 WHAT IT NEVER WRITES. The response carries first, last, street, city, zip, dob,
 job, gender and the card number. Writing those into a measurement file kept in
-the repository would breach the project's own governance (EC17) more plainly
+the repository would breach the project's own governance (B3-EC17) more plainly
 than any pipeline could. So this script records SHAPES, not values: field names,
 lengths, types, counts. The one exception is the fields that identify nothing --
 `index`, `trans_num`, `category`, `amt`, `is_fraud`, `current_time`.
@@ -67,7 +68,7 @@ IDENTIFYING = ("cc_num", "first", "last", "gender", "street", "city", "state",
 
 # Where the report goes. runtime/observations/ is the right home: this is a
 # PRODUCED file, like the documents and the datasets, and ws/ now carries only
-# what is written by hand (S6/R13). A measurement that cost five minutes of
+# what is written by hand (B3-S6/B3-R13). A measurement that cost five minutes of
 # real calls must not be lost to a mkdir, so the candidates are tried in order
 # and the one used is announced.
 OUT_CANDIDATES = (
@@ -231,7 +232,7 @@ def main(argv=None) -> int:
     # command. argparse reflows the text, so six paragraphs of rationale come
     # out as one unreadable block.
     parser = argparse.ArgumentParser(
-        description="N0: measure the real-time API before writing N1 to N8. "
+        description="B3-N0: measure the real-time API before writing B3-N1 to B3-N8. "
                     "Writes a report under runtime/observations/ and a raw "
                     "log, one line per "
                     "call. No personal data is ever recorded.",
@@ -266,7 +267,7 @@ def main(argv=None) -> int:
     # log survives any failure of the report.
     journal = out / ("n0-observations--%s.jsonl" % stamp)
     print("Journal brut : %s" % journal)
-    print("N0 : %d appels espaces de %d s, puis une rafale de %d."
+    print("B3-N0 : %d appels espaces de %d s, puis une rafale de %d."
           % (args.calls, args.spacing, args.burst))
     # The latency is counted: ignoring it announced 6 minutes for a run that
     # took 19. Measured median is about 6 s per call.
@@ -288,7 +289,7 @@ def main(argv=None) -> int:
               % (i + 1, args.calls, mark, record["status"] or "-",
                  1000 * record["latency"]))
 
-    # THE LIMITER, provoked on purpose: N7's margin depends on what it does.
+    # THE LIMITER, provoked on purpose: B3-N7's margin depends on what it does.
     burst = []
     if args.burst:
         print("\n  rafale pour declencher le limiteur :")
@@ -367,7 +368,7 @@ def _append(path: Path, phase: str, record: dict) -> None:
     payload whole. On 2026-11-16 five logs of a campaign held 247 complete records,
     roughly 242 distinct identities, in a directory that is not ignored by git.
     Synthetic identities, so no real person was exposed, and still exactly what
-    EC17 forbids putting in the repository.
+    B3-EC17 forbids putting in the repository.
 
     The remedy is not a second redaction routine: shape() already describes a
     payload without copying what must not be copied, and write_report has
@@ -454,7 +455,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
                  if sh.get("publishable", {}).get("current_time") is not None]
 
     lines = [
-        "# N0 --- mesure de l'API temps reel",
+        "# B3-N0 --- mesure de l'API temps reel",
         "",
         "> Produit par `tools/observe_api.py`, %s."
         % started_at.strftime("%d/%m/%Y a %H:%M:%S UTC"),
@@ -466,7 +467,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
         "**Ce fichier ne contient aucune donnee nominative.** La reponse porte",
         "`first`, `last`, `street`, `dob`, `cc_num` et le reste ; seules les",
         "FORMES sont relevees ici (type, longueur, decompte). Ecrire les valeurs",
-        "dans un fichier du depot violerait EC17 plus directement qu'aucun",
+        "dans un fichier du depot violerait B3-EC17 plus directement qu'aucun",
         "traitement ne le pourrait.",
         "",
         "---",
@@ -506,7 +507,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
         "## 3. Le limiteur et les echecs",
         "",
         "La limite annoncee est de 5 par minute et par IP. **Ces chiffres",
-        "decident de la marge du lot N7** -- et ils ne valent QUE si une seule",
+        "decident de la marge du lot B3-N7** -- et ils ne valent QUE si une seule",
         "campagne tournait : deux clients simultanes depuis la meme adresse",
         "faussent le limiteur comme le taux d erreur.",
         "",
@@ -565,7 +566,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
             type(s["publishable"].get("is_fraud")).__name__
             for s in shapes if s.get("publishable"))),
         "",
-        "Si elle est presente, **le lot N6 est une garantie contre la fuite**",
+        "Si elle est presente, **le lot B3-N6 est une garantie contre la fuite**",
         "et non un dispositif de simulation.",
         "",
     ]
@@ -581,7 +582,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
             % (100 * (1 - (1 - 0.00386) ** max(len(shapes), 1))),
             "quatre heures de collecte, pour atteindre 95 %.",
             "",
-            "**N6 ne doit donc pas attendre d'observer un `is_fraud = 1` reel.**",
+            "**B3-N6 ne doit donc pas attendre d'observer un `is_fraud = 1` reel.**",
             "Son critere injecte les deux valeurs dans la meme charge utile et",
             "exige le meme score : c'est une mesure d'absence de fuite, et elle",
             "ne depend pas de la chance du tirage.",
@@ -594,7 +595,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
         lines += [
             "Le type recu est `str`, comme attendu : le corps est decode avec",
             "`parse_int=str`, donc `is_fraud` arrive en texte comme tout autre",
-            "entier. `truth.to_bool`, ecrit pour S1, refuse plutot que de",
+            "entier. `truth.to_bool`, ecrit pour B3-S1, refuse plutot que de",
             "deviner -- il convient tel quel.",
             "",
         ]
@@ -603,7 +604,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
             "**Le type recu n'est pas `str` mais %s.** Le decodage avec"
             % ", ".join(sorted(label_types)),
             "`parse_int=str` devait rendre tout entier en texte : ce resultat",
-            "demande une explication avant que N6 ne soit ecrit.",
+            "demande une explication avant que B3-N6 ne soit ecrit.",
             "",
         ]
 
@@ -694,7 +695,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
                 "intervalle ORDINAIRE. La colonne cause n affirme donc rien",
                 "qu elle ne compare.",
                 "",
-                "Dans les deux cas la consequence pour N1 est la meme, car",
+                "Dans les deux cas la consequence pour B3-N1 est la meme, car",
                 "`current_time` EST notre `txn_ts` : **borner cette valeur contre",
                 "notre propre horloge** et mettre en quarantaine un horodatage",
                 "invraisemblable, sans quoi une transaction datee dans le futur",
@@ -751,7 +752,7 @@ def write_report(started_at, spaced, burst, reopened_after, args,
         lines += [
             "**Une carte a 19 chiffres est bien arrivee**, et le texte recu",
             "porte ses 19 chiffres : le risque de precision est donc reel sur",
-            "le chemin complet, et N1 doit lire `cc_num` en texte des la sortie",
+            "le chemin complet, et B3-N1 doit lire `cc_num` en texte des la sortie",
             "du decodeur.",
             "",
         ]
@@ -771,14 +772,14 @@ def write_report(started_at, spaced, burst, reopened_after, args,
         "",
         "| Lot | Chiffre |",
         "|---|---|",
-        "| N1 | le type et la longueur de `cc_num`, section 8 |",
-        "| N1 | l'alignement colonnes / donnees, section 4 |",
-        "| N3 | la liste des colonnes, section 4 |",
-        "| N4 | l'absence de `trans_date_trans_time`, section 4 |",
-        "| N6 | la presence de `is_fraud`, section 5 |",
-        "| N7 | le rang du premier 429 et le delai de reouverture, section 3 |",
-        "| N7 | la latence mediane, section 2 |",
-        "| N8 | le taux de doublons, section 7 |",
+        "| B3-N1 | le type et la longueur de `cc_num`, section 8 |",
+        "| B3-N1 | l'alignement colonnes / donnees, section 4 |",
+        "| B3-N3 | la liste des colonnes, section 4 |",
+        "| B3-N4 | l'absence de `trans_date_trans_time`, section 4 |",
+        "| B3-N6 | la presence de `is_fraud`, section 5 |",
+        "| B3-N7 | le rang du premier 429 et le delai de reouverture, section 3 |",
+        "| B3-N7 | la latence mediane, section 2 |",
+        "| B3-N8 | le taux de doublons, section 7 |",
         "",
     ]
 

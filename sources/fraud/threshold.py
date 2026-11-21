@@ -1,8 +1,9 @@
 """Choosing the operating threshold, and showing the work.
 
-Covers: EE08, EI04, EC09
-Lot: M6
-Competency: C2, C5
+Block: B3.
+Lot: B3-M6.
+Competency: B3-C2, B3-C5.
+Covers: B3-EE08, B3-EI04, B3-EC09.
 
 0.5 IS NOT A DECISION. It is the default of a library, and at a 0.4 % base rate
 it produced 105 alerts a day for a precision of 0.27 -- where the analyst's
@@ -16,7 +17,7 @@ TWO POLICIES, BOTH COMPUTED, ONE DECIDING:
               AMOUNT, measured per transaction rather than assumed. That is the
               one number in this file nobody has to believe.
   capacity -- the highest recall that stays within what an analyst can review in
-              a morning. This is what G2 actually constrains: "each morning,
+              a morning. This is what B3-G2 actually constrains: "each morning,
               review the previous day's payments and frauds" has a ceiling.
 
 Reporting both is the point. A threshold chosen by a policy nobody can see is a
@@ -118,13 +119,13 @@ def point_at(labels, scores, amounts, cost_false_alert: float,
 
     Split out of sweep rather than duplicated, so there is one implementation of
     this count. The reason a caller needs one threshold instead of the grid:
-    N4 rescores the test set 32 times to measure what txn_hour does to the model
+    B3-N4 rescores the test set 32 times to measure what txn_hour does to the model
     on the stream, and the grid would be 99 thresholds times 50,349 rows times
     32 scenarios -- 160 million iterations of this loop to read 32 numbers.
 
-    Covers: EI04
-    Lot: N4
-    Competency: C5
+    Lot: B3-N4.
+    Competency: B3-C5.
+    Covers: B3-EI04.
     """
     rows = list(zip(labels, scores, amounts))
     if not rows:
@@ -140,9 +141,9 @@ def sweep(labels, scores, amounts, cost_false_alert: float) -> tuple[Point, ...]
     threshold can be exercised anywhere, including where scikit-learn is not
     installed.
 
-    Covers: EI04
-    Lot: M6
-    Competency: C5
+    Lot: B3-M6.
+    Competency: B3-C5.
+    Covers: B3-EI04.
     """
     rows = list(zip(labels, scores, amounts))
     if not rows:
@@ -155,9 +156,9 @@ def choose(points: tuple[Point, ...], policy: str, capacity: int,
            n_rows: int, chosen_on: str) -> ThresholdChoice:
     """Apply the declared policy, and keep the other one for the report.
 
-    Covers: EE08, EC09
-    Lot: M6
-    Competency: C2, C5
+    Lot: B3-M6.
+    Competency: B3-C2, B3-C5.
+    Covers: B3-EE08, B3-EC09.
     """
     if not points:
         raise ValueError("no candidate threshold")
@@ -194,9 +195,9 @@ def choose(points: tuple[Point, ...], policy: str, capacity: int,
 def render(choice: ThresholdChoice) -> str:
     """The threshold decision, auditable.
 
-    Covers: EI04
-    Lot: M6
-    Competency: C5
+    Lot: B3-M6.
+    Competency: B3-C5.
+    Covers: B3-EI04.
     """
     def describe(label: str, point: Point) -> list[str]:
         return [

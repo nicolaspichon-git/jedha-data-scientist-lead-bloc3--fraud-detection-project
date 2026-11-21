@@ -33,7 +33,7 @@ def altered(**changes):
     return record
 
 
-# --- EC17: identity does not reach the exploited layer --------------------
+# --- B3-EC17: identity does not reach the exploited layer --------------------
 
 def test_no_identifying_field_comes_out_of_typing():
     out = transform.to_transaction(GOOD, PEPPER)
@@ -148,7 +148,7 @@ def test_a_missing_coordinate_becomes_none_not_zero():
     assert out["merch_long"] is None
 
 
-# --- EC17 by minimisation: the distance, not the address ------------------
+# --- B3-EC17 by minimisation: the distance, not the address ------------------
 
 def test_a_known_distance_is_computed_correctly():
     """Paris to New York, 5,837 km by the great circle."""

@@ -1,8 +1,9 @@
 """Run journal.
 
-Covers: EC12
-Lot: L7
-Competency: C4
+Block: B3.
+Lot: B3-L7.
+Competency: B3-C4.
+Covers: B3-EC12.
 
 One row per run in fd_pipeline_runs, written as the facts become known rather
 than all at once at the end: a run that dies mid-chain still leaves a row saying
@@ -85,11 +86,11 @@ def finish(conn: "psycopg.Connection", run_id: str, state: str) -> int:
 def abandon(conn: "psycopg.Connection", run_id: str) -> int:
     """Close a run as FAILED, AND ONLY IF NOBODY CLOSED IT.
 
-    THE REASON THIS IS NOT finish(). N9 hung two control tasks after close_run,
+    THE REASON THIS IS NOT finish(). B3-N9 hung two control tasks after close_run,
     which records the success. A control failing downstream would then make the
     DAG-level failure callback overwrite that success with a failure, and the
     journal would say the ingestion failed when the transactions are in the
-    table. The guard of M1 reads that journal: a window of sound ingestions
+    table. The guard of B3-M1 reads that journal: a window of sound ingestions
     could come to refuse training because a watchdog broke.
 
     So the callback marks what is still RUNNING -- i.e. what nobody closed --
@@ -114,16 +115,16 @@ def abandon(conn: "psycopg.Connection", run_id: str) -> int:
 def digest(conn: "psycopg.Connection") -> dict[str, tuple[int, str]]:
     """Digest of each store, to compare a replay against its original.
 
-    Covers: EC23, EC24
-    Lot: L6
-    Competency: C5
+    Lot: B3-L6.
+    Competency: B3-C5.
+    Covers: B3-EC23, B3-EC24.
     """
     from fraud import db
     return {store: (rows, dig)
             for store, rows, dig in db.query_file(conn, "checks/table_digest.sql")}
 
 
-# --- S5/Q1: the fingerprint of what a run wrote, STORED ----------------------
+# --- B3-S5/B3-Q1: the fingerprint of what a run wrote, STORED ----------------------
 #
 # runs.digest() above fingerprints whole TABLES, once, at the end of the
 # historical load, and only logs it. That is not what a purge needs: the purge
@@ -153,7 +154,7 @@ class MigrationMissing(RuntimeError):
 
 
 def assert_digests(conn: "psycopg.Connection") -> None:
-    """Refuse to go on if the column of Q1 is absent. Cheap, and asked first.
+    """Refuse to go on if the column of B3-Q1 is absent. Cheap, and asked first.
 
     Every reader of the fingerprints goes through here -- the purge planner and
     the backfill tool -- because the same missing column would otherwise raise
@@ -166,7 +167,7 @@ def assert_digests(conn: "psycopg.Connection") -> None:
         if cur.fetchone() is None:
             raise MigrationMissing(
                 "la colonne fd_pipeline_runs.digests est absente de cette "
-                "base : la migration du lot Q1 n'y a pas ete appliquee. "
+                "base : la migration du lot B3-Q1 n'y a pas ete appliquee. "
                 "Sans elle, aucune empreinte de lot n'est stockee, et la "
                 "purge refuserait tout.\n"
                 "  Appliquer le DDL :  .\\fd-manager.ps1 init\n"
@@ -249,7 +250,7 @@ def mark_purging(conn: "psycopg.Connection", run_id: str, store: str,
     container killed half-way leaves a batch whose rows no longer match its
     recorded fingerprint. Without this mark, the next run could not tell that
     remainder from a batch someone had tampered with -- and would refuse it for
-    ever, which is the one outcome Q1 was built to prevent.
+    ever, which is the one outcome B3-Q1 was built to prevent.
     """
     if not _set_nested(conn, run_id, "purge", store,
                        {"started_at": started_at, "expected": expected,
@@ -343,7 +344,7 @@ def undigested_batches(conn: "psycopg.Connection") -> list[dict]:
 def refusal(conn: "psycopg.Connection", batch_id) -> tuple[str, str] | None:
     """Why a batch may NOT be purged, or None if it may.
 
-    THE STRUCTURAL GUARANTEE OF S5: evidence is not destroyed before it has
+    THE STRUCTURAL GUARANTEE OF B3-S5: evidence is not destroyed before it has
     been taken. Two refusals, each named:
 
       no_digest        nobody recorded what the batch held. Deleting it would
@@ -366,7 +367,7 @@ def refusal(conn: "psycopg.Connection", batch_id) -> tuple[str, str] | None:
                   held["rows"], held["digest"]))
         # A PURGE LEFT HALF-WAY EXPLAINS IT, and must not look like tampering:
         # the slices already deleted are the difference. Said here so that the
-        # dry run of Q2, which reports this, names the real cause -- and
+        # dry run of B3-Q2, which reports this, names the real cause -- and
         # purge_batch() resumes rather than refusing (fraud/purge.py).
         marks = held.get("purge") or {}
         unfinished = sorted(store for store, mark in marks.items()
@@ -380,8 +381,8 @@ def refusal(conn: "psycopg.Connection", batch_id) -> tuple[str, str] | None:
             # A FINISHED PURGE EXPLAINS IT FOR GOOD. Nothing is wrong and
             # nothing is pending: the rows are gone on purpose, and what the
             # batch held is what the recorded fingerprint says. Said here
-            # because this message is what the dry run of Q2 and the
-            # acceptance of Q6 show, and "mismatch" alone reads as tampering.
+            # because this message is what the dry run of B3-Q2 and the
+            # acceptance of B3-Q6 show, and "mismatch" alone reads as tampering.
             why += (" -- ce lot a ete purge (%s) : l'empreinte enregistree est "
                     "ce qui subsiste de son contenu"
                     % ", ".join(finished))

@@ -1,13 +1,14 @@
 """Telling somebody a transaction was flagged, and recording that it happened.
 
-Covers: EE09, EI05, EC09, EC14, EC17
-Lot: N5
-Competency: C3, C4
+Block: B3.
+Lot: B3-N5.
+Competency: B3-C3, B3-C4.
+Covers: B3-EE09, B3-EI05, B3-EC09, B3-EC14, B3-EC17.
 
 WHAT A NOTIFICATION MAY CARRY, and this is the part worth getting right. An
 alert is exactly the message where one wants to put the cardholder's name. It
-cannot: fd_transactions holds no identifying column at all (EC17, decided in
-S1), so a notification physically cannot leak one. The analyst resolves identity
+cannot: fd_transactions holds no identifying column at all (B3-EC17, decided in
+B3-S1), so a notification physically cannot leak one. The analyst resolves identity
 INSIDE the system, never from the message.
 
 client_key is excluded on purpose, and it is the only judgement call here. It is
@@ -136,7 +137,7 @@ def to_alert(row) -> Alert:
     serializable`, raised in the channel, recorded as a failure in last_error,
     and retried every minute -- an alert raised, retried for ever, never sent.
     The tests built their alerts from floats, which is why they never saw it;
-    the same class of defect XCom met in S4 (dag_daily, 16 November).
+    the same class of defect XCom met in B3-S4 (dag_daily, 16 November).
 
     numeric(9,8) and numeric(12,2) fit a double exactly enough for a
     notification: 0.97000000 becomes 0.97, 1204.50 becomes 1204.5.
@@ -166,7 +167,7 @@ def append_json_line(path, payload: dict) -> None:
     observations to a directory that was not mounted, and an alert is worth
     more than an observation.
 
-    Shared with the operations channel of N9, which writes to a DIFFERENT path
+    Shared with the operations channel of B3-N9, which writes to a DIFFERENT path
     -- the one thing the two channels must not have in common. One
     implementation, two destinations.
     """
@@ -206,9 +207,9 @@ def channel_of(name: str):
 def raise_alerts(conn) -> int:
     """Raise an alert for every flagged score that has none. Returns the count.
 
-    Covers: EI05, EC23
-    Lot: N5
-    Competency: C3
+    Lot: B3-N5.
+    Competency: B3-C3.
+    Covers: B3-EI05, B3-EC23.
     """
     raised = db.execute_file(conn, RAISE_SQL)
     if raised:
@@ -240,9 +241,9 @@ def notify(conn, settings, now_budget: int | None = None) -> dict:
     bounds a crash to at most ONE duplicated notification instead of re-sending
     everything the run had already delivered.
 
-    Covers: EI05, EC09, EC14
-    Lot: N5
-    Competency: C3, C4
+    Lot: B3-N5.
+    Competency: B3-C3, B3-C4.
+    Covers: B3-EI05, B3-EC09, B3-EC14.
     """
     channel_name = settings.alert_channel
     send = channel_of(channel_name)

@@ -1,9 +1,12 @@
 -- Exploited layer: typed, pseudonymised transactions with their features.
--- Covers: EE08, EI03, EC17   Lot: L3, L4   Competency: C2
+-- Block: B3.
+-- Lot: B3-L3, B3-L4.
+-- Competency: B3-C2.
+-- Covers: B3-EE08, B3-EI03, B3-EC17.
 --
 -- No label column: dissociating the verdict is structural, not a convention
--- (F02.3). No identifying column either: identity data is not copied here
--- (EC17).
+-- (B3-F02-3). No identifying column either: identity data is not copied here
+-- (B3-EC17).
 --
 -- amt is numeric(12,2), never a float: a monetary total has to reconcile to the
 -- cent from one store to the next.
@@ -20,14 +23,14 @@ CREATE TABLE IF NOT EXISTS fd_transactions (
     -- Features: computed at ingestion in real time, backfilled in batch here.
     f_tx_count   bigint,
     f_avg_amount numeric(12,2),
-    -- Minimisation rather than removal, which EC17 allows. lat/long are the
+    -- Minimisation rather than removal, which B3-EC17 allows. lat/long are the
     -- cardholder's home and are constant for each of the 924 cardholders, so
     -- keeping them would keep the home address. Only the distance between home
     -- and merchant is stored: a radius around a merchant, not a point, and the
     -- feature that carries the signal survives.
     --
     -- Unlike the two above, this one is a pure row function with no history, so
-    -- it takes no part in L4's two-mode reconciliation.
+    -- it takes no part in B3-L4's two-mode reconciliation.
     f_home_distance_km numeric(8,2),
     batch_id     uuid          NOT NULL,
     ingested_at  timestamptz   NOT NULL DEFAULT now()

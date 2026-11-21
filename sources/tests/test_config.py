@@ -143,9 +143,9 @@ def test_a_relative_root_does_not_depend_on_the_working_directory():
 # --- the cadence, and the calibration that depends on it ----------------------
 
 def test_the_declared_cadence_covers_the_announced_rate():
-    """THE invariant of N7's cadence, decided 2026-11-16.
+    """THE invariant of B3-N7's cadence, decided 2026-11-16.
 
-    One call returns one transaction and nothing queues behind it (N0), so the
+    One call returns one transaction and nothing queues behind it (B3-N0), so the
     cadence times the calls per run IS the share of the stream that gets scored.
     fraud/threshold.py chose the threshold 0.93 and the capacity of 60 alerts a
     day at API_TXN_PER_DAY. Observe less and every published figure stays
@@ -163,7 +163,7 @@ def test_the_declared_cadence_covers_the_announced_rate():
 
 
 def test_the_cadence_stays_under_the_measured_limiter():
-    """N0 measured the limiter firing at 13 calls/minute and never below."""
+    """B3-N0 measured the limiter firing at 13 calls/minute and never below."""
     settings = config.load()
     per_minute = settings.observed_per_day() / (24 * 60)
     assert per_minute <= 13, per_minute
@@ -191,8 +191,8 @@ def test_runs_per_day_refuses_a_zero_step():
 
 
 def test_the_timing_budget_of_one_run_fits_in_its_cadence():
-    """N0: median latency 5.4 s per call. Five calls take about 27 s of the
-    minute; a 502 costs 25 s more. Two 502s would overrun, which is why N7 sets
+    """B3-N0: median latency 5.4 s per call. Five calls take about 27 s of the
+    minute; a 502 costs 25 s more. Two 502s would overrun, which is why B3-N7 sets
     max_active_runs=1 rather than why the cadence is slower."""
     settings = config.load()
     seconds_between_runs = 86400 / config.runs_per_day(settings.realtime_schedule)
@@ -200,7 +200,7 @@ def test_the_timing_budget_of_one_run_fits_in_its_cadence():
     assert nominal < seconds_between_runs, (nominal, seconds_between_runs)
 
 
-# --- la decision de N4, declaree dans la gouvernance --------------------------
+# --- la decision de B3-N4, declaree dans la gouvernance --------------------------
 
 def test_the_governance_declares_the_columns_the_model_does_not_use():
     """Decided by the paired comparison of 16 November 2026: +18 frauds out of
@@ -242,7 +242,7 @@ def test_the_shape_is_checked_here_and_membership_elsewhere():
     assert "from fraud" not in body
 
 
-# --- N9: the operations channel is declared, and its declaration is checked ---
+# --- B3-N9: the operations channel is declared, and its declaration is checked ---
 
 def test_the_operations_channel_is_declared():
     settings = config.load()
@@ -283,7 +283,7 @@ def test_a_share_outside_the_open_interval_is_refused(value):
 
 
 def test_the_declared_rejection_share_clears_the_measured_floor():
-    """N0 saw one call in 57 (1.75 %) carrying an 818 s gap, which quarantines
+    """B3-N0 saw one call in 57 (1.75 %) carrying an 818 s gap, which quarantines
     on the clock tolerance: the normal rejection rate is NOT zero, and a
     threshold below the measured floor would hold the control in permanent
     alert. Measured, then declared above it."""

@@ -1,6 +1,9 @@
 -- The messages sent to the operations channel over a calendar period, newest
 -- first, each return to green with the length of the incident it closes.
--- Covers: EC14, EC17   Lot: R9 (S6)   Competency: C4
+-- Block: B3.
+-- Lot: B3-R9 (B3-S6).
+-- Competency: B3-C4.
+-- Covers: B3-EC14, B3-EC17.
 --
 -- THE LENGTH IS READ ACROSS THE PERIOD'S EDGE. An incident that began before
 -- the first day and ended within the period is still an incident of known

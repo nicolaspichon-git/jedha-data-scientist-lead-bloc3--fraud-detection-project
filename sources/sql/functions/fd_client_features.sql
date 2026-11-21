@@ -1,9 +1,12 @@
 -- THE definition of the history features -- REAL-TIME mode (per row).
--- Covers: EE07   Lot: L4   Competency: C2, C5
+-- Block: B3.
+-- Lot: B3-L4.
+-- Competency: B3-C2, B3-C5.
+-- Covers: B3-EE07.
 --
 -- Its batch counterpart is sql/backfill/features_window.sql. Both must produce
 -- the same values; sql/checks/reconcile_features.sql is what proves it, rather
--- than a shared piece of code -- see the S1 plan, section 2.2 / L4.
+-- than a shared piece of code -- see the B3-S1 plan, section 2.2 / B3-L4.
 --
 -- THE SIX RULINGS, to be read side by side with those of the backfill file:
 --   1. bound      : STRICT (<). A transaction never counts itself.

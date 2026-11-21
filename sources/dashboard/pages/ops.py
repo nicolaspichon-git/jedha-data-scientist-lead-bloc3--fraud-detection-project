@@ -1,8 +1,9 @@
-"""The operations channel: what it was told, and when (R9).
+"""The operations channel: what it was told, and when (B3-R9).
 
-Covers: EC14, EC17
-Lot: R9
-Competency: C4
+Block: B3.
+Lot: B3-R9.
+Competency: B3-C4.
+Covers: B3-EC14, B3-EC17.
 
 Reads fd_ops_notifications, the journal notify_ops writes after each message
 it sends -- whatever the channel, log or file. fraud/dashboard.ops_view()

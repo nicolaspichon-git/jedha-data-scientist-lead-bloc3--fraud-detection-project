@@ -1,6 +1,8 @@
--- The acceptance criteria of S3, lots N1 to N9. Every verdict must read OK.
--- Covers: EE01, EE02, EE09, EI01, EI03, EI05, EC09, EC14, EC17, EC23, EC24
--- Lot: N8   Competency: C1, C4, C5
+-- The acceptance criteria of B3-S3, lots B3-N1 to B3-N9. Every verdict must read OK.
+-- Block: B3.
+-- Lot: B3-N8.
+-- Competency: B3-C1, B3-C4, B3-C5.
+-- Covers: B3-EE01, B3-EE02, B3-EE09, B3-EI01, B3-EI03, B3-EI05, B3-EC09, B3-EC14, B3-EC17, B3-EC23, B3-EC24.
 --
 -- THE DECISIVE ONE IS THE BLIND BAND, criterion 9: every verdict of the stream
 -- must sit exactly one declared delay after its transaction, and none may be
@@ -8,10 +10,10 @@
 -- claim rather than a property -- and a model trained on a window overlapping
 -- it would have read the future without any metric saying so.
 --
--- THE MOST USEFUL ONE IS 13, and it is informative on purpose. M6 chose the
+-- THE MOST USEFUL ONE IS 13, and it is informative on purpose. B3-M6 chose the
 -- threshold for 38.5 alerts a day on the TEST SET; what the stream actually
 -- produces is measured here. A large gap does not mean the pipeline is broken:
--- it means the stream does not resemble the test set, and therefore that S2's
+-- it means the stream does not resemble the test set, and therefore that B3-S2's
 -- published metrics do not describe what is happening. That is the single most
 -- valuable signal this file carries, so it is reported rather than enforced --
 -- a criterion that failed on it would be refusing reality.
@@ -24,13 +26,13 @@
 -- 60  = scoring.alert_capacity_per_day
 -- 30  = verdicts.delay_days, in nominal mode
 --
--- N9's own criteria sit at 20 to 22. The ones that read a FILE -- that no
+-- B3-N9's own criteria sit at 20 to 22. The ones that read a FILE -- that no
 -- transaction travelled on the operations channel -- are in tools/check_s3.py
 -- beside the alert file's, because this file can only ask the database.
 
--- THE VERDICT MUST REACH THE SHELL, and until N9 it did not. psql exits 0
+-- THE VERDICT MUST REACH THE SHELL, and until B3-N9 it did not. psql exits 0
 -- whatever the column below says, and Invoke-Step reads only the exit code: so
--- `fd-manager check` walked past seven criteria of S1 reading ECHEC and would
+-- `fd-manager check` walked past seven criteria of B3-S1 reading ECHEC and would
 -- have printed "Tous les criteres passent". A green light that cannot turn red
 -- is worse than no light, because somebody trusts it.
 --
@@ -88,23 +90,23 @@ window_24h AS (
     WHERE  txn_ts > now() - interval '24 hours'
 ),
 criteria AS (
-    -- N1: the collector and the raw zone
-    SELECT 1 AS ord, 'N1 lots temps reel en zone brute' AS criterion,
+    -- B3-N1: the collector and the raw zone
+    SELECT 1 AS ord, 'B3-N1 lots temps reel en zone brute' AS criterion,
            'au moins 1' AS expected,
            CASE WHEN (SELECT count(DISTINCT batch_id) FROM fd_raw_events
                       WHERE source = 'current-transactions') > 0
                 THEN 'au moins 1' ELSE 'AUCUN' END AS actual
     UNION ALL
-    SELECT 2, 'N1 une execution par lot, jamais deux',
+    SELECT 2, 'B3-N1 une execution par lot, jamais deux',
            '0 lot partage',
            CASE WHEN NOT EXISTS (
                     SELECT batch_id FROM stream_runs WHERE batch_id IS NOT NULL
                     GROUP BY batch_id HAVING count(*) > 1)
                 THEN '0 lot partage' ELSE 'PARTAGE' END
-    -- N2: the counters close. The CHECK constraint already refuses otherwise,
+    -- B3-N2: the counters close. The CHECK constraint already refuses otherwise,
     -- so this reads as a confirmation that the constraint was exercised.
     UNION ALL
-    SELECT 3, 'N2 compteurs fermes sur chaque execution',
+    SELECT 3, 'B3-N2 compteurs fermes sur chaque execution',
            '0 ecart',
            CASE WHEN NOT EXISTS (
                     SELECT 1 FROM stream_runs
@@ -118,7 +120,7 @@ criteria AS (
     -- to do while this failed, and an operator had no way out. Two readings of
     -- one rule, disagreeing. Airflow's verdict first; an age only for a run
     -- Airflow never heard of, where there is no verdict to have.
-    SELECT 4, 'N7 aucune execution que personne ne peut fermer',
+    SELECT 4, 'B3-N7 aucune execution que personne ne peut fermer',
            '0',
            (SELECT count(*)::text FROM stream_runs r
              WHERE r.state = 'running'
@@ -142,10 +144,10 @@ criteria AS (
               FROM fd_pipeline_runs
              WHERE state = 'running'
                AND started_at < now() - interval '1 hour')
-    -- N3: no identifying column reaches the exploited layer. Checked against
+    -- B3-N3: no identifying column reaches the exploited layer. Checked against
     -- the catalogue, not against a list written here.
     UNION ALL
-    SELECT 6, 'N3 aucune colonne nominative dans fd_transactions',
+    SELECT 6, 'B3-N3 aucune colonne nominative dans fd_transactions',
            '0',
            (SELECT count(*)::text FROM information_schema.columns
             WHERE table_name = 'fd_transactions'
@@ -153,38 +155,38 @@ criteria AS (
                                   'job','dob','gender','cc_num','lat','long',
                                   'is_fraud','label'))
     UNION ALL
-    SELECT 7, 'N3 aucune transaction du flux sans features',
+    SELECT 7, 'B3-N3 aucune transaction du flux sans features',
            '0',
            (SELECT count(*)::text FROM stream_txn WHERE f_tx_count IS NULL)
-    -- N4: every scored row carries the version that scored it
+    -- B3-N4: every scored row carries the version that scored it
     UNION ALL
-    SELECT 8, 'N4 transactions scorees sans version de modele',
+    SELECT 8, 'B3-N4 transactions scorees sans version de modele',
            '0', (SELECT without_version::text FROM scored)
     UNION ALL
-    SELECT 9, 'N4 decision stockee conforme au seuil stocke',
+    SELECT 9, 'B3-N4 decision stockee conforme au seuil stocke',
            '0',
            (SELECT count(*)::text FROM fd_scores
             WHERE flagged <> (score >= threshold))
-    -- N6: THE BLIND BAND, measured in production
+    -- B3-N6: THE BLIND BAND, measured in production
     UNION ALL
-    SELECT 10, 'N6 verdicts du flux deja echus',
+    SELECT 10, 'B3-N6 verdicts du flux deja echus',
            '0', (SELECT (verdicts - not_due)::text FROM band)
     UNION ALL
-    SELECT 11, 'N6 un seul delai de verdict',
+    SELECT 11, 'B3-N6 un seul delai de verdict',
            CASE WHEN (SELECT verdicts FROM band) = 0 THEN '0' ELSE '1' END,
            (SELECT distinct_delays::text FROM band)
-    -- N5: one alert per transaction, and the ceiling respected
+    -- B3-N5: one alert per transaction, and the ceiling respected
     UNION ALL
-    SELECT 12, 'N5 alertes en double sur un txn_id',
+    SELECT 12, 'B3-N5 alertes en double sur un txn_id',
            '0', (SELECT (raised - distinct_txn)::text FROM alerts)
     UNION ALL
-    SELECT 13, 'N5 notifications sur 24 h sous la capacite',
+    SELECT 13, 'B3-N5 notifications sur 24 h sous la capacite',
            'oui',
            CASE WHEN (SELECT notified_24h FROM alerts) <= 60
                 THEN 'oui' ELSE 'DEPASSEE' END
-    -- Informative. The figures any metric of S2 must be read beside.
+    -- Informative. The figures any metric of B3-S2 must be read beside.
     UNION ALL
-    SELECT 14, 'info alertes/jour observees contre 38.5 prevues par M6',
+    SELECT 14, 'info alertes/jour observees contre 38.5 prevues par B3-M6',
            'mesure',
            CASE WHEN (SELECT txn_24h FROM window_24h) = 0 THEN 'pas de flux'
                 ELSE round(86400.0 * (SELECT notified_24h + pending FROM alerts)
@@ -213,12 +215,12 @@ criteria AS (
     UNION ALL
     SELECT 20, 'info delai de verdict constate', 'mesure',
            (SELECT COALESCE(delay::text, 'aucun verdict') FROM band)
-    -- N9: stage (3c), the controls and the operations channel. A control
+    -- B3-N9: stage (3c), the controls and the operations channel. A control
     -- recorded under a name the code no longer knows would never transition
     -- again -- it would sit in the table as a state nobody computes, and the
     -- channel would go quiet about whatever that control used to watch.
     UNION ALL
-    SELECT 21, 'N9 controles enregistres hors des quatre declares',
+    SELECT 21, 'B3-N9 controles enregistres hors des quatre declares',
            '0 inconnu',
            (SELECT count(*)::text || ' inconnu'
               FROM fd_ops_state
@@ -258,7 +260,7 @@ BEGIN
       FROM acceptance
      WHERE verdict LIKE '%ECHEC%';
     IF failed > 0 THEN
-        RAISE EXCEPTION 'S3 : % critere(s) en echec : %', failed, names
+        RAISE EXCEPTION 'B3-S3 : % critere(s) en echec : %', failed, names
             USING HINT = 'Le tableau ci-dessus donne attendu et constate pour chacun.';
     END IF;
 END $$;

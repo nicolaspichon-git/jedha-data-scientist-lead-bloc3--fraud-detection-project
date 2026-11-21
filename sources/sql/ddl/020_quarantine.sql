@@ -1,9 +1,12 @@
 -- Quarantine, with a reason.
--- Covers: EC22   Lot: L2   Competency: C5
+-- Block: B3.
+-- Lot: B3-L2.
+-- Competency: B3-C5.
+-- Covers: B3-EC22.
 --
 -- reason_class makes the separation between the two classes of check required by
--- EC20 and EC21 visible IN THE DATA: 'field' for per-field validation, 'record'
--- for cross-field coherence within one record. F07.3 reports the breakdown over
+-- B3-EC20 and B3-EC21 visible IN THE DATA: 'field' for per-field validation, 'record'
+-- for cross-field coherence within one record. B3-F07-3 reports the breakdown over
 -- this column.
 
 CREATE TABLE IF NOT EXISTS fd_quarantine (

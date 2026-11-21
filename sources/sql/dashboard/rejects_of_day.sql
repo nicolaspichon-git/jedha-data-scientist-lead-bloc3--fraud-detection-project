@@ -1,6 +1,9 @@
 -- The quarantine of a calendar period, by class and by reason. Read by the
--- dashboard (S6, lot R7). Restitutes F07.3.
--- Covers: EC15, EC22   Lot: R7, R8   Competency: C4
+-- dashboard (B3-S6, lot B3-R7). Restitutes B3-F07-3.
+-- Block: B3.
+-- Lot: B3-R7, B3-R8.
+-- Competency: B3-C4.
+-- Covers: B3-EC15, B3-EC22.
 --
 -- COUNTS ONLY. Neither `payload` -- the raw rejected record, the raw zone's
 -- personal data -- nor `reason_detail` -- which quotes a raw value, the

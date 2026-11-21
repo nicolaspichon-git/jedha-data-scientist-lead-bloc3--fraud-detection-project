@@ -1,4 +1,4 @@
-"""The batch identifier: what makes a retry harmless (EC23)."""
+"""The batch identifier: what makes a retry harmless (B3-EC23)."""
 import uuid
 
 from fraud import raw

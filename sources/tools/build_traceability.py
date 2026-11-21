@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""Build the traceability matrix: requirement -> D0 row -> code location.
+"""Build the traceability matrix: requirement -> B3-D0 row -> code location.
 
     python tools/build_traceability.py            # writes TRACEABILITY.md
     python tools/build_traceability.py --check    # writes nothing, non-zero on a break
 
-Covers: EC07, EC28
-Lot: L8
-Competency: C1
+Block: B3.
+Lot: B3-L8.
+Competency: B3-C1.
+Covers: B3-EC07, B3-EC28.
 
-Why a script rather than a hand-kept table: a hand-written matrix drifts. D0's
+Why a script rather than a hand-kept table: a hand-written matrix drifts. B3-D0's
 did -- eleven citations had slipped by one rank after a renumbering. The --check
 mode looks BOTH WAYS:
 
-  - does every requirement cited in D0 section 0.4 exist in the requirements
+  - does every requirement cited in B3-D0 section 0.4 exist in the requirements
     document? (this is the check that would have caught that drift the same day)
   - does every "Covers:" mark in the code name an existing requirement?
 
@@ -20,7 +21,7 @@ Documentary and architectural requirements legitimately carry no code: their
 absence is counted, not penalised.
 
 Code and comments are in English; the generated document stays in French, since
-it is read alongside D0 and D1.
+it is read alongside B3-D0 and B3-D1.
 """
 from __future__ import annotations
 
@@ -31,10 +32,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent          # step-2/
-REQUIREMENTS = ROOT.parent / "step-0" / "ws" / "fraud-project--reprise-du-cahier-des-charges.md"
-D0 = ROOT.parent / "step-0" / "fraud-project--d0-introduction.md"
+REQUIREMENTS = (ROOT.parent / "step-0" / "ws" / "fraud-project--cahier-des-charges"
+                / "fraud-project--reprise-du-cahier-des-charges.md")
+D0_DOC = ROOT.parent / "step-0" / "fraud-project--d0-introduction.md"
 SCANNED = ("fraud", "sql", "tests", "tools", "airflow", "dashboard")
-REQ = re.compile(r"\b((?:EE|EI|EC)[0-9]{2})\b")
+REQ = re.compile(r"(?<![\w-])(B3-(?:EE|EI|EC)[0-9]{2})(?![\w])")
 MARK = re.compile(r"Covers:\s*(.+)")
 
 # The requirements document spells a kind out, sometimes twice over ("documentaire,
@@ -66,7 +68,7 @@ def defined() -> dict[str, tuple[str, str]]:
     """Requirements as defined: identifier -> (statement, kind)."""
     out = {}
     for line in read(REQUIREMENTS).split("\n"):
-        m = re.match(r"^\|\s*\*{0,2}((?:EE|EI|EC)[0-9]{2})\*{0,2}\s*\|", line)
+        m = re.match(r"^\|\s*\*{0,2}(B3-(?:EE|EI|EC)[0-9]{2})\*{0,2}\s*\|", line)
         if not m:
             continue
         cells = [c.strip() for c in line.split("|")]
@@ -78,13 +80,13 @@ def defined() -> dict[str, tuple[str, str]]:
 
 
 def cited_in_d0() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    """Requirement -> D0 rows citing it. Live rows kept apart from struck ones."""
-    body = read(D0)
+    """Requirement -> B3-D0 rows citing it. Live rows kept apart from struck ones."""
+    body = read(D0_DOC)
     body = body.split("### 0.4.1.")[1].split("### 0.4.4.")[0]
     live: dict[str, list[str]] = {}
     struck: dict[str, list[str]] = {}
     for line in body.split("\n"):
-        m = re.match(r"^\|\s*\*{0,2}~{0,2}((?:F|K|D)[0-9]{2}(?:\.[0-9])?)", line)
+        m = re.match(r"^\|\s*\*{0,2}~{0,2}(B3-(?:F|K|H)[0-9]{2}(?:-[0-9])?)", line)
         if not m:
             continue
         cells = line.split("|")
@@ -130,7 +132,7 @@ def main() -> int:
     broken: list[str] = []
     for r, rows in live.items():
         if r not in req:
-            broken.append("D0 cites %s (row %s), which the requirements do not define"
+            broken.append("B3-D0 cites %s (row %s), which the requirements do not define"
                           % (r, ", ".join(rows)))
     for r, places in code.items():
         if r not in req:
@@ -156,11 +158,11 @@ def main() -> int:
 
     out = ["# Matrice de traçabilité", "",
            "> Fichier **généré** par `tools/build_traceability.py`. Ne pas éditer à la main.",
-           "> Les emplacements viennent des marques `Covers:` du code ; les lignes de D0 de §0.4.",
+           "> Les emplacements viennent des marques `Covers:` du code ; les lignes de B3-D0 de §0.4.",
            "",
            "> Nature : " + LEGEND + ".",
            "",
-           "| Exigence | Nature | Énoncé | D0 §0.4 | Code |",
+           "| Exigence | Nature | Énoncé | B3-D0 §0.4 | Code |",
            "| --- | --- | --- | --- | --- |"]
     for r in sorted(req):
         text, kind = req[r]

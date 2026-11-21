@@ -1,12 +1,13 @@
 """A column that is not there yet says so, and says what to run.
 
-Covers: EC23, EI12
-Lot: Q2
-Competency: C4, C5
+Block: B3.
+Lot: B3-Q2.
+Competency: B3-C4, B3-C5.
+Covers: B3-EC23, B3-EI12.
 
 WHAT THIS CAME FROM. The first real run of `fd-manager purge` ended in a
 driver traceback: `psycopg.errors.UndefinedColumn: column p.digests does not
-exist`. Nothing was wrong with the purge -- the DDL of Q1 had simply not been
+exist`. Nothing was wrong with the purge -- the DDL of B3-Q1 had simply not been
 applied to that database. The message sent the reader to the SQL, which is
 correct and useless; the remedy was one command, and nothing said it.
 
@@ -67,7 +68,7 @@ def test_the_column_being_absent_is_named_with_its_remedy():
         runs.assert_digests(Conn(present=False))
     message = str(raised.value)
     assert "fd_pipeline_runs.digests" in message
-    assert "Q1" in message
+    assert "B3-Q1" in message
     assert "fd-manager.ps1 init" in message        # the command, in the message
     assert "digests -Apply" in message             # and the step after it
     assert "additif" in message                    # applying it loses nothing

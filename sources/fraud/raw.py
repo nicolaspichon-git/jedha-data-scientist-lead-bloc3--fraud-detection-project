@@ -1,11 +1,12 @@
 """Writing into and reading back from the raw zone.
 
-Covers: EC23, EC24
-Lot: L1
-Competency: C2, C5
+Block: B3.
+Lot: B3-L1.
+Competency: B3-C2, B3-C5.
+Covers: B3-EC23, B3-EC24.
 
 The raw zone is the seam of the whole system: everything downstream can be
-rebuilt from it without querying the source again (EC24), and it is append-only
+rebuilt from it without querying the source again (B3-EC24), and it is append-only
 by revocation, not by convention (see sql/ddl/060_roles_grants.sql).
 """
 from __future__ import annotations
@@ -35,7 +36,7 @@ def batch_id_for(run_id: str) -> uuid.UUID:
     A random uuid4 would hand a retried task a fresh batch_id, and the same
     lines would be ingested twice. Derived from the run_id, a retry reuses the
     same identifier, so the pre-check below and the UNIQUE (batch_id, line_no)
-    constraint both make the retry a no-op. That is EC23 in practice.
+    constraint both make the retry a no-op. That is B3-EC23 in practice.
     """
     return uuid.uuid5(NAMESPACE, "fraud-detection:raw:" + run_id)
 
@@ -46,7 +47,7 @@ def history_in_raw(conn: "psycopg.Connection", dag_id: str) -> list[tuple]:
     Reads sql/checks/history_already_loaded.sql -- THE definition. Returns
     (state, run_id, batch_id, n_rows, ended_at), successes first.
 
-    Covers: EC23, EC24
+    Covers: B3-EC23, B3-EC24.
     """
     from fraud import db
     return db.query_file(conn, HISTORY_LOADED_SQL, dag_id=dag_id)
@@ -63,7 +64,7 @@ def refuse_second_load(conn: "psycopg.Connection", dag_id: str,
     the run level, which is where an operator relaunching after a failure
     actually stands.
 
-    Covers: EC23, EC24
+    Covers: B3-EC23, B3-EC24.
     """
     if replay:                         # a replay reads the raw zone, never writes it
         return

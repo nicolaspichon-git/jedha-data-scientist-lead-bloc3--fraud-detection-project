@@ -1,15 +1,16 @@
 """History features: drives both computation modes and proves they agree.
 
-Covers: EE07
-Lot: L4
-Competency: C2, C5
+Block: B3.
+Lot: B3-L4.
+Competency: B3-C2, B3-C5.
+Covers: B3-EE07.
 
 One definition, expressed twice, and a test that proves the equality:
   - real time : sql/functions/fd_client_features.sql   (per row)
   - batch     : sql/backfill/features_window.sql    (window)
   - proof     : sql/checks/reconcile_features.sql   (stratified)
 
-WHY TWO EXPRESSIONS RATHER THAN ONE. D1 and the process guide propose a single
+WHY TWO EXPRESSIONS RATHER THAN ONE. B3-D1 and the process guide propose a single
 SQL expression invoked both ways. That does not hold at scale: with 924
 cardholders and 601 transactions each on average, a correlated call costs about
 601^2 / 2 ~ 180,600 row visits per cardholder, so ~167 million in all, and as
@@ -49,11 +50,11 @@ def backfill(conn: "psycopg.Connection") -> int:
     Recomputes the whole table and not just the current batch: a history feature
     depends on every earlier transaction of the cardholder, so a new batch moves
     the values of rows that were already stored. Deterministic given the data,
-    therefore replayable (EC23).
+    therefore replayable (B3-EC23).
 
-    Covers: EE07
-    Lot: L4
-    Competency: C2
+    Lot: B3-L4.
+    Competency: B3-C2.
+    Covers: B3-EE07.
     """
     rows = db.execute_file(conn, BACKFILL_SQL)
     log.info("backfill: %d row(s) updated", rows)
@@ -68,9 +69,9 @@ def batch_is_latest(conn: "psycopg.Connection", batch_id) -> tuple[int, object]:
     current_time and is therefore later than everything stored -- true today,
     and nothing in the schema enforces it.
 
-    Covers: EE07
-    Lot: N3
-    Competency: C5
+    Lot: B3-N3.
+    Competency: B3-C5.
+    Covers: B3-EE07.
     """
     rows = db.query_file(conn, IS_LATEST_SQL, batch_id=batch_id)
     return (rows[0][0], rows[0][1]) if rows else (0, None)
@@ -84,9 +85,9 @@ def apply_batch(conn: "psycopg.Connection", batch_id) -> int:
     -- the values would simply be wrong, which is the failure mode this whole
     lot exists to avoid.
 
-    Covers: EE07, EI03
-    Lot: N3
-    Competency: C2, C5
+    Lot: B3-N3.
+    Competency: B3-C2, B3-C5.
+    Covers: B3-EE07, B3-EI03.
     """
     later, offender = batch_is_latest(conn, batch_id)
     if later:
@@ -124,9 +125,9 @@ def coverage(conn: "psycopg.Connection") -> dict:
 def reconcile(conn: "psycopg.Connection") -> list[tuple]:
     """Confront both modes over the stratified sample. MUST return [].
 
-    Covers: EE07
-    Lot: L4
-    Competency: C5
+    Lot: B3-L4.
+    Competency: B3-C5.
+    Covers: B3-EE07.
     """
     rows = db.query_file(conn, RECONCILE_SQL)
     if rows:

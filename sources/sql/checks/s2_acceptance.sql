@@ -1,5 +1,8 @@
--- The acceptance criteria of S2, lots M0 to M4. Every verdict must read OK.
--- Covers: EC05, EC23, EI02, EI04   Lot: M8   Competency: C1, C2, C5
+-- The acceptance criteria of B3-S2, lots B3-M0 to B3-M4. Every verdict must read OK.
+-- Block: B3.
+-- Lot: B3-M8.
+-- Competency: B3-C1, B3-C2, B3-C5.
+-- Covers: B3-EC05, B3-EC23, B3-EI02, B3-EI04.
 --
 -- The decisive one is the fourth: n_train + n_test must equal the number of
 -- rows whose VERDICT WAS KNOWN at the cut-off. If the build had filtered on the
@@ -14,9 +17,9 @@
 -- governance.yml. A duplication, and a deliberate one: an acceptance check that
 -- read its expected value from the thing it checks would verify nothing.
 
--- THE VERDICT MUST REACH THE SHELL, and until N9 it did not. psql exits 0
+-- THE VERDICT MUST REACH THE SHELL, and until B3-N9 it did not. psql exits 0
 -- whatever the column below says, and Invoke-Step reads only the exit code: so
--- `fd-manager check` walked past seven criteria of S1 reading ECHEC and would
+-- `fd-manager check` walked past seven criteria of B3-S1 reading ECHEC and would
 -- have printed "Tous les criteres passent". A green light that cannot turn red
 -- is worse than no light, because somebody trusts it.
 --
@@ -48,45 +51,45 @@ known AS (
     JOIN   fd_ground_truth g ON g.txn_id = t.txn_id AND g.label_ts <= l.cut_off
 ),
 criteria AS (
-    SELECT 1 AS ord, 'M0 jeux enregistres (>= 1)' AS criterion,
+    SELECT 1 AS ord, 'B3-M0 jeux enregistres (>= 1)' AS criterion,
            'ok' AS expected,
            CASE WHEN count(*) >= 1 THEN 'ok' ELSE 'aucun' END AS actual
     FROM   fd_datasets
     UNION ALL
-    SELECT 2, 'M2 empreinte de recette sur 64 hexa', '64',
+    SELECT 2, 'B3-M2 empreinte de recette sur 64 hexa', '64',
            length(recipe_digest)::text FROM latest
     UNION ALL
-    SELECT 3, 'M2 coupure dans l''horizon d''etiquetage', 'oui',
+    SELECT 3, 'B3-M2 coupure dans l''horizon d''etiquetage', 'oui',
            CASE WHEN cut_off <= '2020-12-22 23:13:39+00'::timestamptz
                 THEN 'oui' ELSE 'NON : ' || cut_off::text END
     FROM   latest
     UNION ALL
-    SELECT 4, 'M3 n_train + n_test = lignes au verdict CONNU',
+    SELECT 4, 'B3-M3 n_train + n_test = lignes au verdict CONNU',
            (SELECT n::text FROM known),
            (SELECT (l.n_train + l.n_test)::text FROM latest l)
     UNION ALL
-    SELECT 5, 'M3 repartition train conforme a la regle',
+    SELECT 5, 'B3-M3 repartition train conforme a la regle',
            (SELECT n_train::text FROM known), n_train::text FROM latest
     UNION ALL
-    SELECT 6, 'M3 repartition test conforme a la regle',
+    SELECT 6, 'B3-M3 repartition test conforme a la regle',
            (SELECT n_test::text FROM known), n_test::text FROM latest
     UNION ALL
-    SELECT 7, 'M4 regle de decoupage temporelle', 'oui',
+    SELECT 7, 'B3-M4 regle de decoupage temporelle', 'oui',
            CASE WHEN split_rule LIKE 'temporal:%' THEN 'oui'
                 ELSE 'NON : ' || split_rule END
     FROM   latest
     UNION ALL
-    SELECT 8, 'M4 positifs du cote entrainement (> 0)', 'ok',
+    SELECT 8, 'B3-M4 positifs du cote entrainement (> 0)', 'ok',
            CASE WHEN n_train_pos > 0 THEN 'ok' ELSE 'AUCUN' END FROM latest
     UNION ALL
-    SELECT 9, 'M4 positifs du cote test (> 0)', 'ok',
+    SELECT 9, 'B3-M4 positifs du cote test (> 0)', 'ok',
            CASE WHEN n_test_pos > 0 THEN 'ok' ELSE 'AUCUN' END FROM latest
     UNION ALL
-    SELECT 10, 'M4 taux de base enregistres', 'ok',
+    SELECT 10, 'B3-M4 taux de base enregistres', 'ok',
            CASE WHEN base_rate_train > 0 AND base_rate_test > 0 THEN 'ok'
                 ELSE 'MANQUANT' END FROM latest
     UNION ALL
-    SELECT 11, 'M4 aucune transaction des deux cotes', '0',
+    SELECT 11, 'B3-M4 aucune transaction des deux cotes', '0',
            CASE WHEN train_end <= test_end THEN '0' ELSE 'CHEVAUCHEMENT' END
     FROM   latest
     -- Informative, and the figures that must accompany any metric later.
@@ -124,7 +127,7 @@ BEGIN
       FROM acceptance
      WHERE verdict LIKE '%ECHEC%';
     IF failed > 0 THEN
-        RAISE EXCEPTION 'S2 : % critere(s) en echec : %', failed, names
+        RAISE EXCEPTION 'B3-S2 : % critere(s) en echec : %', failed, names
             USING HINT = 'Le tableau ci-dessus donne attendu et constate pour chacun.';
     END IF;
 END $$;

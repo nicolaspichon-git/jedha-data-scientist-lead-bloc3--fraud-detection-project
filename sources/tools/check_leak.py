@@ -1,8 +1,9 @@
 """Score the same payload twice, with each verdict, and require the same score.
 
-Covers: EE03, EI03, EI12, EC17
-Lot: N6
-Competency: C4, C5
+Block: B3.
+Lot: B3-N6.
+Competency: B3-C4, B3-C5.
+Covers: B3-EE03, B3-EI03, B3-EI12, B3-EC17.
 
 THE ONLY ACCEPTANCE CRITERION OF THIS PLAN THAT MEASURES AN ABSENCE. Every
 other one checks that a function does something; this one checks that a value
@@ -10,7 +11,7 @@ does NOT reach a model. The distinction matters because a leak leaves no trace
 in any metric: a model that reads the label scores beautifully, and the report
 would be the proudest page of the dossier.
 
-The API delivers is_fraud in the SAME payload as the features -- N0 measured it,
+The API delivers is_fraud in the SAME payload as the features -- B3-N0 measured it,
 21 columns, is_fraud present as a str -- so the label sits one line of code away
 from the scoring. tests/test_leak.py reads the code and the schema for the four
 structural guarantees. This runs the chain, with the REGISTERED model, and
@@ -35,10 +36,10 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")
 log = logging.getLogger("check_leak")
 
-# A payload of the measured shape. The values are the ones N0 published as safe
+# A payload of the measured shape. The values are the ones B3-N0 published as safe
 # to record -- no name, no address, no date of birth -- and cc_num is the
 # 19-digit card the measurement found, so the check also crosses the precision
-# boundary that cost S1 a ruling.
+# boundary that cost B3-S1 a ruling.
 PAYLOAD = {
     "trans_num": "aca54e7c407bb98811b688f3f055c4c7",
     "current_time": "1794817599732",
@@ -71,7 +72,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Require the same score for a payload labelled fraudulent "
                     "and the same payload labelled honest.",
-        epilog="The only acceptance criterion of S3 that measures an absence.")
+        epilog="The only acceptance criterion of B3-S3 that measures an absence.")
     parser.add_argument("--recipe", "--digest", dest="recipe", default=None,
                         help="recipe VERSION -- the 12-character directory name under datasets/, which is datasets.Recipe.version() and never the full 64-character digest (default: the latest run)")
     args = parser.parse_args(argv)

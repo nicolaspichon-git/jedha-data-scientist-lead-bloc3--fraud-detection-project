@@ -1,8 +1,9 @@
-"""The dashboard of S6: its entry point. `streamlit run dashboard/app.py`.
+"""The dashboard of B3-S6: its entry point. `streamlit run dashboard/app.py`.
 
-Covers: EE03
-Lot: R2
-Competency: C4
+Block: B3.
+Lot: B3-R2.
+Competency: B3-C4.
+Covers: B3-EE03.
 
 Declares the pages and nothing else. No data is read here: every page opens
 its own connection, as fd_dashboard, through common.connection().

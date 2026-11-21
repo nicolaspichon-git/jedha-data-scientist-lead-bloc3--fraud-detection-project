@@ -1,10 +1,11 @@
-"""S5 / Q3: the purge itself. Rows leave the database here.
+"""B3-S5 / B3-Q3: the purge itself. Rows leave the database here.
 
-Covers: EE05, EI11, EC19, EC26
-Lot: Q3
-Competency: C2, C3
+Block: B3.
+Lot: B3-Q3.
+Competency: B3-C2, B3-C3.
+Covers: B3-EE05, B3-EI11, B3-EC19, B3-EC26.
 
-Everything in Q2 counted. This lot destroys, and these tests hold the five
+Everything in B3-Q2 counted. This lot destroys, and these tests hold the five
 decisions that separate it from an ordinary DELETE:
 
   - the set comes from the plan, so what the operator read is what happens;
@@ -16,7 +17,7 @@ decisions that separate it from an ordinary DELETE:
   - an interrupted purge is RESUMABLE: the slices commit as they go, so a
     killed process leaves a batch that no longer matches its fingerprint, and
     without the marker written beforehand the honest reading would be "refuse
-    for ever" -- the very outcome Q1 exists to prevent;
+    for ever" -- the very outcome B3-Q1 exists to prevent;
   - the right to destroy belongs to a role of its own, and that role cannot
     reach the exploited layer at all.
 """
@@ -63,7 +64,7 @@ class Conn:
 
 def _store(name, rows, deletable, total=1000):
     """One store as plan() reports it -- including the two fields the journal
-    of Q6 reads: the cutoff it applied and the size it applied it to."""
+    of B3-Q6 reads: the cutoff it applied and the size it applied it to."""
     return {"store": name, "rows": rows, "deletable": deletable,
             "batch_ids": [entry["batch_id"] for entry in deletable],
             "refusals": [], "total_rows": total,
@@ -105,7 +106,7 @@ def world(monkeypatch):
 
     def execute_file(conn, relative, **params):
         if relative == purge.RECORD_SQL:
-            # Q6: the journal goes through the same door as the deletes, and
+            # B3-Q6: the journal goes through the same door as the deletes, and
             # taking it for one made every count here wrong.
             trace.append(("journal", params["store"], params["n_deleted"]))
             return 1
@@ -178,7 +179,7 @@ def test_the_purge_runs_under_a_role_of_its_own():
 
 def test_that_role_cannot_reach_the_exploited_layer():
     """"THE PURGE DID NOT OVERFLOW" IS NOT A CHECK HERE, IT IS A PRIVILEGE THE
-    SESSION DOES NOT HOLD. Q6 measures the digest as well, because a property
+    SESSION DOES NOT HOLD. B3-Q6 measures the digest as well, because a property
     worth having is worth measuring -- but the first line of defence is that
     the grant does not exist."""
     granted = [line for line in _sql(ROLE_SQL).splitlines()
@@ -190,7 +191,7 @@ def test_that_role_cannot_reach_the_exploited_layer():
 
 
 def test_that_role_cannot_delete_the_evidence():
-    """The fingerprints of Q1 are what remains of a purged batch. The process
+    """The fingerprints of B3-Q1 are what remains of a purged batch. The process
     that deletes the data must not be able to delete the record of it."""
     text = _sql(ROLE_SQL)
     assert re.search(r"REVOKE[^;]*DELETE[^;]*ON fd_pipeline_runs\s+FROM fd_purge",
@@ -335,7 +336,7 @@ def test_the_marker_of_one_store_does_not_erase_the_other():
 
 
 def test_an_interrupted_purge_explains_the_mismatch_it_causes():
-    """The dry run of Q2 reports a half-purged batch as a mismatch. The
+    """The dry run of B3-Q2 reports a half-purged batch as a mismatch. The
     message must name the real cause, or the reader goes looking for an
     intruder."""
     source = (ROOT / "fraud" / "runs.py").read_text(encoding="utf-8")
@@ -360,7 +361,7 @@ def test_the_confirmation_is_what_lets_it_through(world):
 # --- a store the dry run counts and this lot does not delete ------------------------
 
 def test_a_store_with_no_delete_is_named_rather_than_silently_skipped(world):
-    """Every store the plan counts is deleted since Q4, so this holds the
+    """Every store the plan counts is deleted since B3-Q4, so this holds the
     BEHAVIOUR rather than today's list: a store added to the dry run without a
     delete file must be named in the summary, or the plan's figures read as a
     promise. Invented here, since the real list no longer has such a store."""
@@ -373,7 +374,7 @@ def test_a_store_with_no_delete_is_named_rather_than_silently_skipped(world):
 
 
 def test_every_store_the_plan_counts_is_now_deleted():
-    """Q4 closed the gap: the quarantine was counted by the dry run of Q2 and
+    """B3-Q4 closed the gap: the quarantine was counted by the dry run of B3-Q2 and
     deleted by nothing."""
     assert set(purge.CANDIDATE_SQL) == set(purge.DELETE_SQL)
 
@@ -445,7 +446,7 @@ def test_the_switches_are_declared():
 
 
 
-# --- Q4: the quarantine, and the order the two stores go in -------------------
+# --- B3-Q4: the quarantine, and the order the two stores go in -------------------
 
 QUARANTINE = ROOT / "sql" / "purge" / "020_quarantine.sql"
 
@@ -530,8 +531,8 @@ def test_the_raw_zone_itself_is_never_exempted_by_its_own_mark(world):
 
 def test_a_finished_purge_explains_a_mismatch_for_good():
     """Every purged batch is in permanent mismatch -- by design, since its rows
-    are gone. The message must say so, or the dry run of Q2 and the acceptance
-    of Q6 report tampering on every batch the purge ever removed."""
+    are gone. The message must say so, or the dry run of B3-Q2 and the acceptance
+    of B3-Q6 report tampering on every batch the purge ever removed."""
     source = (ROOT / "fraud" / "runs.py").read_text(encoding="utf-8")
     block = source.split("def refusal")[1]
     assert "a ete purge" in block
@@ -539,7 +540,7 @@ def test_a_finished_purge_explains_a_mismatch_for_good():
 
 
 def test_the_journal_is_not_among_the_stores_the_purge_knows():
-    """Q4's finding: nothing to empty, and its rows hold the fingerprints that
+    """B3-Q4's finding: nothing to empty, and its rows hold the fingerprints that
     are all that remains of a purged batch."""
     assert "fd_pipeline_runs" not in purge.CANDIDATE_SQL
     assert "fd_pipeline_runs" not in purge.DELETE_SQL

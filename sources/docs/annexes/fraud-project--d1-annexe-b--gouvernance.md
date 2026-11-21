@@ -17,12 +17,12 @@ tags:
 ## Appendices 
 ### 1.B. Appendix B : Data Governance Policy
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / D1 / Annexe B : Data Governance Policy / v05 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe B : Data Governance Policy / v05 --- 2026/11/26.*
 ---
 
 #### 1.D.0. Contexte
 
-Ce document annexe présente la politique de gouvernance référencée dans \[D0, §0.4.3\] comme le document *D09*. Il est versionné en tant que code dans le fichier de configuration `governance.yml`. Il est destiné à satisfaire l'exigence *EC16* : formaliser par écrit les données personnelles identifiées, leur pseudonymisation ou minimisation, les rôles et droits, et les durées de conservation. Il décrit aussi comment ces durées sont **appliquées** (*EC18*).
+Ce document annexe présente la politique de gouvernance référencée dans \[B3-D0, §0.4.3\] comme le document *B3-H09*. Il est versionné en tant que code dans le fichier de configuration `governance.yml`. Il est destiné à satisfaire l'exigence *B3-EC16* : formaliser par écrit les données personnelles identifiées, leur pseudonymisation ou minimisation, les rôles et droits, et les durées de conservation. Il décrit aussi comment ces durées sont **appliquées** (*B3-EC18*).
 
 #### 1.D.1. Données personnelles
 
@@ -74,10 +74,10 @@ Les rôles de groupe n'ont pas d'attribut `LOGIN` : ils ne peuvent pas ouvrir de
 
 | Rôle        | Autorisations | Interdictions |
 | ----------- | ------------- | ------------- |
-| `fd_ingest` | lire et insérer dans la zone brute, la quarantaine, les transactions, les verdicts, les scores, les alertes, les jeux d'entraînement, le journal du canal d'exploitation ; mettre à jour le journal d'exécutions, l'état d'exploitation et les **mesures de M5** d'un jeu d'entraînement | modifier ou supprimer la zone brute, les scores et le journal du canal d'exploitation ; supprimer une alerte ; modifier une colonne métier d'une transaction ; modifier un jeu d'entraînement hors de ses mesures |
+| `fd_ingest` | lire et insérer dans la zone brute, la quarantaine, les transactions, les verdicts, les scores, les alertes, les jeux d'entraînement, le journal du canal d'exploitation ; mettre à jour le journal d'exécutions, l'état d'exploitation et les **mesures de B3-M5** d'un jeu d'entraînement | modifier ou supprimer la zone brute, les scores et le journal du canal d'exploitation ; supprimer une alerte ; modifier une colonne métier d'une transaction ; modifier un jeu d'entraînement hors de ses mesures |
 | `fd_report` | lire la couche exploitée, la quarantaine, les journaux d'exécutions et de purges ; écrire le journal des rapports | lire la zone brute ; supprimer un rapport |
 | `fd_purge`  | lire et supprimer dans la zone brute et la quarantaine ; poser les marqueurs de purge dans le journal d'exécutions ; inscrire une ligne au journal des purges | **lire ou modifier la couche exploitée**, insérer dans la zone brute, supprimer une ligne du journal d'exécutions, modifier ou supprimer le journal des purges |
-| `fd_dashboard` | **se connecter** (seul rôle `LOGIN`, mot de passe dans `.env`) ; lire les rapports, les alertes, les transactions, les verdicts, les scores, le journal d'exécutions, l'état des contrôles et le journal du canal d'exploitation ; lire **cinq colonnes** de la quarantaine (`batch_id`, `line_no`, `reason_class`, `reason_code`, `rejected_at`) et **neuf colonnes** du catalogue des jeux (identité, part de fraudes, mesures de M5) | écrire quoi que ce soit ; lire la zone brute, la charge (`payload`) ou le détail (`reason_detail`) d'une ligne rejetée ; lire les chemins ou la liste des features d'un jeu ; endosser un autre rôle ; créer un objet |
+| `fd_dashboard` | **se connecter** (seul rôle `LOGIN`, mot de passe dans `.env`) ; lire les rapports, les alertes, les transactions, les verdicts, les scores, le journal d'exécutions, l'état des contrôles et le journal du canal d'exploitation ; lire **cinq colonnes** de la quarantaine (`batch_id`, `line_no`, `reason_class`, `reason_code`, `rejected_at`) et **neuf colonnes** du catalogue des jeux (identité, part de fraudes, mesures de B3-M5) | écrire quoi que ce soit ; lire la zone brute, la charge (`payload`) ou le détail (`reason_detail`) d'une ligne rejetée ; lire les chemins ou la liste des features d'un jeu ; endosser un autre rôle ; créer un objet |
 
 Les droits sont accordés à la colonne et non à la table :
 
@@ -85,7 +85,7 @@ Les droits sont accordés à la colonne et non à la table :
 - `fd_ingest` n'écrit que l'état de notification de `fd_frauds` (`notified_at`, `channel`, `attempts`, `last_error`) : une alerte levée ne se réécrit pas ;
 - `fd_purge` n'a aucun droit sur la couche exploitée. 
 
-**Remarque.** `fd_report` n'a aucun accès à la zone brute car les charges utiles de `fd_raw_events` portent encore les noms, les adresses et les numéros de carte en clair (la pseudonymisation n'opère qu'à l'entrée de la couche exploitée). Donner au rôle de restitution un droit de lecture sur la zone brute annulerait l'effet de l'exigence *EC17* \[D0\]. Conséquence pratique : un outil qui mesure la volumétrie de la zone brute s'exécute avec le rôle `fd_ingest`, et ne lit que des décomptes et des tailles, jamais des contenus.
+**Remarque.** `fd_report` n'a aucun accès à la zone brute car les charges utiles de `fd_raw_events` portent encore les noms, les adresses et les numéros de carte en clair (la pseudonymisation n'opère qu'à l'entrée de la couche exploitée). Donner au rôle de restitution un droit de lecture sur la zone brute annulerait l'effet de l'exigence *B3-EC17* \[B3-D0\]. Conséquence pratique : un outil qui mesure la volumétrie de la zone brute s'exécute avec le rôle `fd_ingest`, et ne lit que des décomptes et des tailles, jamais des contenus.
 
 **Remarque.** La règle précédente n'est pas tenue pour la quarantaine. `fd_quarantine.payload` conserve la charge brute de chaque ligne rejetée, donc les mêmes données personnelles que la zone brute, et `fd_report` détient un `SELECT` sur toute la table. Le rapport du matin lit bien la quarantaine, mais seulement pour l'invariant de volume (`n_read` = transactions + lignes mises en quarantaine), qui ne touche que `batch_id` et `line_no`. Le correctif est un droit à la colonne excluant `payload`, comme pour les deux cas ci-dessus. Il n'est pas encore appliqué.
 
@@ -145,7 +145,7 @@ Une liste des magasins est déclaré dans `governance.yml` pour indiquer si un m
 | Paramètre | Valeur | Rôle |
 | --- | --- | --- |
 | `verdicts.delay_days` | 30 jours | délai d'enquête simulé, largeur de la bande aveugle avant la coupure |
-| `verdicts.demo_delay_seconds` | 300 secondes | même délai, à l'échelle d'une démonstration (*EI12*) |
+| `verdicts.demo_delay_seconds` | 300 secondes | même délai, à l'échelle d'une démonstration (*B3-EI12*) |
 
 Un seul commutateur (`verdicts.mode`) choisit l'un ou l'autre, lu par le chargement historique comme par le flux : les étiquettes historiques et temps réel doivent porter le même délai.
 
@@ -160,7 +160,7 @@ La purge est un traitement à part entière (`dag_purge`) et suit les règles su
 - Par tranches. Les suppressions procèdent par tranches de 10 000 lignes, validées une à une, avec un marqueur de reprise : un conteneur arrêté au milieu de procédure laisse un état que l'exécution suivante sait expliquer et terminer.
 - Avec un garde-fou. Une purge qui supprimerait plus de la moitié d'un magasin (voir paramètre `purge.max_share`) s'arrête avant toute suppression et demande une confirmation explicite ..
 - Avec un journal. Chaque exécution inscrit une ligne par magasin dans `fd_purges`, y compris quand elle n'a rien trouvé à supprimer. Le journal s'écrit après la suppression.
-- La purge coupe sur une date. La procédure refuse de purger la zone brute d'un lot qui porte des transactions ou des verdicts, puisque sa zone brute est ce qui permet de les rejouer (*EC24*, \[D0\]).
+- La purge coupe sur une date. La procédure refuse de purger la zone brute d'un lot qui porte des transactions ou des verdicts, puisque sa zone brute est ce qui permet de les rejouer (*B3-EC24*, \[B3-D0\]).
 
 #### 1.D.6. Application de la politique dans le code
 
@@ -184,8 +184,8 @@ La matrice de traçabilité est produite par `tools/build_traceability.py` et pr
 
 #### Références
 ##### Spécifications
-- \[D0\] [*Automatic Fraud Detection Project* Introduction](../../step-0/fraud-project--d0-introduction.pdf)
-- \[D1\] [*Data Infrastructure Design*](../fraud-project--d1-data-infrastructure.pdf)
+- \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](../../step-0/fraud-project--d0-introduction.pdf)
+- \[B3-D1\] [*Data Infrastructure Design*](../fraud-project--d1-data-infrastructure.pdf)
 #### Ressources
 - \[R3\] [Fraudulent Payments full dataset](https://lead-program-assets.s3.eu-west-3.amazonaws.com/M05-Projects/fraudTest.csv)
 - \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)

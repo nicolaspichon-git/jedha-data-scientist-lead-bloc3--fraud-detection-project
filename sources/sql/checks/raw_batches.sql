@@ -1,5 +1,8 @@
 -- What the raw zone holds, by batch.
--- Covers: EC12, EC23   Lot: L7   Competency: C4
+-- Block: B3.
+-- Lot: B3-L7.
+-- Competency: B3-C4.
+-- Covers: B3-EC12, B3-EC23.
 --
 -- THE RULE THIS FILE EXISTS TO HOLD: aggregate BEFORE joining.
 --
@@ -24,7 +27,7 @@ WITH lots AS (
 txn AS (
     -- The exploited layer, per batch. THE fact that says whether a batch is
     -- the origin of anything: transactions point back at it, and its raw zone
-    -- is what allows them to be replayed (EC24). A batch with raw lines and no
+    -- is what allows them to be replayed (B3-EC24). A batch with raw lines and no
     -- transaction is a duplicate copy of a load that happened elsewhere.
     --
     -- Aggregated here, like the rest, and joined afterwards.

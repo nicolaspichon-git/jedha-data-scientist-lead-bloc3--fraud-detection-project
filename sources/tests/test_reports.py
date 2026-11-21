@@ -1,16 +1,17 @@
 """The four queries of the morning report, read as text.
 
-Covers: EE04, EI04, EI08, EC17
-Lot: P1
-Competency: C5
+Block: B3.
+Lot: B3-P1.
+Competency: B3-C5.
+Covers: B3-EE04, B3-EI04, B3-EI08, B3-EC17.
 
 PostgreSQL is not in the authoring environment, so these read the SQL. A
 weaker test than running it, and still the one that catches what matters here:
 a window taken from the clock instead of from the DAG's interval, a query that
 reaches into the raw zone, an order that is not total, or an alert losing the
-sort P0 decided on.
+sort B3-P0 decided on.
 
-The queries themselves were executed against a real PostgreSQL 16 while P1 was
+The queries themselves were executed against a real PostgreSQL 16 while B3-P1 was
 written -- all four under the fd_report role, with the aggregates of
 daily_volumes checked to close against a direct count on the same window. What
 cannot be re-run here is checked here.
@@ -49,7 +50,7 @@ def _code(name: str) -> str:
     EVERY TEST BELOW READS THIS AND NOT THE FILE. The comments of these queries
     explain at length why now() must never appear, so a test grepping the whole
     file for "now()" finds the explanation and fails. That mistake was made
-    three times in S3 before this helper existed: a test that searches text
+    three times in B3-S3 before this helper existed: a test that searches text
     cannot tell code from the prose about it.
     """
     return "\n".join(line for line in _text(name).splitlines()
@@ -93,7 +94,7 @@ def test_the_window_is_half_open(name):
 def test_the_query_never_touches_the_raw_zone(name):
     """fd_report has no access to it, so a query that needed the raw zone would
     fail at run time -- but it would also mean the exploited layer was not
-    enough, and the guarantee of EC17 rests on it being enough. The raw payload
+    enough, and the guarantee of B3-EC17 rests on it being enough. The raw payload
     still carries names, addresses and card numbers."""
     assert "fd_raw_events" not in _code(name)
 
@@ -117,10 +118,10 @@ def test_no_identifying_column_is_named(name):
         assert not re.search(r"\b%s\b" % column, code), column
 
 
-# --- what P0 decided, and the queries must carry -------------------------------
+# --- what B3-P0 decided, and the queries must carry -------------------------------
 
 def test_the_alerts_are_ordered_by_expected_loss():
-    """THE DECISION OF P0. An analyst who reviews the first 38 of a list of 60
+    """THE DECISION OF B3-P0. An analyst who reviews the first 38 of a list of 60
     must know what he sorted on, so the order is written in the document -- and
     it has to be the order the query actually returns."""
     code = _code("daily_frauds.sql")
@@ -132,7 +133,7 @@ def test_the_alerts_are_ordered_by_expected_loss():
 @pytest.mark.parametrize("name", QUERIES)
 def test_the_order_is_total(name):
     """Two runs on the same window must produce the same document to the
-    character (criterion of P2). A query returning several rows without a
+    character (criterion of B3-P2). A query returning several rows without a
     tie-break can reorder them between two runs and break it on ties alone."""
     code = _code(name)
     if "ORDER BY" not in code:
@@ -144,7 +145,7 @@ def test_the_order_is_total(name):
 
 
 def test_the_alert_carries_the_cardholder_habit_and_its_ratio():
-    """The decision of P0: "this payment is 16.9 times the cardholder's habit"
+    """The decision of B3-P0: "this payment is 16.9 times the cardholder's habit"
     reads, where two raw columns ask the reader to divide forty times a
     morning."""
     code = _code("daily_frauds.sql")
@@ -163,7 +164,7 @@ def test_an_unknown_habit_reads_as_unknown_and_not_as_zero():
 # --- the two axes of time, which is the whole process -------------------------
 
 def test_the_verdicts_are_filtered_on_the_knowledge_axis():
-    """THE CENTRAL TRAP OF S4. A section titled "yesterday's verdicts" that
+    """THE CENTRAL TRAP OF B3-S4. A section titled "yesterday's verdicts" that
     filtered on txn_ts would show zero for ever, since no transaction of
     yesterday has a verdict. It filters on label_ts, and returns the payment
     dates it covers so the reader cannot mistake one axis for the other."""
@@ -191,7 +192,7 @@ def test_a_day_without_fraud_gives_an_unknown_recall_and_not_a_zero():
 
 def test_the_base_rate_travels_with_the_ratios():
     """A recall compared across two different base rates compares nothing: the
-    report puts the observed base rate beside the one M5 measured."""
+    report puts the observed base rate beside the one B3-M5 measured."""
     assert "base_rate_observed" in _code("daily_verdicts.sql")
 
 
@@ -224,7 +225,7 @@ def test_the_volumes_come_from_one_scan():
 
 def test_the_hour_bucket_is_local_and_the_zone_is_declared():
     """A report whose hours were UTC would place the night fraud peak -- 84 of
-    every 100 frauds between 22h and 03h, measured in M5 -- two hours off in
+    every 100 frauds between 22h and 03h, measured in B3-M5 -- two hours off in
     summer and one in winter."""
     code = _code("daily_volumes.sql")
     assert "AT TIME ZONE %(zone)s" in code

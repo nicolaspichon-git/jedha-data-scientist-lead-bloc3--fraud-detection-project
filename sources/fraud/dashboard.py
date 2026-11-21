@@ -1,12 +1,13 @@
-"""The reads behind the dashboard of S6. NOTHING HERE IMPORTS STREAMLIT.
+"""The reads behind the dashboard of B3-S6. NOTHING HERE IMPORTS STREAMLIT.
 
-Covers: EE03, EC14, EC17
-Lot: R1
-Competency: C4
+Block: B3.
+Lot: B3-R1.
+Competency: B3-C4.
+Covers: B3-EE03, B3-EC14, B3-EC17.
 
 THE DASHBOARD DECIDES NOTHING. Every decision it shows was taken elsewhere and
-persisted (P5): the alert by the scoring, the notification by N5, the report by
-S4. So almost every function here is a delegation to the definition another
+persisted (B3-P5): the alert by the scoring, the notification by B3-N5, the report by
+B3-S4. So almost every function here is a delegation to the definition another
 process already uses -- report.alerts() for the alerts of a day, so the page
 shows by construction the alerts the document of the same day lists;
 report.window_for() for the day; report.check_document() for the digest;
@@ -48,7 +49,7 @@ REPORTS_LISTED = 90
 # blacklist, for the reason fraud/health.py gives: a field added to a query
 # tomorrow must be DECIDED onto the page, not leak onto it. client_key is
 # absent on purpose -- a pseudonym, but the analyst has no use for it, and what
-# is not displayed is not copied (EC17).
+# is not displayed is not copied (B3-EC17).
 FRAUD_FIELDS = ("txn_ts", "amt", "merchant", "category", "score", "threshold",
                 "model_version", "raised_at", "notified", "notified_at",
                 "channel", "attempts", "last_error", "f_tx_count",
@@ -88,7 +89,7 @@ def assert_identity(conn) -> str:
 def connect(settings):
     """A connection as fd_dashboard, verified before anything is read.
 
-    No SET ROLE: the service logs in as fd_dashboard directly (S6/R0), so the
+    No SET ROLE: the service logs in as fd_dashboard directly (B3-S6/B3-R0), so the
     role argument of db.connect() is None and nothing can be RESET.
     """
     with db.connect(None, settings) as conn:
@@ -144,7 +145,7 @@ def period_label(first: dt.date, last: dt.date) -> str:
     return "du %s au %s" % (report._day(first), report._day(last))
 
 
-# --- the morning report (R2) --------------------------------------------------
+# --- the morning report (B3-R2) --------------------------------------------------
 
 def reports(conn, limit: int = REPORTS_LISTED) -> list[dict]:
     """The reports on record, most recent first, with their counts."""
@@ -152,9 +153,9 @@ def reports(conn, limit: int = REPORTS_LISTED) -> list[dict]:
 
 
 def missing_mornings(conn) -> list[dict]:
-    """The mornings with no report -- S4's own definition, not a second one.
+    """The mornings with no report -- B3-S4's own definition, not a second one.
 
-    A wrong report is seen; an absent one is not (EC14).
+    A wrong report is seen; an absent one is not (B3-EC14).
     """
     return report._rows(conn, ABSENCE_SQL, {})
 
@@ -186,7 +187,7 @@ def morning(settings, row: dict) -> Morning:
                    relocated=Path(row["path"]) != Path(here))
 
 
-# --- the alerts (R3) ----------------------------------------------------------
+# --- the alerts (B3-R3) ----------------------------------------------------------
 
 def frauds_of_span(conn, settings, first: dt.date, last: dt.date) -> list[dict]:
     """The alerts of calendar days first..last, projected onto FRAUD_FIELDS.
@@ -205,9 +206,9 @@ def frauds_of_day(conn, settings, day: dt.date) -> list[dict]:
 
 
 def capacity(conn, settings) -> dict:
-    """The notification capacity, as N5 counts it: a ROLLING 24 hours.
+    """The notification capacity, as B3-N5 counts it: a ROLLING 24 hours.
 
-    Not the calendar day of the page, and the page must say so: N5 enforces
+    Not the calendar day of the page, and the page must say so: B3-N5 enforces
     the capacity over a rolling window so that 60 alerts at 23:50 and 60 more
     at 00:10 cannot both go out. Read with notify's own functions.
     """
@@ -229,7 +230,7 @@ def summary_of(alerts: list[dict]) -> dict:
             "not_notified": len(alerts) - notified}
 
 
-# --- the morning report, as a page shows it (R2) ------------------------------
+# --- the morning report, as a page shows it (B3-R2) ------------------------------
 #
 # WHAT THE PAGE DISPLAYS IS DECIDED HERE, and in this order, so that pytest can
 # hold it: the page itself only maps each notice to a Streamlit call. Notices
@@ -237,7 +238,7 @@ def summary_of(alerts: list[dict]) -> dict:
 # warning nobody reads.
 #
 # The figures are read from the fd_reports row, never from the document's
-# prose: the decision of the S4 plan, so that a reworded sentence cannot change
+# prose: the decision of the B3-S4 plan, so that a reworded sentence cannot change
 # a number. Numbers and dates are written by the report's own formatters, so
 # the page and the document agree to the character.
 
@@ -276,7 +277,7 @@ def morning_view(conn, settings, day: dt.date | None = None) -> dict:
 
     # ABSENCES FIRST, before any date is chosen: they concern the whole series,
     # and a reader who looks only at today's report would never learn that
-    # Saturday's was never produced (EC14).
+    # Saturday's was never produced (B3-EC14).
     if missing:
         notices.append(Notice(WARNING, "%d %s sans rapport : %s." % (
             len(missing), report._plural(len(missing), "matin"),
@@ -335,12 +336,12 @@ def morning_view(conn, settings, day: dt.date | None = None) -> dict:
             "title": "Rapport du %s" % report._day(selected)}
 
 
-# --- the alerts of a day, as a page shows them (R3) ---------------------------
+# --- the alerts of a day, as a page shows them (B3-R3) ---------------------------
 #
 # Same division as the morning page: what is shown, and in what order, is
 # decided here. Two clocks meet on this page and must not be confused: the DAY
 # shown is a calendar day in the declared zone, like the report's; the
-# CAPACITY is N5's rolling 24 hours. A capacity reached is a DECISION of the
+# CAPACITY is B3-N5's rolling 24 hours. A capacity reached is a DECISION of the
 # notifier -- alerts still raised, notification withheld -- and the page must
 # say so, or it reads as an outage.
 
@@ -428,7 +429,7 @@ def frauds_view(conn, settings, first: dt.date | None = None,
         notices.append(Notice(WARNING,
             "Plafond de notification atteint : %s sur les dernières 24 heures "
             "glissantes, pour une capacité de %s. Les alertes suivantes sont "
-            "levées mais leur notification est retenue (N5) : c'est une "
+            "levées mais leur notification est retenue (B3-N5) : c'est une "
             "décision, pas une panne. Un réentraînement qui sur-alerte se "
             "voit ici."
             % (report._count(cap["notified_24h"]), report._count(cap["capacity"]))))
@@ -458,9 +459,9 @@ def frauds_view(conn, settings, first: dt.date | None = None,
             "title": "Alertes %s" % period}
 
 
-# --- the state of the chain, as a page shows it (R6) --------------------------
+# --- the state of the chain, as a page shows it (B3-R6) --------------------------
 #
-# THE CONTROLS ARE N9's, NOT A SECOND SET. health.check() is what the task
+# THE CONTROLS ARE B3-N9's, NOT A SECOND SET. health.check() is what the task
 # raise_and_notify_ops runs every minute: the same facts, the same four
 # judgements, the same declared limits, compared with the same recorded state.
 # It reads and raises nothing -- a red control is its normal output -- so the
@@ -566,7 +567,7 @@ def operations_view(conn, settings) -> dict:
                                                          health.WATCHED_DAG))}
 
 
-# --- the operations channel, as a page shows it (R9) --------------------------
+# --- the operations channel, as a page shows it (B3-R9) --------------------------
 #
 # What the channel was TOLD, from fd_ops_notifications -- one row per message
 # sent, written by notify_ops after the send. Not what the controls say now:
@@ -652,10 +653,10 @@ def ops_view(conn, settings, first: dt.date | None = None,
                                           health.WATCHED_DAG))}
 
 
-# --- the performance of the model, as a page shows it (R10) -------------------
+# --- the performance of the model, as a page shows it (B3-R10) -------------------
 #
 # Section 3 of the report over a period: the verdicts that BECAME KNOWN in it,
-# judged against what M5 measured on the test set. report.verdicts() and
+# judged against what B3-M5 measured on the test set. report.verdicts() and
 # report.reference() are the report's own functions -- the page and the
 # documents compare the same numbers with the same reference.
 
@@ -693,8 +694,8 @@ def performances_view(conn, settings, first: dt.date | None = None,
                 MAX_PERIOD_DAYS, report._day(first), report._day(last))))
     if ref is None:
         notices.append(Notice(WARNING,
-            "Référence de M5 indisponible : la recette la plus récente n'a pas "
-            "de mesure enregistrée en base. Si elle a été entraînée avant R10 : "
+            "Référence de B3-M5 indisponible : la recette la plus récente n'a pas "
+            "de mesure enregistrée en base. Si elle a été entraînée avant B3-R10 : "
             ".\\fd-manager.ps1 reference"))
     if not seen["verdicts"]:
         notices.append(Notice(INFO,
@@ -717,13 +718,13 @@ def performances_view(conn, settings, first: dt.date | None = None,
     comparison = [
         {"Indicateur": "Fraudes retrouvées (rappel)",
          "Observé": report._percent(seen["recall_observed"]),
-         "Mesuré en M5 (test)": reference_of("recall")},
+         "Mesuré en B3-M5 (test)": reference_of("recall")},
         {"Indicateur": "Alertes justes (précision)",
          "Observé": report._percent(seen["precision_observed"]),
-         "Mesuré en M5 (test)": reference_of("precision")},
+         "Mesuré en B3-M5 (test)": reference_of("precision")},
         {"Indicateur": "Part de fraudes",
          "Observé": report._share(seen["base_rate_observed"], 3),
-         "Mesuré en M5 (test)": (report._share(ref["base_rate_test"], 3)
+         "Mesuré en B3-M5 (test)": (report._share(ref["base_rate_test"], 3)
                                  if ref else "indisponible")},
     ]
     matrix = [
@@ -741,9 +742,9 @@ def performances_view(conn, settings, first: dt.date | None = None,
                  "Verdicts": report._count(m["verdicts"]),
                  "Fraudes": report._count(m["frauds"]),
                  "Rappel observé": report._percent(m["recall_observed"]),
-                 "Rappel M5": report._percent(m["test_recall"]),
+                 "Rappel B3-M5": report._percent(m["test_recall"]),
                  "Précision observée": report._percent(m["precision_observed"]),
-                 "Précision M5": report._percent(m["test_precision"])}
+                 "Précision B3-M5": report._percent(m["test_precision"])}
                 for m in models]
 
     if seen["verdicts"]:
@@ -764,9 +765,9 @@ def performances_view(conn, settings, first: dt.date | None = None,
             "title": "Verdicts reçus %s" % period}
 
 
-# --- the rejections of a day, as a page shows them (R7) -----------------------
+# --- the rejections of a day, as a page shows them (B3-R7) -----------------------
 #
-# F07.3: the breakdown of the quarantine by reason. COUNTS ONLY -- fd_dashboard
+# B3-F07-3: the breakdown of the quarantine by reason. COUNTS ONLY -- fd_dashboard
 # reads five columns of fd_quarantine and neither payload nor reason_detail.
 # The vocabulary is closed (fraud/checks.py), so every row carries a label and
 # no free text reaches the page.

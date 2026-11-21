@@ -1,10 +1,11 @@
 """Collecting the real-time stream, and putting it in the raw zone untouched.
 
-Covers: EE01, EE02, EI01, EC01
-Lot: N1
-Competency: C2
+Block: B3.
+Lot: B3-N1.
+Competency: B3-C2.
+Covers: B3-EE01, B3-EE02, B3-EI01, B3-EC01.
 
-EVERY VALUE IS TEXT, and that is not a style choice. Measured in N0: 7 of the
+EVERY VALUE IS TEXT, and that is not a style choice. Measured in B3-N0: 7 of the
 924 cards carry 19 digits and exceed 2**53, so a single float anywhere on the
 path turns 4992346398065154184 into 4992346398065154048 -- a different
 client_key, therefore a different cardholder, therefore history features
@@ -12,7 +13,7 @@ computed against an empty past, silently, on one transaction in eleven.
 
 json.loads(..., parse_int=str, parse_float=str) removes the whole class of
 defect rather than protecting one field: no integer and no float ever exists
-between the wire and the raw zone. It is also exactly the contract S1's
+between the wire and the raw zone. It is also exactly the contract B3-S1's
 fetch.read_rows holds for the CSV, so both sources reach fd_raw_events in the
 same shape.
 
@@ -39,7 +40,7 @@ log = logging.getLogger(__name__)
 
 SOURCE = "current-transactions"
 
-# Measured in N0: a 502 costs 25 s, and it is the expensive failure -- a 429
+# Measured in B3-N0: a 502 costs 25 s, and it is the expensive failure -- a 429
 # costs 0.23 s. A timeout below 26 s would cut off calls that were going to
 # succeed.
 DEFAULT_TIMEOUT_SECONDS = 35
@@ -63,7 +64,7 @@ class Reading:
     def clock_gap_s(self) -> float:
         """How far the server's stamp sits from our clock at the call.
 
-        Measured in N0: the median is +5.1 s, which IS the latency -- the server
+        Measured in B3-N0: the median is +5.1 s, which IS the latency -- the server
         stamps when it answers, we when we call. A gap far beyond the latency
         means one of the two clocks moved.
         """
@@ -120,7 +121,7 @@ def records_from_raw(conn, batch_id) -> list:
 
     WHY EVERY STAGE AFTER THE POLL READS FROM HERE. The raw zone is the only
     durable, append-only copy of what the API said, and it is what lets the
-    tasks of N7's DAG hand work to one another: Airflow passes JSON between
+    tasks of B3-N7's DAG hand work to one another: Airflow passes JSON between
     tasks, not Python objects, and re-polling is not an option -- five calls
     cost about 27 seconds and the API will never return the same five
     transactions again. So the poll is the ONLY task that touches the network,
@@ -128,7 +129,7 @@ def records_from_raw(conn, batch_id) -> list:
 
     MATERIALISED into a list, not yielded. raw.read_batch is a SERVER-SIDE
     cursor and transform.load_transactions uses COPY: a COPY and a FETCH cannot
-    share one connection without deadlocking -- which L3 paid for once.
+    share one connection without deadlocking -- which B3-L3 paid for once.
 
     Unwrapped by row_of, so a caller sees the shape the ingestion saw rather
     than the envelope this module wrote.
@@ -147,12 +148,12 @@ def row_of(payload: dict) -> dict:
 
     THE INVERSE OF Reading.as_payload, and it lives here because this module is
     what wrote the envelope. Reading the raw zone from somewhere else and
-    guessing at the shape is how N6's verdict write came to derive every
+    guessing at the shape is how B3-N6's verdict write came to derive every
     identifier from a payload whose current_time sits one level down: the
     identifiers all came back as "<trans_num>:", matched nothing, and four
     verdicts were skipped with a message that read like normal operation.
 
-    Tolerant of a payload that IS a row -- S1's CSV batches are stored that way
+    Tolerant of a payload that IS a row -- B3-S1's CSV batches are stored that way
     -- so a caller reading a mixed raw zone needs no second branch.
     """
     inner = payload.get("row")
@@ -169,9 +170,9 @@ def decode(body: str) -> tuple[list[str], list[Any]]:
         because a misalignment would silently put an amount in the category
         column and nothing would raise.
 
-    Covers: EC25
-    Lot: N1
-    Competency: C5
+    Lot: B3-N1.
+    Competency: B3-C5.
+    Covers: B3-EC25.
     """
     try:
         outer = json.loads(body)
@@ -243,13 +244,13 @@ def fetch_one(endpoint: str, session=None,
               timeout: float = DEFAULT_TIMEOUT_SECONDS) -> Attempt:
     """One call. Returns an Attempt and never raises.
 
-    Measured in N0: 5 % of calls fail -- 2 of 60 with a 502, 1 with a 429. A
+    Measured in B3-N0: 5 % of calls fail -- 2 of 60 with a 502, 1 with a 429. A
     collector that raised on those would stop five times a day for a stream that
     is simply flaky.
 
-    Covers: EE01, EC01
-    Lot: N1
-    Competency: C2
+    Lot: B3-N1.
+    Competency: B3-C2.
+    Covers: B3-EE01, B3-EC01.
     """
     getter = session.get if session is not None else requests.get
     our_ms = int(time.time() * 1000)
@@ -312,7 +313,7 @@ def poll(endpoint: str, calls: int, spacing_s: float = 0.0,
          budget_s: float | None = None) -> tuple[list[Reading], list[Attempt]]:
     """`calls` calls. Returns what was obtained and what failed, separately.
 
-    The failures are RETURNED, not logged and dropped: EC14 asks that an absence
+    The failures are RETURNED, not logged and dropped: B3-EC14 asks that an absence
     be detectable, and a poll that quietly returned three rows where four were
     asked is exactly the absence nobody notices.
 
@@ -328,9 +329,9 @@ def poll(endpoint: str, calls: int, spacing_s: float = 0.0,
     failures too -- "5 asked, 0 read, 1 timed out, 4 not attempted" is an
     absence the log and the journal can show. None means no budget, as before.
 
-    Covers: EE02, EI01, EC14
-    Lot: N1
-    Competency: C2, C4
+    Lot: B3-N1.
+    Competency: B3-C2, B3-C4.
+    Covers: B3-EE02, B3-EI01, B3-EC14.
     """
     readings: list[Reading] = []
     failures: list[Attempt] = []
@@ -393,7 +394,7 @@ def _verdicts_of(numbered, max_amount: float, tolerance_s: float):
     two shapes: validate() works on Readings held in memory, validate_raw() on
     the envelopes the raw zone gives back. Writing the rule twice is how a
     pipeline comes to validate differently depending on which door it came
-    through -- and N7's first draft did exactly that, running validate_batch
+    through -- and B3-N7's first draft did exactly that, running validate_batch
     without the clock bound and so dropping CLOCK_IMPLAUSIBLE from the DAG
     while the manual runner kept it.
 
@@ -426,18 +427,18 @@ def validate_raw(records, max_amount: float, tolerance_s: float
     the same thing the raw zone holds, so a quarantined line reads without
     joining anything -- as in validate().
 
-    WHY IT EXISTS. The DAG of N7 hands work between tasks through the database,
+    WHY IT EXISTS. The DAG of B3-N7 hands work between tasks through the database,
     so the task that validates has no Reading objects: it re-reads the raw zone.
     Without this function it would have called checks.validate_batch alone and
-    lost the clock bound -- the rule N0 earned by measuring one reading 818 s
+    lost the clock bound -- the rule B3-N0 earned by measuring one reading 818 s
     out, our own process suspended.
 
     latency comes back rounded to the millisecond, which the tolerance of 120 s
     does not notice.
 
-    Covers: EC25, EC26, EI13
-    Lot: N7
-    Competency: C5
+    Lot: B3-N7.
+    Competency: B3-C5.
+    Covers: B3-EC25, B3-EC26, B3-EI13.
     """
     numbered = []
     envelopes = {}
@@ -469,7 +470,7 @@ def validate(readings: list[Reading], max_amount: float,
     Returns (accepted, items) where `items` is EXACTLY what quarantine.write
     consumes: (line_no, payload, rejects) triples. Returning a flat list of
     reasons was the first shape, and it would have needed reshaping at the one
-    place that uses it -- the interface is better made to fit the writer S1
+    place that uses it -- the interface is better made to fit the writer B3-S1
     already has.
 
     Runs checks.validate_batch under STREAM_PROFILE, then the clock bound --
@@ -479,9 +480,9 @@ def validate(readings: list[Reading], max_amount: float,
     The line numbers are the ranks the raw zone gave, so a reason written to
     fd_quarantine points at the record that caused it.
 
-    Covers: EC25, EC26, EI13
-    Lot: N2
-    Competency: C5
+    Lot: B3-N2.
+    Competency: B3-C5.
+    Covers: B3-EC25, B3-EC26, B3-EI13.
     """
     accepted: list[Reading] = []
     items: list[tuple[int, dict, list]] = []
@@ -518,18 +519,18 @@ def write_batch(conn: "psycopg.Connection", batch_id, readings: list[Reading]
                 ) -> int:
     """Put the readings in the raw zone, one record per call.
 
-    Delegates to raw.write_batch, which S1 already wrote: it carries the COPY,
+    Delegates to raw.write_batch, which B3-S1 already wrote: it carries the COPY,
     the declared column types, and the pre-check that makes re-writing a batch
     idempotent instead of doubling it. Reimplementing any of that here would
-    give S3 a second raw-zone writer to keep in step with the first.
+    give B3-S3 a second raw-zone writer to keep in step with the first.
 
     line_no comes from that function, as the rank of the reading in the batch.
     There is no line number in a stream, and the rank keeps
     UNIQUE (batch_id, line_no) doing its job.
 
-    Covers: EE02, EI01
-    Lot: N1
-    Competency: C2
+    Lot: B3-N1.
+    Competency: B3-C2.
+    Covers: B3-EE02, B3-EI01.
     """
     from fraud import raw
 

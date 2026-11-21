@@ -1,14 +1,15 @@
 """An acceptance file must be able to fail the chain it is run from.
 
-Covers: EC07, EC14
-Lot: N9
-Competency: C5
+Block: B3.
+Lot: B3-N9.
+Competency: B3-C5.
+Covers: B3-EC07, B3-EC14.
 
 THE DEFECT THIS EXISTS FOR, and it was found by reading a real run rather than
 by any check. The three acceptance files printed a `verdict` column holding
 `<<< ECHEC`, and psql exits 0 whatever that column says. fd-manager's
 Invoke-Step reads only the exit code, so `fd-manager check` walked past SEVEN
-failing criteria of S1 and would have ended on "Tous les criteres passent".
+failing criteria of B3-S1 and would have ended on "Tous les criteres passent".
 
 A green light that cannot turn red is worse than no light, because somebody
 trusts it. These tests read the SQL rather than running it -- PostgreSQL is not
@@ -60,7 +61,7 @@ def test_the_table_is_displayed_before_the_raise(name):
 
 @pytest.mark.parametrize("name", FILES)
 def test_an_informative_figure_does_not_fail_the_chain(name):
-    """`info` rows are measurements, not criteria -- criterion 13 of S3 is the
+    """`info` rows are measurements, not criteria -- criterion 13 of B3-S3 is the
     reason: a figure that failed its own acceptance would be refusing reality.
     The count looks for ECHEC and nothing else."""
     text = _text(name)
@@ -95,7 +96,7 @@ STREAM_SOURCE = "current-transactions"
 
 def test_the_stream_source_literal_is_the_one_the_code_writes():
     """Both acceptance files hinge on this string. If fraud/stream.py changes
-    it, S1 would silently count the stream again and S3 would count nothing."""
+    it, B3-S1 would silently count the stream again and B3-S3 would count nothing."""
     from fraud import stream
 
     assert stream.SOURCE == STREAM_SOURCE
@@ -118,8 +119,8 @@ def test_s1_scopes_itself_to_the_historical_load():
 def test_no_criterion_of_s1_reads_a_shared_table_DIRECTLY():
     """THE DEFECT THIS GUARDS, and it cost seven false failures.
 
-    S1's criteria counted the WHOLE tables, and they were written when nothing
-    else wrote to them. S3 ingests the stream into the same raw zone, the same
+    B3-S1's criteria counted the WHOLE tables, and they were written when nothing
+    else wrote to them. B3-S3 ingests the stream into the same raw zone, the same
     fd_transactions and the same fd_ground_truth: 555,857 typed transactions
     instead of 555,719 -- its 138 -- and 555,743 verdicts instead of 555,719 --
     its 24. A pipeline working perfectly failed its own acceptance.
@@ -137,9 +138,9 @@ def test_no_criterion_of_s1_reads_a_shared_table_DIRECTLY():
 def test_the_dag_checks_its_own_verdicts_and_not_everybody_s():
     """The same defect inside dag_load_history, where no acceptance check looks.
 
-    Its L5 assertion read the whole of fd_ground_truth. The delay is 30 days on
+    Its B3-L5 assertion read the whole of fd_ground_truth. The delay is 30 days on
     both sides today, so it passes; the day the stream carried another delay, a
-    REPLAY of S1 would fail on "the delay is not uniform" and blame the
+    REPLAY of B3-S1 would fail on "the delay is not uniform" and blame the
     historical load for a property of the stream.
     """
     dag = (ROOT / "airflow" / "dags" / "dag_load_history.py").read_text(
@@ -166,7 +167,7 @@ def test_the_criteria_of_s1_read_only_scoped_relations():
     """THE DEFECT THIS REPAIRS, and it cost seven false failures.
 
     These criteria counted the WHOLE tables, and they were written when nothing
-    else wrote to them. S3 ingests the stream into the same raw zone, the same
+    else wrote to them. B3-S3 ingests the stream into the same raw zone, the same
     fd_transactions and the same fd_ground_truth: 555,857 typed transactions
     instead of 555,719 -- exactly the stream's 138 -- and 555,743 verdicts
     instead of 555,719, exactly its 24. A pipeline working perfectly reported
@@ -188,7 +189,7 @@ def test_the_criteria_of_s1_read_only_scoped_relations():
             if found in STREAM_TABLES:
                 offenders.append("%d: %s" % (number, line.strip()))
     assert not offenders, (
-        "critere de S1 lisant une table entiere :\n  " + "\n  ".join(offenders))
+        "critere de B3-S1 lisant une table entiere :\n  " + "\n  ".join(offenders))
 
 
 def test_the_stream_literal_is_written_once_and_is_the_one_the_code_uses():
@@ -213,7 +214,7 @@ def test_s1_and_s3_scope_on_the_same_literal_in_opposite_directions():
 
 
 def test_the_scope_of_s1_is_negative_and_says_why():
-    """It has to be: S1 writes the CSV's FILE NAME as the source and its
+    """It has to be: B3-S1 writes the CSV's FILE NAME as the source and its
     verdicts carry the BATCH UUID, so there is no single positive value to
     match. Only the stream has one."""
     text = _text("s1_acceptance.sql")
@@ -225,11 +226,11 @@ def test_the_load_dag_scopes_its_own_acceptance_assertion_too():
     """THE SAME DEFECT IN A PLACE NO ACCEPTANCE CHECK LOOKS. dag_load_history
     asserts that the verdict delay is uniform over fd_ground_truth -- and the
     stream writes there. The delay is 30 days on both sides today, so it
-    passes; the day it differed, a REPLAY OF S1 would fail on "the delay is not
+    passes; the day it differed, a REPLAY OF B3-S1 would fail on "the delay is not
     uniform" and blame the historical load for a property of the stream."""
     body = (ROOT / "airflow" / "dags" / "dag_load_history.py").read_text(
         encoding="utf-8")
-    assertion = body[body.index("The acceptance criteria of L5"):
+    assertion = body[body.index("The acceptance criteria of B3-L5"):
                      body.index("The dissociation is structural")]
     assert "FROM   fd_ground_truth WHERE source = %s" in assertion
     assert "str(bid)" in assertion

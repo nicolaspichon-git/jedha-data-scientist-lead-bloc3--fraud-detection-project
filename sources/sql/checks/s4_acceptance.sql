@@ -1,6 +1,8 @@
--- The acceptance criteria of S4, lots P1 to P5. Every verdict must read OK.
--- Covers: EE04, EI02, EI03, EI04, EI08, EC14, EC23, EC27
--- Lot: P5   Competency: C1, C4, C5
+-- The acceptance criteria of B3-S4, lots B3-P1 to B3-P5. Every verdict must read OK.
+-- Block: B3.
+-- Lot: B3-P5.
+-- Competency: B3-C1, B3-C4, B3-C5.
+-- Covers: B3-EE04, B3-EI02, B3-EI03, B3-EI04, B3-EI08, B3-EC14, B3-EC23, B3-EC27.
 --
 -- THE DECISIVE ONE IS CRITERION 5, and it is the only criterion in this project
 -- that ONLY TIME MAKES POSSIBLE: past the declared verdict delay, no
@@ -17,11 +19,11 @@
 --
 -- THE MOST USEFUL ONE IS 11, and it is informative on purpose: the recall and
 -- the precision observed on the verdicts that have fallen, beside the figures
--- M5 measured on the test set. An observed recall far from the measured one
+-- B3-M5 measured on the test set. An observed recall far from the measured one
 -- does not mean the pipeline is broken -- it means the stream does not resemble
--- the test set, and therefore that S2's published metrics do not describe what
+-- the test set, and therefore that B3-S2's published metrics do not describe what
 -- is happening. That is the single most valuable signal this file carries, so
--- it is reported rather than enforced, exactly as criterion 13 of S3 is.
+-- it is reported rather than enforced, exactly as criterion 13 of B3-S3 is.
 --
 -- The expected values that come from governance.yml are written here as
 -- LITERALS, mirroring the file. A duplication, and a deliberate one: an
@@ -112,28 +114,28 @@ observed AS (
       FROM fallen
 ),
 criteria AS (
-    SELECT 1 AS ord, 'P3 rapports enregistres (>= 1)' AS criterion,
+    SELECT 1 AS ord, 'B3-P3 rapports enregistres (>= 1)' AS criterion,
            'ok' AS expected,
            CASE WHEN (SELECT rows_recorded FROM journal) >= 1
                 THEN 'ok' ELSE 'AUCUN' END AS actual
     UNION ALL
     -- The primary key makes this structurally impossible; stating it is how a
     -- reader learns the key is there for idempotence and not for tidiness.
-    SELECT 2, 'P3 aucune journee en double', '0 doublon',
+    SELECT 2, 'B3-P3 aucune journee en double', '0 doublon',
            (SELECT (rows_recorded - days_recorded)::text || ' doublon'
               FROM journal)
     UNION ALL
-    SELECT 3, 'P3 aucune journee sans rapport', '0 journee',
+    SELECT 3, 'B3-P3 aucune journee sans rapport', '0 journee',
            (SELECT coalesce((SELECT days FROM missing), 0)::text || ' journee')
     UNION ALL
-    SELECT 4, 'P3 chaque ligne nomme son document', '0 sans chemin',
+    SELECT 4, 'B3-P3 chaque ligne nomme son document', '0 sans chemin',
            (SELECT without_path::text || ' sans chemin' FROM journal)
     UNION ALL
     -- THE DECISIVE ONE.
-    SELECT 5, 'P5 aucun paiement au-dela du delai sans verdict connu', '0',
+    SELECT 5, 'B3-P5 aucun paiement au-dela du delai sans verdict connu', '0',
            (SELECT waiting::text FROM overdue)
     UNION ALL
-    SELECT 6, 'P2 la connaissance ne precede jamais la journee couverte', '0',
+    SELECT 6, 'B3-P2 la connaissance ne precede jamais la journee couverte', '0',
            (SELECT known_too_early::text FROM journal)
     UNION ALL
     SELECT 7, 'info rapports enregistres', 'mesure',
@@ -143,7 +145,7 @@ criteria AS (
            (SELECT coalesce(first_day::text || ' -> ' || last_day::text,
                             'aucun rapport') FROM journal)
     UNION ALL
-    SELECT 9, 'info alertes par rapport contre 41.6 prevues par M6', 'mesure',
+    SELECT 9, 'info alertes par rapport contre 41.6 prevues par B3-M6', 'mesure',
            (SELECT coalesce(alerts_per_report::text, 'aucun rapport')
               FROM journal)
     UNION ALL
@@ -153,11 +155,11 @@ criteria AS (
                             || n_verdicts::text || ' / ' || n_pending::text,
                             'aucun rapport') FROM latest)
     UNION ALL
-    SELECT 11, 'info rappel observe sur 30 j contre 0.7512 mesure par M5',
+    SELECT 11, 'info rappel observe sur 30 j contre 0.7512 mesure par B3-M5',
            'mesure',
            (SELECT coalesce(recall::text, 'aucun verdict echu') FROM observed)
     UNION ALL
-    SELECT 12, 'info precision observee sur 30 j contre 0.5292 de M5', 'mesure',
+    SELECT 12, 'info precision observee sur 30 j contre 0.5292 de B3-M5', 'mesure',
            (SELECT coalesce(precision_::text, 'aucune alerte') FROM observed)
     UNION ALL
     SELECT 13, 'info taux de base observe contre 0.4072 pour-cent du jeu de test',
@@ -188,7 +190,7 @@ BEGIN
       FROM acceptance
      WHERE verdict LIKE '%ECHEC%';
     IF failed > 0 THEN
-        RAISE EXCEPTION 'S4 : % critere(s) en echec : %', failed, names
+        RAISE EXCEPTION 'B3-S4 : % critere(s) en echec : %', failed, names
             USING HINT = 'Le tableau ci-dessus donne attendu et constate pour chacun.';
     END IF;
 END $$;

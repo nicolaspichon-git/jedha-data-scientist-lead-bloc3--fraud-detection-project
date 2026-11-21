@@ -1,12 +1,13 @@
 """Two recipes, compared fraud by fraud on the same test set.
 
-Covers: EE08, EI04, EC24
-Lot: N4
-Competency: C2, C5
+Block: B3.
+Lot: B3-N4.
+Competency: B3-C2, B3-C5.
+Covers: B3-EE08, B3-EI04, B3-EC24.
 
 THE QUESTION THIS SETTLES. Does a recipe amputated of txn_hour and txn_weekday
 catch more fraud, on the stream, than the current recipe does? The current
-recipe's figure on the stream is the clock-permuted reading of N4 -- 0.631 of
+recipe's figure on the stream is the clock-permuted reading of B3-N4 -- 0.631 of
 recall over 20 draws -- and the amputated one needs none, since it reads no
 calendar column: its score does not depend on the clock at all.
 
@@ -81,7 +82,7 @@ def main(argv=None) -> int:
                              "in place of the one its manifest carries. This "
                              "is how a re-chosen threshold enters the "
                              "comparison: the manifest still holds the value "
-                             "M6 chose on the hour of the PAYMENT, and only S2 "
+                             "B3-M6 chose on the hour of the PAYMENT, and only B3-S2 "
                              "may rewrite a manifest.")
     args = parser.parse_args(argv)
 
@@ -145,7 +146,7 @@ def main(argv=None) -> int:
         if override:
             log.info("le seuil de la recette %s vient de la ligne de commande "
                      "(%.2f) : c'est ainsi qu'un seuil rechoisi entre dans la "
-                     "comparaison, puisque seul S2 reecrit un manifeste.",
+                     "comparaison, puisque seul B3-S2 reecrit un manifeste.",
                      name, float(override))
             continue
         chosen_on = str((payload.get("threshold") or {}).get("chosen_on") or "")
@@ -208,7 +209,7 @@ def render(current, candidate, tables, n_test, settings, current_cut,
     for_current = sum(1 for table in decisive if table.difference < 0)
 
     lines = [
-        "# N4 --- comparaison appariee de deux recettes",
+        "# B3-N4 --- comparaison appariee de deux recettes",
         "",
         "| | Recette | Features | Seuil |",
         "|---|---|---|---|",

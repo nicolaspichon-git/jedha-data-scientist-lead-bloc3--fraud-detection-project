@@ -1,11 +1,12 @@
-"""The four guarantees of N6, checked by analysis rather than by re-reading.
+"""The four guarantees of B3-N6, checked by analysis rather than by re-reading.
 
-Covers: EE03, EI03, EI12, EC17
-Lot: N6
-Competency: C5
+Block: B3.
+Lot: B3-N6.
+Competency: B3-C5.
+Covers: B3-EE03, B3-EI03, B3-EI12, B3-EC17.
 
 WHY THIS FILE IS DIFFERENT FROM EVERY OTHER TEST HERE. It measures an ABSENCE.
-The API delivers is_fraud in the SAME payload as the features -- N0 measured it:
+The API delivers is_fraud in the SAME payload as the features -- B3-N0 measured it:
 21 columns, is_fraud present as a str -- so the label sits one line of code away
 from the scoring. No code review proves it did not get there, and no metric in
 any report would reveal it: a model that reads the label scores beautifully.
@@ -31,7 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # 32 characters, because transform refuses less: a shorter pepper would make the
 # pseudonymisation reversible by enumeration over 924 cardholder numbers. The
-# refusal is a guard of S1 doing its job, so the test meets it rather than
+# refusal is a guard of B3-S1 doing its job, so the test meets it rather than
 # weakening it.
 PEPPER = "0123456789abcdef0123456789abcdef"
 
@@ -181,7 +182,7 @@ def test_the_scores_table_holds_no_verdict_column():
 # --- guarantee 4: the write shares no task with the scoring -------------------
 
 def test_the_ingestion_runner_writes_no_verdict():
-    """It did until N6. Removing it is the guarantee; this reads the imports so
+    """It did until B3-N6. Removing it is the guarantee; this reads the imports so
     the removal cannot be undone unnoticed."""
     names = _imports("tools/ingest_once.py")
     assert "truth" not in names
@@ -222,9 +223,9 @@ def test_the_verdict_dag_shares_no_task_with_any_other():
 
     This test used to compare the verdict DAG against dag_train and
     dag_load_history only -- not against dag_ingest, which is the DAG that
-    SCORES. The fourth guarantee of N6 is precisely that the writing of the
+    SCORES. The fourth guarantee of B3-N6 is precisely that the writing of the
     verdict shares nothing with the scoring, so the comparison that mattered
-    was the one missing. Found while declaring dag_daily in P4.
+    was the one missing. Found while declaring dag_daily in B3-P4.
 
     It now walks the directory, so a DAG added later is compared without
     anybody remembering to add it.
@@ -248,7 +249,7 @@ def test_the_verdict_dag_shares_no_task_with_any_other():
 
 
 def test_the_verdict_dag_has_a_cadence_of_its_own():
-    """EI06: the ingestion runs every minute, this once a day. Nothing is lost
+    """B3-EI06: the ingestion runs every minute, this once a day. Nothing is lost
     by waiting -- the verdict is not due for the declared delay anyway."""
     body = (ROOT / "airflow/dags/dag_ingest_verdicts.py").read_text(
         encoding="utf-8")
@@ -262,7 +263,7 @@ def test_the_verdict_dag_has_a_cadence_of_its_own():
 def test_the_verdict_is_written_with_a_future_label_and_not_delayed():
     """Nothing is simulated: the verdict is real and written at once. What holds
     it back is label_ts = txn_ts + delay and every consumer filtering on
-    label_ts <= cut_off -- the mechanism exercised on 555,719 rows by M3."""
+    label_ts <= cut_off -- the mechanism exercised on 555,719 rows by B3-M3."""
     body = _text("fraud/truth.py")
     assert "label_ts" in body
     assert "delay" in body
@@ -292,7 +293,7 @@ def test_the_verdict_write_filters_on_existence_not_on_a_reject_list():
     assert _text("sql/verdicts/known_transactions.sql").count("ANY(") == 1
 
 
-# --- deux defauts de N6, trouves a l'execution le 16 novembre 2026 ------------
+# --- deux defauts de B3-N6, trouves a l'execution le 16 novembre 2026 ------------
 
 def test_the_awaiting_query_does_not_multiply_its_rows():
     """A CARTESIAN PRODUCT IS QUIET: it does not fail, it multiplies.
@@ -339,7 +340,7 @@ def test_the_raw_envelope_is_unwrapped_by_the_module_that_wrote_it():
     envelope = {"row": row, "trans_num": "abc", "source_index": "31923",
                 "server_ms": 1, "our_ms": 2, "latency_ms": 3}
     assert stream.row_of(envelope) == row
-    # Tolerant of a payload that IS a row: S1's CSV batches are stored that way.
+    # Tolerant of a payload that IS a row: B3-S1's CSV batches are stored that way.
     assert stream.row_of(row) == row
 
 

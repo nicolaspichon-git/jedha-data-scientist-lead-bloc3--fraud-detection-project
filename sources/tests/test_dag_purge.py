@@ -1,8 +1,9 @@
 """The shape of the purge DAG, read from its source.
 
-Covers: EE06, EI06, EI11, EC09, EC14, EC19
-Lot: Q5
-Competency: C5
+Block: B3.
+Lot: B3-Q5.
+Competency: B3-C5.
+Covers: B3-EE06, B3-EI06, B3-EI11, B3-EC09, B3-EC14, B3-EC19.
 
 Airflow is not installed in the authoring environment, so this reads the file.
 A weaker test than running the DAG, and still the one that catches what matters
@@ -160,7 +161,7 @@ def test_nothing_is_caught_up():
     assert _dag_keywords()["catchup"] is False
     daily = (ROOT / "airflow" / "dags" / "dag_daily.py").read_text(
         encoding="utf-8")
-    assert "catchup=True" in daily, "le contraste n'existe plus : verifier P4"
+    assert "catchup=True" in daily, "le contraste n'existe plus : verifier B3-P4"
 
 
 def test_one_run_at_a_time():
@@ -218,7 +219,7 @@ def test_the_plan_is_asked_without_the_expensive_verification():
 # --- the guard ----------------------------------------------------------------------
 
 def test_the_guard_is_a_task_of_its_own():
-    """The plan of S5 asked for exactly this rather than purging and warning
+    """The plan of B3-S5 asked for exactly this rather than purging and warning
     afterwards."""
     assert "check_share" in _tasks()
 
@@ -307,7 +308,7 @@ def test_the_two_stores_go_in_one_task():
 
 def test_the_dag_declares_its_lot_and_its_competencies():
     tags = _dag_keywords()["tags"]
-    assert "S5" in tags and "Q5" in tags and "BC03" in tags
+    assert "B3-S5" in tags and "B3-Q5" in tags and "BC03" in tags
 
 
 # --- the XCom boundary ------------------------------------------------------------------

@@ -1,11 +1,12 @@
 # Governance policy and parameterised durations.
-# Covers: EI12, EC16, EC18
+# Block: B3.
+# Covers: B3-EI12, B3-EC16, B3-EC18.
 #
 # Durations that outlast the demonstration itself live here, and nowhere else in
 # the code. No secret belongs in this file: those live in .env.
 
 verdicts:
-  # Which of the two delays below is in force. ONE switch, read by S1 and by S3
+  # Which of the two delays below is in force. ONE switch, read by B3-S1 and by B3-S3
   # alike: the historical labels and the real-time ones must sit on the same
   # delay, or the blind band before the cut-off differs between training and
   # scoring and the measured recall means nothing.
@@ -16,10 +17,10 @@ verdicts:
   # Delay between a transaction and the moment its verdict becomes known.
   # Sets the width of the blind band before the cut-off.
   delay_days: 30
-  demo_delay_seconds: 300        # demonstration value (F13.1, EI12)
+  demo_delay_seconds: 300        # demonstration value (B3-F13-1, B3-EI12)
 
 retention:
-  # EVERY STORE OF THE PROJECT IS DECLARED HERE, purged or not (S5/Q0). A store
+  # EVERY STORE OF THE PROJECT IS DECLARED HERE, purged or not (B3-S5/B3-Q0). A store
   # missing from this section is one nobody decided about, and the missing one
   # is always the one that holds the most: fd_quarantine kept the raw payload of
   # every REJECTED record with no duration at all, while the accepted ones were
@@ -44,7 +45,7 @@ retention:
   kept:
     fd_transactions: >-
       Carries no identifying column: client_key is an HMAC pseudonym and the
-      identifying fields were dropped or minimised in L3 (personal_data below).
+      identifying fields were dropped or minimised in B3-L3 (personal_data below).
       Kept for training and for audit.
     fd_ground_truth: >-
       A verdict per txn_id and a date; no personal field. It is the training
@@ -56,8 +57,8 @@ retention:
       txn_id, score and the state of the notification. No personal field; the
       notification channels refuse them (notify.FORBIDDEN_FIELDS).
     fd_pipeline_runs: >-
-      Measured rather than assumed (S5/Q4): an identifier, a DAG name, dates,
-      a state, counters and the fingerprints of Q1. No personal field, so
+      Measured rather than assumed (B3-S5/B3-Q4): an identifier, a DAG name, dates,
+      a state, counters and the fingerprints of B3-Q1. No personal field, so
       there is nothing to empty -- and its rows must not be deleted either,
       since those fingerprints are all that remains of a purged batch. The
       role that purges holds no DELETE on this table.
@@ -65,37 +66,37 @@ retention:
       One row per control of the chain, holding its state and the date it
       changed. Operational, no transaction data.
     fd_ops_notifications: >-
-      The journal of the operations channel (S6/R9): one row per message sent,
+      The journal of the operations channel (B3-S6/B3-R9): one row per message sent,
       holding a control name, a state and counts. No transaction data -- the
       payload is checked against FORBIDDEN_FIELDS before it leaves -- and a
       few rows per incident, not per run. Append-only, like fd_purges.
     fd_datasets: >-
       The catalogue of the training sets: recipe digest, paths, counts. No
       personal field; it is the row that ties a model to the data it learned
-      from, which is what M8's lineage rests on.
+      from, which is what B3-M8's lineage rests on.
     datasets_directory: >-
       The parquet training sets under runtime/datasets/. MEASURED RATHER THAN ASSUMED
-      (S5/Q6): they carry no identifying field -- features and the
+      (B3-S5/B3-Q6): they carry no identifying field -- features and the
       pseudonymised client_key -- so limiting their retention is not what this
-      policy is for, and they are the other half of M8's lineage: a registered
+      policy is for, and they are the other half of B3-M8's lineage: a registered
       model must stay tied to the set that produced it. About 830 MB a year at
       a weekly cadence, which is a housekeeping question and not a governance
       one. A first version of this file declared "the five latest versions"
       here among the purged stores, and nothing deleted a file: a rule of disk
       hygiene dressed as a retention rule, which is how a declared duration
       comes to be a duration nobody applies. Trimming the directory, if it
-      ever matters, is a manual act outside S5.
+      ever matters, is a manual act outside B3-S5.
     fd_purges: >-
-      The journal of the purges (S5/Q6): counts, instants and store names, one
+      The journal of the purges (B3-S5/B3-Q6): counts, instants and store names, one
       row per store and per execution. No personal field -- and it is the proof
-      that the declared durations are APPLIED, which EC18 asks for. Deleting it
+      that the declared durations are APPLIED, which B3-EC18 asks for. Deleting it
       would destroy the evidence that the policy exists in fact; the role that
       purges may insert into it and nothing else.
     fd_reports: >-
       The journal of the morning reports: counts and a digest, one row per
-      day. The counts are what the audit of S4 re-reads.
+      day. The counts are what the audit of B3-S4 re-reads.
     mlflow_registry: >-
-      Not purged by S5. Models and their metrics hold no personal data; their
+      Not purged by B3-S5. Models and their metrics hold no personal data; their
       retention is a registry decision, and a model in service must be
       reproducible, which a purge would break.
     reports_directory: >-
@@ -105,7 +106,7 @@ retention:
     local_cache: >-
       The downloaded historical CSV. It carries personal data but it is the
       SOURCE and downloads again; its place is outside the repository, and it
-      is not something S5 destroys.
+      is not something B3-S5 destroys.
 
 purge:
   # WHEN THE PURGE RUNS. Weekly, Sunday, at an hour when nothing else does:
@@ -121,7 +122,7 @@ purge:
   # fell. At the same instant the purge would take batches out from under it.
   schedule: "0 4 * * 0"
 
-  # THE GUARD AGAINST A TOO-WIDE PURGE (S5/Q2, Q5). A purge that would delete
+  # THE GUARD AGAINST A TOO-WIDE PURGE (B3-S5/B3-Q2, B3-Q5). A purge that would delete
   # more than this share of a store stops and demands an explicit confirmation:
   # a purge of 90 % of a table may be legitimate, but it is never a routine.
   # Strictly between 0 and 1: at 1 the guard never fires.
@@ -133,7 +134,7 @@ scoring:
   # as threshold_policy is set, and it is set (capacity, below). So this number
   # decides a report only in a configuration where no policy is declared.
   #
-  # IT IS NOT THE SCORING THRESHOLD. N4 reads the operating threshold from the
+  # IT IS NOT THE SCORING THRESHOLD. B3-N4 reads the operating threshold from the
   # manifest of the model version it loads, never from here, for a reason that
   # is not a matter of taste: a threshold is only meaningful for the score
   # distribution of the model it was chosen on. The model is retrained every
@@ -146,14 +147,14 @@ scoring:
   # it travels with the model, in run.json.
   decision_threshold: 0.5
 
-  # HOW THE OPERATING THRESHOLD IS CHOSEN (M6). 0.5 is the default of a
+  # HOW THE OPERATING THRESHOLD IS CHOSEN (B3-M6). 0.5 is the default of a
   # library, never a business decision.
   #
   # cost     : minimise the money lost. The cost of a missed fraud is ITS OWN
   #            AMOUNT, measured per transaction rather than assumed; the cost of
   #            a false alert is the analyst minutes below.
   # capacity : the highest recall that stays within what an analyst can review
-  #            in a morning. This is the policy G2 actually constrains.
+  #            in a morning. This is the policy B3-G2 actually constrains.
   #
   # Both are computed and reported at every run; this switch says which one
   # decides. A policy nobody can see is a number nobody can challenge.
@@ -188,7 +189,7 @@ scoring:
   #
   # WHY. txn_hour and txn_weekday mean the hour of the PAYMENT in the historical
   # data and the hour of OUR OWN CALL on the stream: the API draws a row at
-  # random from 2020 -- measured over the N0 campaign, indices spread over
+  # random from 2020 -- measured over the B3-N0 campaign, indices spread over
   # 16,227..553,065 with 29 of 56 gaps positive, a coin flip -- and stamps it
   # with the instant our call returned. So on the stream the two columns are
   # independent of the label BY CONSTRUCTION, while in training they are
@@ -211,7 +212,7 @@ scoring:
   #
   # IT IS A DEFECT OF THIS TEST BENCH, NOT OF THE DESIGN. "Arrival time = payment
   # time" holds in a real payment application, where the authorisation message
-  # arrives seconds after the card is swiped -- N0 measured that latency, median
+  # arrives seconds after the card is swiped -- B3-N0 measured that latency, median
   # 5.1 s. What this simulator does not do, and cannot do since it ignores the
   # drawn row's own timestamp, is preserve the time-of-day structure. On a real
   # payment stream these two columns should come back, and this comment is where
@@ -235,7 +236,7 @@ scoring:
     min_amount: 300
     night_hours: [22, 23, 0, 1, 2, 3]
 
-# HOW A FLAGGED TRANSACTION REACHES SOMEBODY. Lot N5, decided 2026-11-16.
+# HOW A FLAGGED TRANSACTION REACHES SOMEBODY. Lot B3-N5, decided 2026-11-16.
 notifications:
   # The channel is a function taking (payload, settings), declared in
   # fraud/notify.py. Two are realised:
@@ -282,8 +283,8 @@ notifications:
 
 # ------------------------------------------------------------------ operations
 # THE CHANNEL OF THE PIPELINE OWNER, which diagram 3.3 specifies as "(3c)
-# dag_ingest : check" -> "ops channel". The development plan of S3 listed five
-# tasks for N7 and none of them was that stage, so it was built in N9 after the
+# dag_ingest : check" -> "ops channel". The development plan of B3-S3 listed five
+# tasks for B3-N7 and none of them was that stage, so it was built in B3-N9 after the
 # omission was found by reading the diagram against the code.
 #
 # A DIFFERENT AUDIENCE FROM notifications ABOVE, and that is the whole reason
@@ -315,7 +316,7 @@ ops:
   #
   # Ten, and the number comes from the measurements. The cadence is one run a
   # minute and the worst realistic run is about 47 s, so ten consecutive lost
-  # minutes is not a statistical accident: N0 measured about 5 % of calls
+  # minutes is not a statistical accident: B3-N0 measured about 5 % of calls
   # failing, and a run makes five, so an entirely empty run needs all five to
   # fail. Ten empty minutes in a row therefore means the API, the network or
   # the chain is down -- not bad luck. It also bounds what is lost before
@@ -334,7 +335,7 @@ ops:
 
   # REJECTION RATE: the share of read lines sent to quarantine.
   #
-  # Five per cent, and the floor is measured rather than chosen: N0 saw one
+  # Five per cent, and the floor is measured rather than chosen: B3-N0 saw one
   # call in 57 (1.75 %) with an 818 s gap -- our own process suspended, not the
   # server -- and such a reading goes to quarantine on the clock tolerance. So
   # the normal rate is NOT zero, and a threshold at zero would hold this
@@ -345,11 +346,11 @@ ops:
   max_rejection_rate: 0.05
 
 # --------------------------------------------------------------------- reports
-# S4 produces a DATED DOCUMENT each morning, not a page to refresh. Everything
+# B3-S4 produces a DATED DOCUMENT each morning, not a page to refresh. Everything
 # here is read by sql/reports/*.sql and by fraud/report.py.
 report:
   # THE ZONE THE CALENDAR DAY IS COUNTED IN, and it is not a detail. The hourly
-  # breakdown of section 1 is read against the night fraud peak measured in M5
+  # breakdown of section 1 is read against the night fraud peak measured in B3-M5
   # -- 84 per cent of the frauds between 22h and 03h -- and a report whose
   # hours were UTC would place that peak two hours off in summer and one in
   # winter. The window bounds themselves are passed by the DAG as absolute
@@ -395,7 +396,7 @@ labels:
   horizon: 2020-12-22T23:13:39Z
 
   # A window holding no positive stops the training DAG, exactly as a window
-  # holding no run does (EC14 applied to labels).
+  # holding no run does (B3-EC14 applied to labels).
   min_positives: 1
 
 datasets:
@@ -404,7 +405,7 @@ datasets:
   # /opt/airflow, where this would land outside the mounted volume.
   root: runtime/datasets
   family: fraud_scoring
-  # v2 stores txn_ts alongside the features: M6 chooses the threshold on a
+  # v2 stores txn_ts alongside the features: B3-M6 chooses the threshold on a
   # temporal validation slice of the TRAINING period, and a slice cannot be cut
   # without the time. Bumping this changes the recipe digest, which is the whole
   # point -- a dataset of the old shape is not reused and silently found short.
@@ -414,7 +415,7 @@ datasets:
   split_rule: "temporal:train<=2020-10-31,test<=2020-11-30"
 
 realtime:
-  # Measured in N0 (ws/fraud-project--n0-mesure-api--20261116-0826.md), on a
+  # Measured in B3-N0 (ws/fraud-project--n0-mesure-api--20261116-0826.md), on a
   # campaign of 60 calls run ALONE -- three overlapping campaigns had reported
   # 13 % failures that were our own load.
   endpoint: https://sdacelo-real-time-fraud-detection.hf.space/current-transactions
@@ -427,19 +428,19 @@ realtime:
   # after an evening when the Space stopped answering: five calls of 35 s make
   # 175 s, more than dag_ingest's dagrun_timeout of 2 minutes, so Airflow killed
   # every run with a SIGTERM before poll could record a single failure. An
-  # absence nobody could read in the log -- the opposite of EC14.
+  # absence nobody could read in the log -- the opposite of B3-EC14.
   #
   # Under the dagrun_timeout with room for the tasks that follow -- validate,
-  # score, notify, the controls; a whole run took 47 s at worst in S3's
+  # score, notify, the controls; a whole run took 47 s at worst in B3-S3's
   # measurements, polling included. Never below
   # timeout_seconds, or a slow but successful call would be cut off; config
   # refuses it. The first call that times out also ends the poll: an API that
   # did not answer in 35 s will not answer the four next calls either.
   poll_budget_seconds: 60
 
-  # HOW OFTEN N7's DAG RUNS. Decided 2026-11-16.
+  # HOW OFTEN B3-N7's DAG RUNS. Decided 2026-11-16.
   #
-  # The plan framed this as a latency question. It is not. N0 established there
+  # The plan framed this as a latency question. It is not. B3-N0 established there
   # is no journal to consume: one call returns ONE transaction, the present
   # instant, with no queue behind it. So the cadence does not set the detection
   # delay -- it sets THE SHARE OF THE STREAM THAT IS SEEN, and what is not seen
@@ -455,27 +456,27 @@ realtime:
   schedule: "* * * * *"
   calls_per_run: 5
 
-  # Five, not four. Four was chosen in N1 for margin under the limiter, which
+  # Five, not four. Four was chosen in B3-N1 for margin under the limiter, which
   # fired at 13 calls/minute and never below -- and five keeps a factor of 2.6
   # there. What moved the number is coverage, measured against the announced
   # rate above, and not the limiter.
   #
-  # The time budget, from N0: median latency 5.4 s, so five sequential calls take
+  # The time budget, from B3-N0: median latency 5.4 s, so five sequential calls take
   # about 27 s of the minute. One 502 costs 25 s, which brings the worst
   # realistic run to roughly 47 s -- still inside the minute. TWO 502s would
-  # overrun it, so N7 sets max_active_runs=1: a slow run must delay the next,
+  # overrun it, so B3-N7 sets max_active_runs=1: a slow run must delay the next,
   # never run beside it, or two collectors would write the same batch.
   spacing_seconds: 0
 
   # current_time IS the txn_ts of a real-time transaction. One call in 57 showed
   # a gap of +818 s -- our own process suspended, not the server -- and the
   # remedy is the same either way: beyond this tolerance the reading goes to
-  # quarantine rather than carrying a timestamp into the ordering that L4 proved.
+  # quarantine rather than carrying a timestamp into the ordering that B3-L4 proved.
   clock_tolerance_seconds: 120
 
 validation:
   # Measured on fraudTest.csv: max amount 22,768.11. The bound leaves room
-  # without becoming meaningless. Not a magic number in the code (EC20).
+  # without becoming meaningless. Not a magic number in the code (B3-EC20).
   max_amount: 50000
   # A gap shared by more than this share of rows is a SOURCE defect, documented
   # and ruled on once -- not a per-record rejection. See checks.profile_gap.
@@ -495,7 +496,7 @@ personal_data:
   # stable for one cardholder. -> client_key, HMAC with a secret pepper.
   pseudonymized: [cc_num]
 
-  # Minimised rather than dropped, which EC17 allows. lat/long are the
+  # Minimised rather than dropped, which B3-EC17 allows. lat/long are the
   # cardholder's home and are constant for each of the 924 cardholders; only the
   # derived distance to the merchant is stored.
   minimized:

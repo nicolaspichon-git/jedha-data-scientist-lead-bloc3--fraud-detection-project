@@ -1,11 +1,12 @@
 """Building the training set, and registering what was built.
 
-Covers: EC05, EC23, EI04
-Lot: M3
-Competency: C1, C2, C5
+Block: B3.
+Lot: B3-M3.
+Competency: B3-C1, B3-C2, B3-C5.
+Covers: B3-EC05, B3-EC23, B3-EI04.
 
 PostgreSQL to Parquet: the transfer between two stores of distinct natures that
-EC05 asks for, and the reason the dataset is an ARTEFACT rather than a transient
+B3-EC05 asks for, and the reason the dataset is an ARTEFACT rather than a transient
 dataframe. A training run whose data cannot be found again is not auditable.
 
 The construction is idempotent through the recipe digest: a recipe that has
@@ -49,9 +50,9 @@ def build(conn: "psycopg.Connection", recipe: datasets.Recipe,
     after two files had been written -- and a message naming the empty side is
     more use than a constraint violation.
 
-    Covers: EC05, EC23
-    Lot: M3
-    Competency: C2, C5
+    Lot: B3-M3.
+    Competency: B3-C2, B3-C5.
+    Covers: B3-EC05, B3-EC23.
     """
     import pandas as pd
 
@@ -118,12 +119,12 @@ def build_or_reuse(conn: "psycopg.Connection", recipe: datasets.Recipe,
                    root: str | Path, label_horizon: dt.datetime) -> dict:
     """Find the dataset this recipe already produced, or build it.
 
-    This is what makes the construction idempotent (EC23) and what gives
+    This is what makes the construction idempotent (B3-EC23) and what gives
     versioning a purpose: one versions in order to find again.
 
-    Covers: EC23
-    Lot: M2
-    Competency: C5
+    Lot: B3-M2.
+    Competency: B3-C5.
+    Covers: B3-EC23.
     """
     datasets.assert_cut_off_usable(recipe.cut_off, label_horizon)
 

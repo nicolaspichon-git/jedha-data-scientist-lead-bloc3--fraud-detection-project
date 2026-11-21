@@ -1,10 +1,11 @@
-"""S2 -- training the fraud scoring model. Weekly.
+"""B3-S2 -- training the fraud scoring model. Weekly.
 
-Covers: EI06, EC08, EC09
-Lot: M7
-Competency: C3
+Block: B3.
+Lot: B3-M7.
+Competency: B3-C3.
+Covers: B3-EI06, B3-EC08, B3-EC09.
 
-M1 to M8: the guard, the cut-off and recipe, the dataset with its temporal
+B3-M1 to B3-M8: the guard, the cut-off and recipe, the dataset with its temporal
 split, the fit with its honest report, the threshold chosen off the test set,
 the registration in MLflow, and the manifest that keeps the chain readable even
 if the tracking server is gone.
@@ -34,12 +35,12 @@ DAG_ID = "dag_train"
 
 @dag(
     dag_id=DAG_ID,
-    description="S2: weekly training of the fraud scoring model",
-    schedule="0 3 * * 1",               # Monday, 03:00 -- a distinct cadence (EI06)
+    description="B3-S2: weekly training of the fraud scoring model",
+    schedule="0 3 * * 1",               # Monday, 03:00 -- a distinct cadence (B3-EI06)
     start_date=pendulum.datetime(2026, 1, 5, tz="Europe/Paris"),
     catchup=False,
     max_active_runs=1,
-    tags=["S2", "BC03", "C2", "C3", "C5"],
+    tags=["B3-S2", "BC03", "B3-C2", "B3-C3", "B3-C5"],
     default_args={"retries": 0},
 )
 def train_model():
@@ -48,9 +49,9 @@ def train_model():
     def resolve_cut_off() -> str:
         """The cut-off of this run, from the interval and never from the clock.
 
-        Covers: EI02, EC23
-        Lot: M2
-        Competency: C5
+        Lot: B3-M2.
+        Competency: B3-C5.
+        Covers: B3-EI02, B3-EC23.
         """
         from airflow.operators.python import get_current_context
 
@@ -82,7 +83,7 @@ def train_model():
     def resolve_features() -> list:
         """The feature list of this run, from --conf and never from an edit.
 
-        WHY THIS IS A PARAMETER OF A RUN. N4 measured that txn_hour and
+        WHY THIS IS A PARAMETER OF A RUN. B3-N4 measured that txn_hour and
         txn_weekday mean the hour of the PAYMENT at training time and the hour
         of OUR CALL on the stream -- independent of the label by construction
         there -- and that the clock costs 0.155 of recall, 32 frauds out of 205.
@@ -96,9 +97,9 @@ def train_model():
 
             .\fd-manager.ps1 train -Drop txn_hour,txn_weekday
 
-        Covers: EC05, EC23, EI04
-        Lot: N4
-        Competency: C1, C5
+        Lot: B3-N4.
+        Competency: B3-C1, B3-C5.
+        Covers: B3-EC05, B3-EC23, B3-EI04.
         """
         from airflow.operators.python import get_current_context
 
@@ -153,9 +154,9 @@ def train_model():
         ingestion there distorts the published metrics most directly, and the
         horizon check covers the whole span anyway.
 
-        Covers: EC09, EC14
-        Lot: M1
-        Competency: C3, C5
+        Lot: B3-M1.
+        Competency: B3-C3, B3-C5.
+        Covers: B3-EC09, B3-EC14.
         """
         import datetime as _dt
 
@@ -175,9 +176,9 @@ def train_model():
     def build_dataset(cut_off: str, features: list, _report: dict) -> dict:
         """Build the dataset, or find the one this recipe already produced.
 
-        Covers: EC05, EC23, EI04
-        Lot: M3, M4
-        Competency: C1, C2, C5
+        Lot: B3-M3, B3-M4.
+        Competency: B3-C1, B3-C2, B3-C5.
+        Covers: B3-EC05, B3-EC23, B3-EI04.
         """
         import datetime as _dt
 
@@ -215,9 +216,9 @@ def train_model():
     def fit_model(cut_off: str, features: list, dataset: dict) -> dict:
         """Fit on the dataset, and report what may be reported.
 
-        Covers: EE08, EI04
-        Lot: M5
-        Competency: C2, C5
+        Lot: B3-M5.
+        Competency: B3-C2, B3-C5.
+        Covers: B3-EE08, B3-EI04.
         """
         import datetime as _dt
         from pathlib import Path
@@ -261,11 +262,11 @@ def train_model():
 
         # Written beside the dataset, not only to MLflow: the chain from a model
         # back to its rows must survive a tracking server that is down, moved or
-        # wiped (M8).
+        # wiped (B3-M8).
         report = train.render_report(evaluation)
         payload = registry.manifest(recipe, evaluation, choice, path)
         registry.write_manifest(payload, directory)
-        # The same figures in the database (S6/R10), from the SAME payload: the
+        # The same figures in the database (B3-S6/B3-R10), from the SAME payload: the
         # morning report and the dashboard compare against them without
         # reading the datasets directory.
         from fraud import db
@@ -303,9 +304,9 @@ def train_model():
         registration, not the fit -- and the manifest written next to the model
         still carries the whole chain.
 
-        Covers: EE09, EI06
-        Lot: M7
-        Competency: C1, C3, C4
+        Lot: B3-M7.
+        Competency: B3-C1, B3-C3, B3-C4.
+        Covers: B3-EE09, B3-EI06.
         """
         import json
         import os

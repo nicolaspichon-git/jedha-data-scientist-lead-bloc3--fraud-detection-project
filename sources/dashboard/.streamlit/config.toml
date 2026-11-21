@@ -1,4 +1,4 @@
-# Streamlit configuration of the dashboard (S6, lot R4).
+# Streamlit configuration of the dashboard (B3-S6, lot B3-R4).
 
 [server]
 # Inside the container. The HOST side is bound to 127.0.0.1 only, in

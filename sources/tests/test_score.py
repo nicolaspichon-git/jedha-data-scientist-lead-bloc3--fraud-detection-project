@@ -1,8 +1,9 @@
 """What the scoring refuses, and what it reads from the model rather than itself.
 
-Covers: EE09, EI04, EC23, EC24
-Lot: N4
-Competency: C5
+Block: B3.
+Lot: B3-N4.
+Competency: B3-C5.
+Covers: B3-EE09, B3-EI04, B3-EC23, B3-EC24.
 
 Neither MLflow nor scikit-learn is needed here: what is tested is the contract
 around the model -- where the feature order comes from, where the threshold
@@ -182,7 +183,7 @@ def test_the_model_sees_the_columns_in_the_recipe_order():
 
 
 def test_a_recipe_without_txn_hour_scores_without_touching_this_module():
-    """The decision N4 puts to the user must not require a code change."""
+    """The decision B3-N4 puts to the user must not require a code change."""
     amputated = [name for name in FEATURES
                  if name not in ("txn_hour", "txn_weekday")]
     model = _Model([0.1])
@@ -331,7 +332,7 @@ def test_the_ingesting_role_cannot_rewrite_a_score():
 
 
 def test_no_label_column_lives_in_the_scores_table():
-    """fd_ground_truth stays the only place a verdict lives (F02.3)."""
+    """fd_ground_truth stays the only place a verdict lives (B3-F02-3)."""
     body = _without_comments(_sql("ddl/080_scores.sql"))
     for forbidden in ("is_fraud", "label", "verdict"):
         assert forbidden not in body, forbidden

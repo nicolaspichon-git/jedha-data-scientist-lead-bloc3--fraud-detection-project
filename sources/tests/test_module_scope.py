@@ -1,8 +1,9 @@
 """A name a module-level function uses but another function imports.
 
-Covers: EC06
-Lot: N4
-Competency: C5
+Block: B3.
+Lot: B3-N4.
+Competency: B3-C5.
+Covers: B3-EC06.
 
 THE DEFECT THIS EXISTS FOR. tools/rechoose_threshold.py imported `paired`
 inside main() and used it inside render(). Python binds a function-level import
@@ -174,7 +175,7 @@ def _placeholder_free(text: str) -> str:
 
 
 def test_no_parameterised_query_holds_a_bare_percent_sign():
-    """THE TRAP THIS CLOSES, which N9 missed by luck.
+    """THE TRAP THIS CLOSES, which B3-N9 missed by luck.
 
     psycopg binds parameters CLIENT-SIDE with percent formatting, so in a query
     that carries placeholders every other % must be doubled -- including one in

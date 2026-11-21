@@ -1,5 +1,8 @@
 -- The role the dashboard logs in as. READS WHAT ITS PAGES SHOW, NOTHING ELSE.
--- Covers: EC19   Lot: R0   Competency: C2, C5
+-- Block: B3.
+-- Lot: B3-R0.
+-- Competency: B3-C2, B3-C5.
+-- Covers: B3-EC19.
 --
 -- THE ONLY COMPONENT OF THE PROJECT OPEN TO A BROWSER, and the design follows
 -- from that: it must be UNABLE to write, to see the raw zone, or to learn the
@@ -42,34 +45,34 @@ ALTER ROLE fd_dashboard LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
 
 -- First, NOTHING: every replay of `init` starts from closed tables, so a grant
 -- added by hand does not survive it. The REVOKE also makes the intent part of
--- the schema, so the acceptance of S6 (s6_acceptance.sql) has something to read
+-- the schema, so the acceptance of B3-S6 (s6_acceptance.sql) has something to read
 -- rather than an absence to infer.
 REVOKE ALL ON fd_raw_events, fd_quarantine, fd_ground_truth, fd_scores,
               fd_datasets, fd_purges
        FROM fd_dashboard;
 
 -- What the pages read, and nothing else.
---   fd_reports       : the morning reports, their counts and digests (R2)
---   fd_frauds        : the alerts, their score, threshold, model, notification (R3)
---   fd_transactions  : amount, merchant, category and time of an alert (R3);
---                      the stored lines of the volume invariant (R6)
---   fd_pipeline_runs : the runs the four controls are computed from (R6) --
+--   fd_reports       : the morning reports, their counts and digests (B3-R2)
+--   fd_frauds        : the alerts, their score, threshold, model, notification (B3-R3)
+--   fd_transactions  : amount, merchant, category and time of an alert (B3-R3);
+--                      the stored lines of the volume invariant (B3-R6)
+--   fd_pipeline_runs : the runs the four controls are computed from (B3-R6) --
 --                      identifiers, dates, counters, fingerprints; no personal
 --                      field (governance.yml, retention.kept)
---   fd_ops_state     : the recorded state of each control, and since when (R6)
+--   fd_ops_state     : the recorded state of each control, and since when (B3-R6)
 --   fd_ops_notifications : the messages sent to the operations channel --
---                      control names, states and counts (R9)
+--                      control names, states and counts (B3-R9)
 --   fd_ground_truth  : a verdict per txn_id and its date; no personal field
---                      (governance.yml, retention.kept) -- the performance (R10)
---   fd_scores        : score, threshold and decision per model version (R10)
+--                      (governance.yml, retention.kept) -- the performance (B3-R10)
+--   fd_scores        : score, threshold and decision per model version (B3-R10)
 GRANT SELECT ON fd_reports, fd_frauds, fd_transactions, fd_pipeline_runs,
                 fd_ops_state, fd_ops_notifications, fd_ground_truth, fd_scores
       TO fd_dashboard;
 
 -- THE QUARANTINE, BY COLUMN.
---   batch_id, line_no         : the volume invariant (R6, pipeline_health.sql)
---   reason_class, reason_code : the breakdown by reason, F07.3 (R7)
---   rejected_at               : the calendar day of a rejection (R7)
+--   batch_id, line_no         : the volume invariant (B3-R6, pipeline_health.sql)
+--   reason_class, reason_code : the breakdown by reason, B3-F07-3 (B3-R7)
+--   rejected_at               : the calendar day of a rejection (B3-R7)
 -- NEVER `payload`, the raw record of a rejected line -- the same personal
 -- data as the raw zone -- and NEVER `reason_detail`, which quotes a raw value:
 -- for a duplicate it IS the trans_num (fraud/checks.py). The REVOKE ALL above
@@ -78,7 +81,7 @@ GRANT SELECT (batch_id, line_no, reason_class, reason_code, rejected_at)
       ON fd_quarantine TO fd_dashboard;
 
 -- THE CATALOGUE BY COLUMN: the recipe's identity, its base rate and the
--- figures M5 measured (070_datasets.sql, R10). Not the paths of the Parquet
+-- figures B3-M5 measured (070_datasets.sql, B3-R10). Not the paths of the Parquet
 -- files nor the feature list: the dashboard opens no dataset and needs neither.
 GRANT SELECT (recipe_digest, version, created_at, base_rate_test,
               test_recall, test_precision, test_alerts_per_day,
