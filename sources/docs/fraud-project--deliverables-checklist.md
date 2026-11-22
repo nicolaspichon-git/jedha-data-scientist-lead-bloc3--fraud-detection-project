@@ -1,5 +1,5 @@
 ---
-version: v02
+version: v03
 locale: en
 tags:
   - _RNCP38777
@@ -14,7 +14,7 @@ tags:
 
 # Deliverables Checklist
   
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Checklist / v02 --- 2026/11/26.*  
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Checklist / v03 --- 2026/11/26.*  
 ---
 
 ## B3-D1. The Data Infrastructure Diagram

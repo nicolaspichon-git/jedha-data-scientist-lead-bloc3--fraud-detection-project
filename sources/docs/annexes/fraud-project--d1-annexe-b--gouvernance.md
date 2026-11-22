@@ -1,5 +1,5 @@
 ---
-version: v05
+version: v06
 locale: fr
 tags:
   - _RNCP38777
@@ -17,7 +17,7 @@ tags:
 ## Appendices 
 ### 1.B. Appendix B : Data Governance Policy
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe B : Data Governance Policy / v05 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe B : Data Governance Policy / v06 --- 2026/11/26.*
 ---
 
 #### 1.D.0. Contexte
@@ -186,7 +186,7 @@ La matrice de traçabilité est produite par `tools/build_traceability.py` et pr
 ##### Spécifications
 - \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](../../step-0/fraud-project--d0-introduction.pdf)
 - \[B3-D1\] [*Data Infrastructure Design*](../fraud-project--d1-data-infrastructure.pdf)
-#### Ressources
+##### Ressources
 - \[R3\] [Fraudulent Payments full dataset](https://lead-program-assets.s3.eu-west-3.amazonaws.com/M05-Projects/fraudTest.csv)
 - \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
 

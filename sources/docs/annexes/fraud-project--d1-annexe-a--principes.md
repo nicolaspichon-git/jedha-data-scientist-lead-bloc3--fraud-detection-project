@@ -1,5 +1,5 @@
 ---
-version: v13
+version: v14
 locale: fr
 tags:
   - _RNCP38777
@@ -17,7 +17,7 @@ tags:
 ## Appendices
 ### 1.A. Appendix A : Design Rationale
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe A : Design Rationale / v13 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / B3-D1 / Annexe A : Design Rationale / v14 --- 2026/11/26.*
 ---
 
 ### 1.A.0. Contexte
@@ -111,7 +111,7 @@ Une règle n'est implémentée qu'une seule fois : configuration yaml, composant
 - \[B3-D1\] [Data Infrastructure Design](fraud-project--d1-data-infrastructure.pdf)
 ##### Annexes
 - \[B3-D1-B\] [Data Governance Policy](fraud-project--d1-annexe-b--gouvernance.pdf)
-#### Ressources
+##### Ressources
 - \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
 
 ---

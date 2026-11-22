@@ -1,5 +1,5 @@
 ---
-version: v17
+version: v18
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 0. Introduction
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Introduction / v17 --- 2026/11/26.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Introduction / v18 --- 2026/11/26.*
 ---
 
 ## 0.1. Contexte
