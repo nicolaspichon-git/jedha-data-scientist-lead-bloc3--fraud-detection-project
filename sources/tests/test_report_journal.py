@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DDL = ROOT / "sql" / "ddl" / "110_reports.sql"
 UPSERT = ROOT / "sql" / "reports" / "record_report.sql"
 ABSENCE = ROOT / "sql" / "checks" / "s4_absence.sql"
+ACCEPTANCE = ROOT / "sql" / "checks" / "s4_acceptance.sql"
 
 
 def _code(path: Path) -> str:
@@ -107,7 +108,7 @@ def test_the_row_produce_returns_fits_the_upsert_exactly():
     placeholders = set(re.findall(r"%\((\w+)\)s", _code(UPSERT)))
     produced = {"report_date", "knowledge_date", "path", "content_digest",
                 "n_payments", "n_alerts", "n_verdicts", "n_pending",
-                "model_version", "threshold"}
+                "model_version", "threshold", "day_start"}
     assert placeholders == produced
 
 
@@ -137,9 +138,21 @@ def test_an_empty_table_reports_nothing():
     assert "HAVING count(*) > 0" in _code(ABSENCE)
 
 
-def test_the_check_stops_at_yesterday():
-    """Today's report is not due until tomorrow morning."""
-    assert "current_date - 1" in _code(ABSENCE)
+def test_the_check_stops_at_the_last_report_due():
+    """Yesterday's report is not due until its delivery hour this morning, plus
+    the DAG's 30 minutes. THE DEFECT OF 2026-11-23: "current_date - 1" made
+    `fd-manager check` fail at 01:15 on a morning nobody had missed yet.
+
+    And the delivery hour is not written in the SQL: it is 06:00 or 14:00
+    depending on report.mode, so it is read from the reports' own
+    knowledge_date, the instant each was delivered for."""
+    for code in (_code(ABSENCE), _code(ACCEPTANCE)):
+        assert "AT TIME ZONE 'Europe/Paris'" in code
+        assert "knowledge_date" in code
+        assert "(r.report_date + 1)::timestamp" in code
+        assert "interval '30 minutes'" in code
+        assert "current_date - 1" not in code
+        assert "6 hours" not in code
 
 
 def test_the_check_finds_a_hole_after_the_last_report_too():

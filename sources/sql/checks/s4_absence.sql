@@ -27,7 +27,25 @@
 
 WITH span AS (
     SELECT greatest(min(report_date), current_date - 30) AS first_day,
-           current_date - 1                              AS last_day
+           -- The last day whose report is DUE, not yesterday. The report of
+           -- day D is written on D+1 at the delivery hour of the mode in force
+           -- -- 06:00 nominal, 14:00 demo (governance.yml, report.mode) --
+           -- within its 30-minute dagrun_timeout. Read as "yesterday", the
+           -- check failed every night on a report not yet due.
+           --
+           -- THE HOUR IS READ FROM THE REPORTS THEMSELVES, not written here: a
+           -- report's knowledge_date is the end of its Airflow interval, i.e.
+           -- the delivery instant, so knowledge_date - (report_date + 1 day)
+           -- is the delivery hour. The largest of the last three, so that a
+           -- report produced by hand (knowledge at midnight) does not advance
+           -- the due hour. Just after a switch nominal -> demo, the day before
+           -- the first 14:00 report reads as missing from 06:30 to 14:30.
+           ((now() AT TIME ZONE 'Europe/Paris')
+             - (SELECT max((r.knowledge_date AT TIME ZONE 'Europe/Paris')
+                           - (r.report_date + 1)::timestamp)
+                  FROM (SELECT report_date, knowledge_date FROM fd_reports
+                         ORDER BY report_date DESC LIMIT 3) AS r)
+             - interval '30 minutes')::date - 1          AS last_day
       FROM fd_reports
     HAVING count(*) > 0
 )

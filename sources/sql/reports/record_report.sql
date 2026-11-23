@@ -16,10 +16,10 @@
 -- is the only column whose change carries no meaning.
 INSERT INTO fd_reports (report_date, knowledge_date, produced_at, path,
                         n_payments, n_alerts, n_verdicts, n_pending,
-                        model_version, threshold, content_digest)
+                        model_version, threshold, content_digest, day_start)
 VALUES (%(report_date)s, %(knowledge_date)s, now(), %(path)s,
         %(n_payments)s, %(n_alerts)s, %(n_verdicts)s, %(n_pending)s,
-        %(model_version)s, %(threshold)s, %(content_digest)s)
+        %(model_version)s, %(threshold)s, %(content_digest)s, %(day_start)s)
 ON CONFLICT (report_date) DO UPDATE
    SET knowledge_date = excluded.knowledge_date,
        produced_at    = excluded.produced_at,
@@ -30,4 +30,5 @@ ON CONFLICT (report_date) DO UPDATE
        n_pending      = excluded.n_pending,
        model_version  = excluded.model_version,
        threshold      = excluded.threshold,
-       content_digest = excluded.content_digest;
+       content_digest = excluded.content_digest,
+       day_start      = excluded.day_start;

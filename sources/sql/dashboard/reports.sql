@@ -23,7 +23,8 @@ SELECT report_date,
        n_pending,
        model_version,
        threshold,
-       content_digest
+       content_digest,
+       day_start
   FROM fd_reports
  ORDER BY report_date DESC
  LIMIT %(limit)s;

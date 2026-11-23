@@ -44,6 +44,7 @@ VOLUMES = {
     "pgdata": None,
     "airflow-logs": "airflow_logs_days",
     "mlruns": "mlflow_registry",
+    "producer-cache": "producer_cache",
 }
 
 

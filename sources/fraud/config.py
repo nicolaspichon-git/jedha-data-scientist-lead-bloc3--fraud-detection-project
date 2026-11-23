@@ -99,6 +99,11 @@ class Settings:
     pg_db: str
     pg_user: str
     pg_password: str
+    # report.mode, and the start of the reported day in force (B3-EI07). With
+    # defaults, so that a namespace built by a test without them still reads
+    # as nominal: the calendar day.
+    report_mode: str = "nominal"
+    report_day_start: dt.time = dt.time(0, 0)
 
     def verdict_delay(self) -> dt.timedelta:
         """The delay in force, from the single verdicts.mode switch.
@@ -426,6 +431,43 @@ def _datasets_root(value) -> str:
     return _under_project(value)
 
 
+REPORT_MODES = ("nominal", "demo")
+
+
+def _report_mode(section: dict) -> tuple[str, dt.time, str]:
+    """(mode, day_start, schedule) from report.mode and its block.
+
+    ONE switch, like verdicts.mode: the day and the hour it is delivered move
+    together, or a report would be produced before the day it covers is over
+    -- which report.Window refuses anyway.
+    """
+    mode = str(section.get("mode", "nominal"))
+    if mode not in REPORT_MODES:
+        raise ValueError("report.mode is %r; expected one of %s"
+                         % (mode, ", ".join(REPORT_MODES)))
+    block = section.get(mode)
+    if not isinstance(block, dict):
+        raise ValueError("report.mode is %r but governance.yml has no "
+                         "report.%s block" % (mode, mode))
+    text = str(block["day_start"])
+    if not re.fullmatch(r"([01][0-9]|2[0-3]):[0-5][0-9]", text):
+        raise ValueError("report.%s.day_start is %r; expected HH:MM"
+                         % (mode, text))
+    hours, minutes = (int(x) for x in text.split(":"))
+    return mode, dt.time(hours, minutes), str(block["schedule"])
+
+
+def declared_report_schedule(path: Path | None = None) -> str:
+    """The cadence of dag_daily in the mode in force. GOVERNANCE ONLY.
+
+    Read when Airflow PARSES the DAG file, where load() would also demand the
+    connection variables: this reads the one section it needs and nothing
+    else, so the DAG and governance.yml cannot drift apart.
+    """
+    g = yaml.safe_load((path or governance_path()).read_text(encoding="utf-8"))
+    return _report_mode(g["report"])[2]
+
+
 def governance_path() -> Path:
     for p in CANDIDATES:
         if p and p.is_file():
@@ -469,6 +511,7 @@ def load(path: Path | None = None) -> Settings:
         )
 
     retention = _retention(g["retention"])
+    report_mode, report_day_start, report_schedule = _report_mode(g["report"])
 
     return Settings(
         verdict_mode=str(g["verdicts"]["mode"]),
@@ -501,7 +544,7 @@ def load(path: Path | None = None) -> Settings:
             g["ops"]["max_rejection_rate"], "ops.max_rejection_rate"),
         report_timezone=str(g["report"]["timezone"]),
         report_root=_under_project(g["report"]["root"]),
-        report_schedule=str(g["report"]["schedule"]),
+        report_schedule=report_schedule,
         api_endpoint=str(g["realtime"]["endpoint"]),
         api_timeout_s=float(g["realtime"]["timeout_seconds"]),
         poll_budget_s=_poll_budget(g["realtime"]["poll_budget_seconds"],
@@ -530,4 +573,6 @@ def load(path: Path | None = None) -> Settings:
         pg_db=os.environ["POSTGRES_DB"],
         pg_user=os.environ["POSTGRES_USER"],
         pg_password=os.environ["POSTGRES_PASSWORD"],
+        report_mode=report_mode,
+        report_day_start=report_day_start,
     )

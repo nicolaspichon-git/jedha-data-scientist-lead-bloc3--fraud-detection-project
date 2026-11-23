@@ -171,6 +171,16 @@ def test_the_recorded_paths_are_carried_across_the_move():
     assert "/opt/project/runtime/datasets/" in code
 
 
+def test_the_relative_dataset_paths_are_carried_too():
+    """THE DEFECT OF 2026-11-23: datasets.root is relative, so the rows read
+    'datasets/fraud_scoring/...' and the absolute rewrite matched none of them;
+    check_s5 then reported present files as missing."""
+    code = MIGRATION.read_text(encoding="utf-8")
+    assert "LIKE 'datasets/%'" in code
+    assert "'runtime/' || train_path" in code
+    assert "'runtime/' || test_path" in code
+
+
 def test_init_applies_the_migration_with_the_ddl():
     """The layout change and the rewrite are one operation: a stack whose
     directories moved without its rows points at files that are not there."""

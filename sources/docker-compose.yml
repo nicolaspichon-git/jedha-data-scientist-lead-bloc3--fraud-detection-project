@@ -154,9 +154,12 @@ services:
   #
   #   - built on python:3.11-slim by the Dockerfile of that directory; the
   #     original one, FROM jedha/real-time-payments-api-lead-program, is kept
-  #     in its _old/ and that base is never pulled. Each call still reads
-  #     fraudTest.csv from the course's S3 bucket, so the container needs the
-  #     internet;
+  #     in its _old/ and that base is never pulled. fraudTest.csv is kept in
+  #     the volume producer-cache and downloaded from the course's S3 bucket
+  #     only when that cache is empty, at start-up: the original re-read it at
+  #     every call, a minute each, past gunicorn's worker timeout. The first
+  #     start needs the internet and takes about a minute; the next ones,
+  #     neither. `docker compose down -v` empties the cache;
   #   - gunicorn binds to $PORT: 4000, the port of the vendor's run.sh;
   #   - Airflow reaches it as http://producer:4000 on the compose network
   #     (governance.yml, realtime.endpoint). The host port, bound to 127.0.0.1,
@@ -168,6 +171,15 @@ services:
     build: ./vendor/realtime-transactions-producer
     environment:
       PORT: "4000"
+      # 10/MINUTE, TWICE THE CLIENT'S CADENCE, not the 5/minute of the source.
+      # Its limiter opens a 60 s window at the first call; dag_ingest makes its
+      # five calls in a burst once a minute, and the next burst can arrive a
+      # few tenths of a second before that window closes. At 5, every other
+      # run failed on 429 (2026-11-23). At 10, two consecutive bursts always
+      # fit. The pipeline itself still makes five calls a minute (B3-EI09).
+      PRODUCER_RATE_LIMIT: "10/minute"
+    volumes:
+      - producer-cache:/home/app/data
     ports:
       - "127.0.0.1:8801:4000"
     healthcheck:
@@ -175,7 +187,7 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/docs', timeout=4)"]
       interval: 30s
       timeout: 5s
-      start_period: 30s
+      start_period: 180s             # the first start downloads the corpus
       retries: 3
     restart: unless-stopped
 
@@ -226,4 +238,5 @@ services:
 volumes:
   pgdata:
   mlruns:
+  producer-cache:
   airflow-logs:

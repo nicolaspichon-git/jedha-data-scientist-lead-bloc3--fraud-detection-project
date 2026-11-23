@@ -106,7 +106,12 @@ def today(settings, now: dt.datetime | None = None) -> dt.date:
     alerts as the document of the same day.
     """
     zone = zoneinfo.ZoneInfo(settings.report_timezone)
-    return (now or dt.datetime.now(dt.timezone.utc)).astimezone(zone).date()
+    local = (now or dt.datetime.now(dt.timezone.utc)).astimezone(zone)
+    # The day IN PROGRESS, as the reports count days: in demo mode a day runs
+    # from noon to noon, so at 09:00 the current one is still yesterday's.
+    begins = report.day_start(settings)
+    shift = dt.timedelta(hours=begins.hour, minutes=begins.minute)
+    return (local.replace(tzinfo=None) - shift).date()
 
 
 # THE LONGEST PERIOD A PAGE ACCEPTS. The quarantine is purged at 90 days, so a
@@ -138,11 +143,21 @@ def bounded(first: dt.date, last: dt.date) -> tuple[dt.date, dt.date, bool]:
         return last - dt.timedelta(days=MAX_PERIOD_DAYS - 1), last, True
     return first, last, False
 
+def _formatted_day_bounds(settings, begins=None):
+    bounds = report.day_bounds(settings, begins)
+    return f" ({bounds})" if bounds else ""
 
-def period_label(first: dt.date, last: dt.date) -> str:
+def period_label(first: dt.date, last: dt.date, settings=None) -> str:
+    """Return a string describing the period first..last, with the following format: 
+        - first == last -> "le 2026-11-23"
+            - settings -> "le 2026-11-23 (de 12:00 à 12:00)"
+        - first != last -> "du 2026-11-23 au 2026-11-23"
+            - settings -> "du 2026-11-23 au 2026-11-23 (de 12:00 à 12:00)"
+    """
+    bounds = _formatted_day_bounds(settings)
     if first == last:
-        return "le %s" % report._day(first)
-    return "du %s au %s" % (report._day(first), report._day(last))
+        return "le %s%s" % (report._day(first), bounds)
+    return "du %s au %s%s" % (report._day(first), report._day(last), bounds)
 
 
 # --- the morning report (B3-R2) --------------------------------------------------
@@ -285,11 +300,19 @@ def morning_view(conn, settings, day: dt.date | None = None) -> dict:
 
     if not rows:
         notices.append(Notice(INFO,
-            "Aucun rapport n'a encore été produit. Il est écrit chaque matin à "
-            "06:00 par dag_daily : le DAG est-il activé ?"))
+            "Aucun rapport n'a encore été produit. Il est écrit chaque jour "
+            "par dag_daily, à l'heure déclarée (%s) : le DAG est-il activé ?"
+            % getattr(settings, "report_schedule", "report.schedule")))
         return {"dates": [], "selected": None, "notices": notices,
                 "figures": [], "document": None, "title": None}
 
+    bounds = _formatted_day_bounds(settings)
+    if bounds:
+        notices.append(Notice(INFO,
+            "Mode %s : rapport produit à %s sur la dernière journée%s"
+            % (getattr(settings, "report_mode", "demo"),
+               getattr(settings, "report_schedule", "?"),
+               bounds)))
     by_day = {r["report_date"]: r for r in rows}
     selected = day if day in by_day else rows[0]["report_date"]
     m = morning(settings, by_day[selected])
@@ -324,16 +347,18 @@ def morning_view(conn, settings, day: dt.date | None = None) -> dict:
         ("Alertes", report._count(r["n_alerts"])),
         ("Verdicts échus", report._count(r["n_verdicts"])),
         ("En attente de verdict", report._count(r["n_pending"])),
-        ("Modèle", r["model_version"] or "aucune alerte, aucun modèle à nommer"),
-        ("Seuil", report._ratio(r["threshold"]) if r["threshold"] is not None
-         else "--"),
+        ("Modèle", f"v{r['model_version']}" if r["model_version"] else "--"),
+        ("Seuil", report._ratio(r["threshold"]) if r["threshold"] is not None else "--"),
         ("Connaissance au", _local(settings, r["knowledge_date"])),
         ("Produit le", _local(settings, r["produced_at"])),
     ]
     return {"dates": [r["report_date"] for r in rows], "selected": selected,
             "notices": notices, "figures": figures,
             "document": m.check.text,
-            "title": "Rapport du %s" % report._day(selected)}
+            "title": "Rapport du %s%s" % (
+                report._day(selected),
+                # The row's own start: a report keeps the day it covered.
+                _formatted_day_bounds(settings, by_day[selected].get("day_start")))}
 
 
 # --- the alerts of a day, as a page shows them (B3-R3) ---------------------------
@@ -408,7 +433,7 @@ def frauds_view(conn, settings, first: dt.date | None = None,
     rows = frauds_of_span(conn, settings, first, last)
     head = summary_of(rows)
     cap = capacity(conn, settings)
-    period = period_label(first, last)
+    period = period_label(first, last, settings)
     notices: list[Notice] = []
 
     if clipped:
@@ -599,7 +624,7 @@ def ops_view(conn, settings, first: dt.date | None = None,
     first = first or today(settings, now)
     last = last or first
     first, last, clipped = bounded(first, last)
-    period = period_label(first, last)
+    period = period_label(first, last, settings)
     window = report.span_for(settings, first, last)
     sent = report._rows(conn, OPS_SQL, window.params())
     recorded = health.stored_rows(conn)
@@ -679,13 +704,12 @@ def performances_view(conn, settings, first: dt.date | None = None,
     last = last or today(settings, now)
     first = first or last - dt.timedelta(days=PERF_DEFAULT_DAYS - 1)
     first, last, clipped = bounded(first, last)
-    period = period_label(first, last)
+    period = period_label(first, last, settings)
     window = report.span_for(settings, first, last)
     seen = report.verdicts(conn, window)
     ref = report.reference(conn, settings)
     models = report._rows(conn, PERF_BY_MODEL_SQL, window.params())
-    days = report._rows(conn, PERF_BY_DAY_SQL,
-                        {**window.params(), "zone": settings.report_timezone})
+    days = report._rows(conn, PERF_BY_DAY_SQL, {**window.params(), "zone": settings.report_timezone})
     notices: list[Notice] = []
 
     if clipped:
@@ -694,7 +718,7 @@ def performances_view(conn, settings, first: dt.date | None = None,
                 MAX_PERIOD_DAYS, report._day(first), report._day(last))))
     if ref is None:
         notices.append(Notice(WARNING,
-            "Référence de B3-M5 indisponible : la recette la plus récente n'a pas "
+            "Référence indisponible : la recette la plus récente n'a pas "
             "de mesure enregistrée en base. Si elle a été entraînée avant B3-R10 : "
             ".\\fd-manager.ps1 reference"))
     if not seen["verdicts"]:
@@ -718,13 +742,13 @@ def performances_view(conn, settings, first: dt.date | None = None,
     comparison = [
         {"Indicateur": "Fraudes retrouvées (rappel)",
          "Observé": report._percent(seen["recall_observed"]),
-         "Mesuré en B3-M5 (test)": reference_of("recall")},
+         "Mesuré (training test dataset)": reference_of("recall")},
         {"Indicateur": "Alertes justes (précision)",
          "Observé": report._percent(seen["precision_observed"]),
-         "Mesuré en B3-M5 (test)": reference_of("precision")},
+         "Mesuré (training test dataset)": reference_of("precision")},
         {"Indicateur": "Part de fraudes",
          "Observé": report._share(seen["base_rate_observed"], 3),
-         "Mesuré en B3-M5 (test)": (report._share(ref["base_rate_test"], 3)
+         "Mesuré (training test dataset)": (report._share(ref["base_rate_test"], 3)
                                  if ref else "indisponible")},
     ]
     matrix = [
@@ -742,9 +766,9 @@ def performances_view(conn, settings, first: dt.date | None = None,
                  "Verdicts": report._count(m["verdicts"]),
                  "Fraudes": report._count(m["frauds"]),
                  "Rappel observé": report._percent(m["recall_observed"]),
-                 "Rappel B3-M5": report._percent(m["test_recall"]),
+                 "Rappel mesuré ": report._percent(m["test_recall"]),
                  "Précision observée": report._percent(m["precision_observed"]),
-                 "Précision B3-M5": report._percent(m["test_precision"])}
+                 "Précision mesurée ": report._percent(m["test_precision"])}
                 for m in models]
 
     if seen["verdicts"]:
@@ -754,9 +778,8 @@ def performances_view(conn, settings, first: dt.date | None = None,
                      report._day(seen["payments_to"])))
     else:
         scope = "Verdicts reçus %s." % period
-    note = (scope + " Les deux séries ne se comparent que si la part de "
-            "fraudes est voisine : un écart sur cette part suffit à expliquer "
-            "un écart sur le rappel et la précision.")
+    note = (scope + " Les deux séries ne sont comparables qu'avec des parts de fraudes voisines : "
+            "un écart sur la part suffit à expliquer un écart sur le rappel et la précision.")
     if ref is not None:
         note += " Référence : recette %s." % ref["version"]
     return {"first": first, "last": last, "notices": notices,
@@ -784,7 +807,7 @@ def rejects_view(conn, settings, first: dt.date | None = None,
     first = first or today(settings, now)
     last = last or first
     first, last, clipped = bounded(first, last)
-    period = period_label(first, last)
+    period = period_label(first, last, settings)
     window = report.span_for(settings, first, last)
     rows = report._rows(conn, REJECTS_SQL, window.params())
     total = report._rows(conn, REJECTS_TOTAL_SQL, window.params())[0]

@@ -12,7 +12,7 @@ verdicts:
   # scoring and the measured recall means nothing.
   #   nominal -- delay_days, the real-world figure
   #   demo    -- demo_delay_seconds, so a verdict falls due during a recording
-  mode: nominal
+  mode: demo
 
   # Delay between a transaction and the moment its verdict becomes known.
   # Sets the width of the blind band before the cut-off.
@@ -107,6 +107,11 @@ retention:
       The downloaded historical CSV. It carries personal data but it is the
       SOURCE and downloads again; its place is outside the repository, and it
       is not something B3-S5 destroys.
+    producer_cache: >-
+      The volume producer-cache: the copy of fraudTest.csv the real-time
+      simulator draws from. The same file as local_cache, for the same reason
+      kept: it is the SOURCE, downloads again when the volume is emptied
+      (docker compose down -v), and B3-S5 does not destroy it.
 
 purge:
   # WHEN THE PURGE RUNS. Weekly, Sunday, at an hour when nothing else does:
@@ -350,7 +355,7 @@ ops:
 # here is read by sql/reports/*.sql and by fraud/report.py.
 report:
   # THE ZONE THE CALENDAR DAY IS COUNTED IN, and it is not a detail. The hourly
-  # breakdown of section 1 is read against the night fraud peak measured in B3-M5
+  # breakdown of section 1 is read against the night fraud peak measured at B3-M5
   # -- 84 per cent of the frauds between 22h and 03h -- and a report whose
   # hours were UTC would place that peak two hours off in summer and one in
   # winter. The window bounds themselves are passed by the DAG as absolute
@@ -380,8 +385,33 @@ report:
   # BEWARE WHAT THIS HOUR MEANS FOR THE WINDOW. Airflow's interval for this
   # cadence runs from 06:00 to 06:00, which is NOT a calendar day. The covered
   # day is DERIVED from data_interval_start -- see airflow/dags/dag_daily.py --
-  # and the report always covers midnight to midnight in the zone above.
-  schedule: "0 6 * * *"
+  # and the report covers the day from day_start to day_start, in the zone
+  # above: midnight to midnight in nominal mode.
+  #
+  # TWO MODES, ONE SWITCH, like verdicts.mode. `nominal` is the system as
+  # designed and documented: the calendar day, delivered at 06:00. `demo`
+  # exists for a recording that happens in the afternoon: the day runs from
+  # noon to noon and is delivered at 14:00, so the report of the last 24 hours
+  # exists by the time it is filmed. The report states its bounds in its title
+  # whenever the day does not start at midnight.
+  #
+  # SWITCHING LEAVES A SEAM, said rather than discovered. Airflow resumes after
+  # its last run: switched nominal -> demo on day D, its next run covers D from
+  # noon, and the morning of D (00:00 to 12:00) falls in no report. To cover
+  # it, run by hand the day D-1 of demo mode -- D-1 12:00 to D 12:00, delivered
+  # D 14:00 -- once D 14:00 has passed:
+  #   docker compose exec airflow-scheduler airflow dags trigger dag_daily
+  #     -e <D>T14:00:00+01:00
+  # It REPLACES the nominal report of D-1 (same report_date, a replay). Demo ->
+  # nominal, the half-day is covered twice. After a switch, restart the
+  # scheduler so dag_daily is parsed again.
+  mode: demo
+  nominal:
+    day_start: "00:00"
+    schedule: "0 6 * * *"
+  demo:
+    day_start: "12:00"
+    schedule: "0 14 * * *"
 
 labels:
   # The fraud generator stops injecting on this date: the 38,147 later

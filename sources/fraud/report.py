@@ -126,7 +126,8 @@ class Window:
 
 
 def window_for(settings, day: dt.date,
-               knowledge_at: dt.datetime | None = None) -> Window:
+               knowledge_at: dt.datetime | None = None,
+               day_start: dt.time | None = None) -> Window:
     """THE calendar day covered by a report: midnight to midnight, in the
     declared zone. ONE definition.
 
@@ -148,14 +149,20 @@ def window_for(settings, day: dt.date,
     Competency: B3-C4.
     Covers: B3-EE03.
     """
-    return span_for(settings, day, day, knowledge_at)
+    return span_for(settings, day, day, knowledge_at, day_start)
 
 
 def span_for(settings, first: dt.date, last: dt.date,
-             knowledge_at: dt.datetime | None = None) -> Window:
+             knowledge_at: dt.datetime | None = None,
+             day_start: dt.time | None = None) -> Window:
     """Calendar days `first` to `last` INCLUDED: midnight of the first to
     midnight after the last, in the declared zone. window_for() is the case
     first == last, so there is still one rule for what a day is.
+
+    "Midnight" is the nominal mode. In demo mode the day starts at
+    report.demo.day_start -- noon -- and so does every bound here (day_start()).
+    `day_start`, when given, overrides the mode in force: a RECORDED report is
+    rebuilt with the start it was produced with (fd_reports.day_start).
 
     Read by the dashboard's period selector (B3-S6, lot B3-R8). Every day in between
     is a calendar day, 23 or 25 hours long on a clock change, for the reason
@@ -165,11 +172,41 @@ def span_for(settings, first: dt.date, last: dt.date,
         raise ValueError("the period ends (%s) before it starts (%s)"
                          % (last, first))
     zone = zoneinfo.ZoneInfo(settings.report_timezone)
-    start = dt.datetime.combine(first, dt.time.min, tzinfo=zone)
-    end = dt.datetime.combine(last + dt.timedelta(days=1), dt.time.min,
-                              tzinfo=zone)
+    begins = day_start if day_start is not None else _start_of(settings)
+    start = dt.datetime.combine(first, begins, tzinfo=zone)
+    end = dt.datetime.combine(last + dt.timedelta(days=1), begins, tzinfo=zone)
     return Window(start=start, end=end, knowledge_at=knowledge_at or end,
                   zone=settings.report_timezone)
+
+
+def _start_of(settings) -> dt.time:
+    """day_start() under a name span_for()'s parameter does not shadow."""
+    return day_start(settings)
+
+
+def day_start(settings) -> dt.time:
+    """The hour the reported day starts at: midnight in nominal mode, noon in
+    demo mode (governance.yml, report.mode). Read with a default, so that a
+    configuration that does not carry it is the calendar day.
+
+    The day D then runs from D at that hour to D+1 at that hour. It is still
+    NAMED by its first date, which Window.day reads at the start.
+    """
+    return getattr(settings, "report_day_start", None) or dt.time(0, 0)
+
+
+def day_bounds(settings, begins: dt.time | None = None) -> str:
+    """" "de 12:00 à 12:00" when the day does not start at midnight, else "".
+
+    Said wherever a day is named, so that a noon-to-noon report is never read
+    as a calendar day.
+    """
+    # `begins`: a recorded row's own start, which outlives a change of mode.
+    begins = begins if begins is not None else day_start(settings)
+    if begins == dt.time(0, 0):
+        return ""
+    hour = begins.strftime("%H:%M")
+    return "de %s à %s" % (hour, hour)
 
 
 # --- gathering ----------------------------------------------------------------
@@ -339,6 +376,10 @@ def _plural(count: int, singular: str, plural: str | None = None) -> str:
         return singular
     return plural if plural is not None else singular + "s"
 
+def _formatted_day_bounds(settings, begins: dt.time | None = None):
+    bounds = day_bounds(settings, begins)
+    return f" ({bounds})" if bounds else ""
+
 
 def render(data: dict, settings) -> str:
     """The document, as Markdown. NO PRODUCTION TIMESTAMP -- see the module
@@ -364,19 +405,21 @@ def render(data: dict, settings) -> str:
     out = []
     add = out.append
 
-    add("# Revue : journée du %s" % _day(window.day))
+    # The bounds of THIS window, not of the mode in force: a replay of a
+    # nominal day after a switch to demo still renders the same bytes.
+    bounds = _formatted_day_bounds(settings, window.start.time())
+    add("# Revue : journée du %s%s" % (_day(window.day), bounds))
     add("")
     add("| | |")
     add("|---|---|")
-    add("| Journée couverte | %s \u2192 %s |" % (_instant(window.start),
-                                                  _instant(window.end)))
+    add("| Journée couverte | %s \u2192 %s |" % (_instant(window.start), _instant(window.end)))
     add("| Informations arrêtées au | %s |" % _instant(window.knowledge_at))
     add("| Fuseau horaire | %s |" % window.zone)
     add("| Version(s) de modèle | %s |"
         % (", ".join(versions) or "aucune alerte, donc aucune version"))
     add("| Seuil appliqué | %s |"
         % (", ".join(_ratio(value, 2) for value in thresholds) or "n/a"))
-    add("| Alertes du jour | %s, plafond déclaré %s |"
+    add("| Alertes du jour | %s (plafond : %s) |"
         % (_count(len(alerts_)), _count(data["capacity"])))
     add("")
 
@@ -386,15 +429,12 @@ def render(data: dict, settings) -> str:
         % (_count(waiting), _plural(waiting, "transaction"),
            _plural(waiting, "attend", "attendent")))
     if pending_["last_due_at"] is not None:
-        add("> Il tombera au plus tard le %s." % _day(pending_["last_due_at"]))
+        add("> (au plus tard le %s." % _day(pending_["last_due_at"]))
     if pending_["without_verdict_row"]:
         add("> **%s n'%s aucune ligne de verdict** : `dag_ingest_verdicts` n'a "
             "pas tourné, et l'échéance ne peut donc pas être annoncée."
             % (_count(pending_["without_verdict_row"]),
                _plural(pending_["without_verdict_row"], "a", "ont")))
-    add("> Une fraude se découvre quand le porteur conteste : une colonne "
-        "« fraudes confirmées » à zéro pour cette journée ne dit pas qu'il n'y "
-        "en a pas eu.")
     add("")
 
     # --- 1
@@ -706,6 +746,9 @@ def produce(conn, settings, window: Window) -> dict:
             sorted({alert["model_version"] for alert in alerts_})) or None,
         "threshold": min((alert["threshold"] for alert in alerts_),
                          default=None),
+        # The start of the day covered, as the window was built: the row says
+        # which window it describes, whatever the mode becomes afterwards.
+        "day_start": window.start.time(),
     }
     # AFTER the document, always: recording first would leave the table
     # describing a file nobody wrote, and the absence check would announce a

@@ -111,14 +111,47 @@ def _task_source(name: str) -> str:
 def test_the_cadence_is_the_declared_one():
     """governance.yml declares it. The DAG must not drift from the
     declaration, the way dag_ingest once drifted from B3-D1 on its name."""
-    assert _dag_keywords()["schedule"] == config.load().report_schedule
+    for node in ast.walk(ast.parse(_body())):
+        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "dag":
+            schedule = next(kw.value for kw in node.keywords
+                            if kw.arg == "schedule")
+    # READ, not written: a literal here would stay at 06:00 when report.mode
+    # moves the delivery to 14:00 and the day to noon-to-noon.
+    assert isinstance(schedule, ast.Call)
+    assert getattr(schedule.func, "id", None) == "_declared_schedule"
+    assert config.declared_report_schedule() == config.load().report_schedule
+
+
+def test_the_two_report_modes_are_declared_and_consistent():
+    """nominal: the calendar day, delivered at 06:00; demo: noon to noon,
+    delivered at 14:00. Delivered BEFORE the day is over would be refused by
+    report.Window; the declaration is checked here, not at 06:00."""
+    import datetime as dt
+
+    import yaml
+
+    section = yaml.safe_load(
+        config.governance_path().read_text(encoding="utf-8"))["report"]
+    assert section["mode"] in config.REPORT_MODES
+    for mode, (start, hour) in {"nominal": (dt.time(0), 6),
+                                "demo": (dt.time(12), 14)}.items():
+        _, day_start, schedule = config._report_mode({**section, "mode": mode})
+        assert day_start == start, mode
+        minute, delivered = schedule.split()[:2]
+        assert int(delivered) == hour, mode
+        assert dt.time(int(delivered), int(minute)) > day_start, mode
 
 
 def test_the_report_passes_after_the_verdicts_are_written():
     """A DEPENDENCY AND NOT A PREFERENCE: section 3 reads the verdicts that
     fell, and dag_ingest_verdicts writes them at 02:00. Produced before, the
     section would be empty every morning and nothing would say why."""
-    report_hour = int(_dag_keywords()["schedule"].split()[1])
+    # Both modes: 06:00 nominal and 14:00 demo must pass after 02:00.
+    import yaml
+    section = yaml.safe_load(
+        config.governance_path().read_text(encoding="utf-8"))["report"]
+    report_hour = min(int(config._report_mode({**section, "mode": m})[2].split()[1])
+                      for m in config.REPORT_MODES)
     verdicts = (ROOT / "airflow" / "dags" / "dag_ingest_verdicts.py").read_text(
         encoding="utf-8")
     verdict_hour = int(re.search(r'schedule="\d+ (\d+)', verdicts).group(1))
@@ -191,13 +224,14 @@ def test_the_covered_day_is_derived_and_not_the_interval():
     # And the interval itself is NOT handed over as the window.
     assert "start=context[" not in task
     assert "end=context[" not in task
-    # The one definition does run midnight to midnight, in the declared zone.
+    # The one definition runs from the start of the day to the same hour the
+    # next day -- midnight nominal, noon demo -- in the declared zone.
     import inspect
     from fraud import report
     # window_for() is span_for() over one day since B3-S6/B3-R8; the rule is there.
     assert "span_for(settings, day, day" in inspect.getsource(report.window_for)
     rule = inspect.getsource(report.span_for)
-    assert "dt.time.min" in rule and "dt.timedelta(days=1)" in rule
+    assert "_start_of(settings)" in rule and "dt.timedelta(days=1)" in rule
     assert "settings.report_timezone" in rule
 
 

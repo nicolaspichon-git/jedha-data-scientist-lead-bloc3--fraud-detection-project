@@ -32,6 +32,7 @@ DO $$
 DECLARE
     moved_reports  integer;
     moved_datasets integer;
+    relative_rows  integer;
 BEGIN
     UPDATE fd_reports
        SET path = '/opt/project/runtime/reports/' || right(path, -length('/opt/project/reports/'))
@@ -44,6 +45,23 @@ BEGIN
      WHERE train_path LIKE '/opt/project/datasets/%'
         OR test_path  LIKE '/opt/project/datasets/%';
     GET DIAGNOSTICS moved_datasets = ROW_COUNT;
+
+    -- THE RELATIVE FORM, missed by the rewrite above until 2026-11-23:
+    -- datasets.root is RELATIVE in governance.yml, and datasets.register()
+    -- records str(root / family / version), so the rows written before the
+    -- move read 'datasets/fraud_scoring/...'. check_s5 resolves them against
+    -- the project and found them missing although the files had moved with
+    -- their directory. Same prefix rule: 'runtime/datasets/...' does not
+    -- start with 'datasets/', so this too is idempotent.
+    UPDATE fd_datasets
+       SET train_path = CASE WHEN train_path LIKE 'datasets/%'
+                             THEN 'runtime/' || train_path ELSE train_path END,
+           test_path  = CASE WHEN test_path LIKE 'datasets/%'
+                             THEN 'runtime/' || test_path ELSE test_path END
+     WHERE train_path LIKE 'datasets/%'
+        OR test_path  LIKE 'datasets/%';
+    GET DIAGNOSTICS relative_rows = ROW_COUNT;
+    moved_datasets := moved_datasets + relative_rows;
 
     IF moved_reports > 0 OR moved_datasets > 0 THEN
         RAISE NOTICE 'chemins deplaces sous runtime/ : % rapport(s), % jeu(x)',

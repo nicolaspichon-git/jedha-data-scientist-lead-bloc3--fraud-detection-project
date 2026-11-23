@@ -65,6 +65,16 @@ CREATE TABLE IF NOT EXISTS fd_reports (
         CHECK (content_digest ~ '^[0-9a-f]{64}$')
 );
 
+-- THE START OF THE DAY THIS ROW COVERS: 00:00 nominal, 12:00 demo
+-- (governance.yml, report.mode). Recorded, not re-read from the configuration:
+-- a report produced in one mode must still be checked against ITS window after
+-- the mode changed -- tools/check_s4.py rebuilds the window of every row, and
+-- rebuilt with today's mode it found seven nominal reports "impossible"
+-- (2026-11-23). Added by ALTER so that `init` brings an existing table along;
+-- the rows before it were all produced in nominal mode, hence the default.
+ALTER TABLE fd_reports
+    ADD COLUMN IF NOT EXISTS day_start time NOT NULL DEFAULT '00:00';
+
 -- The absence check walks days; the primary key already orders them, and the
 -- table holds one row a day, so no further index earns its place.
 

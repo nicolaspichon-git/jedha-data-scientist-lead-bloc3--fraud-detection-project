@@ -297,9 +297,9 @@ def test_the_entry_point_declares_the_pages_that_exist(monkeypatch):
     runpy.run_path(str(APP / "app.py"))
     declared = [c[1][0] for c in fake.calls if c[0] == "Page"]
     # In menu order, sections included: Analyse, Exploitation, Suivi.
-    assert declared == ["pages/report.py", "pages/frauds.py", "pages/ops.py",
-                        "pages/operations.py", "pages/rejects.py",
-                        "pages/performances.py"]
+    assert declared == ["pages/report.py", "pages/frauds.py",
+                        "pages/operations.py", "pages/ops.py",
+                        "pages/rejects.py", "pages/performances.py"]
     assert all((APP / p).is_file() for p in declared)
     on_disk = {"pages/%s" % path.name for path in (APP / "pages").glob("*.py")}
     assert on_disk == set(declared), (

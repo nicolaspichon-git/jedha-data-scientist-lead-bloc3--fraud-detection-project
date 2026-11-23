@@ -48,8 +48,8 @@ param(
     [string]$Batch,
 
     [ValidateSet('postgres', 'airflow-init', 'airflow-scheduler',
-                 'airflow-webserver', 'mlflow', 'dashboard',
-                 'producer')]
+                 'airflow-webserver', 'mlflow', 'producer',
+                 'dashboard')]
     [string]$Service,
 
     [string]$TaskId = 'preflight',
@@ -441,7 +441,7 @@ switch ($Task) {
         # status=running, whose support varies.
         # airflow-init is absent from this list: it migrates the schema and
         # then exits. Seeing it as "Exited (0)" is the expected behaviour.
-        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow', 'dashboard', 'producer')
+        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow', 'producer', 'dashboard')
         $up = 0
         foreach ($svc in $expected) {
             $id = @(& docker compose ps -q $svc) -join ''

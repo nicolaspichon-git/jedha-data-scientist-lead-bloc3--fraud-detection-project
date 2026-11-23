@@ -116,7 +116,9 @@ def test_instants_are_shown_in_the_declared_zone(series, tmp_path):
 def test_a_day_without_alerts_names_no_model(series, tmp_path):
     series["rows"] = [row(tmp_path, alerts=0)]
     figures = dict(dashboard.morning_view(None, settings(tmp_path))["figures"])
-    assert "aucun" in figures["Modèle"] and figures["Seuil"] == "--"
+    # "--" for both since the figures were shortened (2026-11-23): a day
+    # without alert has no model and no threshold to name.
+    assert figures["Modèle"] == "--" and figures["Seuil"] == "--"
 
 
 def test_missing_mornings_come_before_everything(series, tmp_path):

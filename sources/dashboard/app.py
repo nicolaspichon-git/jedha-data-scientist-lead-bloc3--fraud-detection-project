@@ -10,7 +10,7 @@ its own connection, as fd_dashboard, through common.connection().
 """
 import streamlit as st
 
-st.set_page_config(page_title="Automatic Fraud Detection", layout="wide")
+st.set_page_config(page_title="Fraud Detection : Dashboard", layout="wide")
 
 PAGES = {
     "Analyse": [

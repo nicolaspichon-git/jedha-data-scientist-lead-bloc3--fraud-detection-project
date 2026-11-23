@@ -29,6 +29,8 @@ from pathlib import Path
 
 import pytest
 
+from fraud import config
+
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / "tools" / "check_s4.py"
 PARIS = dt.timezone(dt.timedelta(hours=1), "CET")
@@ -63,10 +65,11 @@ class _Conn:
 
 
 def _row(day="2026-11-16", digest=None, payments=7200, alerts=44,
-         verdicts=7200, pending=7200, path=None, known_at=None):
+         verdicts=7200, pending=7200, path=None, known_at=None,
+         day_start=dt.time(0, 0)):
     return (dt.date.fromisoformat(day),
             known_at or dt.datetime(2026, 11, 17, 6, tzinfo=PARIS),
-            path, digest, payments, alerts, verdicts, pending)
+            path, digest, payments, alerts, verdicts, pending, day_start)
 
 
 def _rows(tmp_path, rows, counts=None, reference=None, root=ROOT, **over):
@@ -77,7 +80,9 @@ def _rows(tmp_path, rows, counts=None, reference=None, root=ROOT, **over):
                         "n_verdicts": 7200, "n_pending": 7200}
     settings = types.SimpleNamespace(
         report_root=str(tmp_path), report_timezone="Europe/Paris",
-        report_schedule="0 6 * * *")
+        # The cadence DECLARED for the mode in force: the DAG reads the same
+        # declaration, so these tests hold in nominal and in demo mode alike.
+        report_schedule=config.declared_report_schedule())
     for key, value in over.items():
         setattr(settings, key, value)
 
@@ -170,6 +175,23 @@ def test_a_window_that_cannot_be_rebuilt_is_a_criterion_and_not_a_traceback(
     assert "precedes the end" in actual
 
 
+def test_a_row_is_rebuilt_with_the_day_it_was_produced_with(tmp_path):
+    """THE DEFECT OF 2026-11-23. Switched to demo mode, the checker rebuilt
+    every nominal report as noon-to-noon: a window ending at noon, known at
+    06:00 -- seven reports "impossible". Each row records its day_start."""
+    path, digest = _document(tmp_path)
+    nominal_row = _row(digest=digest, path=str(path), day_start=dt.time(0, 0))
+    rows = _rows(tmp_path, [nominal_row], report_day_start=dt.time(12, 0))
+    assert rows["B3-P3 fenetre coherente avec la journee couverte"] == (
+        "0 impossible", "0 impossible")
+
+    demo_row = _row(digest=digest, path=str(path), day_start=dt.time(12, 0),
+                    known_at=dt.datetime(2026, 11, 17, 14, tzinfo=PARIS))
+    rows = _rows(tmp_path, [demo_row])               # nominal mode in force
+    assert rows["B3-P3 fenetre coherente avec la journee couverte"] == (
+        "0 impossible", "0 impossible")
+
+
 def test_several_days_are_all_verified(tmp_path):
     first, digest_first = _document(tmp_path, "2026-11-15")
     second, digest_second = _document(tmp_path, "2026-11-16", "# autre\n")
@@ -197,7 +219,8 @@ def test_an_empty_journal_is_unverified_and_never_passed(tmp_path):
 
 def test_the_cadence_of_the_dag_is_held_to_the_declaration(tmp_path):
     rows = _rows(tmp_path, [])
-    assert rows["B3-P4 cadence de dag_daily"] == ("0 6 * * *", "0 6 * * *")
+    declared = config.declared_report_schedule()
+    assert rows["B3-P4 cadence de dag_daily"] == (declared, declared)
 
 
 def test_a_dag_that_stopped_catching_up_is_caught(tmp_path):
@@ -211,7 +234,7 @@ def test_a_cadence_that_drifts_from_governance_fails(tmp_path):
     rows = _rows(tmp_path, [], report_schedule="37 6 * * *")
     expected, actual = rows["B3-P4 cadence de dag_daily"]
     assert expected == "37 6 * * *"
-    assert actual == "0 6 * * *"
+    assert actual == config.declared_report_schedule()
 
 
 def test_a_report_root_outside_the_project_is_caught(tmp_path):
@@ -306,7 +329,8 @@ def test_the_dag_is_found_where_the_container_mounts_it(tmp_path, monkeypatch):
     with this whole file green."""
     project, _ = _container(tmp_path, monkeypatch)
     rows = _rows(tmp_path, [], root=project)
-    assert rows["B3-P4 cadence de dag_daily"] == ("0 6 * * *", "0 6 * * *")
+    declared = config.declared_report_schedule()
+    assert rows["B3-P4 cadence de dag_daily"] == (declared, declared)
     assert rows["B3-P4 dag_daily rattrape les matins manques"] == ("oui", "oui")
     assert "B3-P4 DAG dag_daily" not in rows
     assert "B3-P4 repertoire des DAG" not in rows

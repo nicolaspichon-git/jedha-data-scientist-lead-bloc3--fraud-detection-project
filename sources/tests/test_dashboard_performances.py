@@ -95,8 +95,8 @@ def test_observed_and_reference_sit_side_by_side(state):
             dashboard.performances_view(None, settings(), DAY, DAY)["comparison"]}
     rappel = rows["Fraudes retrouvées (rappel)"]
     assert rappel["Observé"] == report._percent(0.8)
-    assert rappel["Mesuré en B3-M5 (test)"] == report._percent(0.7512)
-    assert rows["Part de fraudes"]["Mesuré en B3-M5 (test)"] == report._share(0.0058, 3)
+    assert rappel["Mesuré (training test dataset)"] == report._percent(0.7512)
+    assert rows["Part de fraudes"]["Mesuré (training test dataset)"] == report._share(0.0058, 3)
 
 
 def test_no_reference_is_said_with_its_remedy(state):
@@ -104,7 +104,7 @@ def test_no_reference_is_said_with_its_remedy(state):
     view = dashboard.performances_view(None, settings(), DAY, DAY)
     assert levels(view)[0] == dashboard.WARNING
     assert "fd-manager.ps1 reference" in view["notices"][0].text
-    assert view["comparison"][0]["Mesuré en B3-M5 (test)"] == "indisponible"
+    assert view["comparison"][0]["Mesuré (training test dataset)"] == "indisponible"
 
 
 def test_no_verdict_yet_is_explained_by_the_delay(state):
@@ -322,11 +322,11 @@ def _view(series, by_model):
 def test_the_page_shows_notices_figures_then_the_comparison(page):
     names, seen_ = page(_view([{"Jour": "2026-11-17"}], [{"Version du modèle": "3"}]))
     assert names.index("warning") < names.index("metric") < names.index("dataframe")
-    assert "line_chart" in names and names.count("dataframe") == 3
+    assert "vega_lite_chart" in names and names.count("dataframe") == 3
     first, last = seen_["period"]
     assert (last - first).days == dashboard.PERF_DEFAULT_DAYS - 1
 
 
 def test_no_series_draws_no_empty_chart(page):
     names, _ = page(_view([], []))
-    assert "line_chart" not in names and names.count("dataframe") == 2
+    assert "vega_lite_chart" not in names and names.count("dataframe") == 2

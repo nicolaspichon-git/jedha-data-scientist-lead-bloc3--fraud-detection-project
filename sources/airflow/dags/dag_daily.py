@@ -88,10 +88,22 @@ def _mark_failed(context) -> None:
         log.exception("could not mark run %s as failed", run_id)
 
 
+def _declared_schedule() -> str:
+    """The cadence in the report mode in force (governance.yml, report.mode):
+    "0 6 * * *" nominal, "0 14 * * *" demo. READ, NOT WRITTEN HERE, so that a
+    switch of mode moves the delivery hour and the covered day together.
+
+    Read at parse time, governance only: no connection variable is needed to
+    parse a DAG.
+    """
+    from fraud import config
+    return config.declared_report_schedule()
+
+
 @dag(
     dag_id=DAG_ID,
     description="B3-S4/B3-P4: the morning report of the previous calendar day",
-    schedule="0 6 * * *",
+    schedule=_declared_schedule(),
     start_date=pendulum.datetime(2026, 11, 16, tz="Europe/Paris"),
     # THE ONLY TRUE HERE. See the module docstring: a missing morning must be
     # catchable, and a catch-up produces the document of ITS day with the
@@ -148,7 +160,9 @@ def daily():
 
         # The calendar day of the interval's START, read in the declared zone.
         # Its window is report.window_for()'s -- the one definition the
-        # dashboard and the checker read as well.
+        # dashboard and the checker read as well. In demo mode the interval
+        # starts at 14:00 and the day at noon: the date is the same, and the
+        # window runs from that noon to the next.
         day = context["data_interval_start"].astimezone(zone).date()
         window = report.window_for(settings, day,
                                    knowledge_at=context["data_interval_end"])

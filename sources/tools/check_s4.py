@@ -67,7 +67,12 @@ def criteria(root: Path, days: int):
         found = ""
         for line in body.splitlines():
             if line.strip().startswith("schedule="):
-                found = line.split('"')[1] if '"' in line else ""
+                if "_declared_schedule(" in line:
+                    # The DAG reads the declaration: what it schedules is
+                    # what governance.yml declares for the mode in force.
+                    found = config.declared_report_schedule()
+                else:
+                    found = line.split('"')[1] if '"' in line else ""
                 break
         yield item("B3-P4 cadence de dag_daily", settings.report_schedule, found)
         yield item("B3-P4 dag_daily rattrape les matins manques", "oui",
@@ -100,7 +105,7 @@ def _documents(item, conn, settings, zone, root, days):
     with conn.cursor() as cur:
         cur.execute(
             "SELECT report_date, knowledge_date, path, content_digest, "
-            "       n_payments, n_alerts, n_verdicts, n_pending "
+            "       n_payments, n_alerts, n_verdicts, n_pending, day_start "
             "  FROM fd_reports "
             " WHERE report_date >= current_date - %s "
             " ORDER BY report_date DESC", (days,))
@@ -124,7 +129,7 @@ def _documents(item, conn, settings, zone, root, days):
 
     absent, mismatched, recomputed, drifted, impossible = [], [], 0, [], []
     for (day, known_at, path, digest, payments, alerts, verdicts,
-         pending) in rows:
+         pending, day_start) in rows:
         # The path the row RECORDS: this checker runs where the document was
         # written, and that path is the evidence. The verdict itself is
         # report.check_document()'s, the rule the dashboard reads too.
@@ -140,7 +145,11 @@ def _documents(item, conn, settings, zone, root, days):
         # report built on the wrong window is internally consistent and
         # describes another day; only this catches it.
         try:
-            window = report.window_for(settings, day, knowledge_at=known_at)
+            # WITH THE START THE ROW RECORDS, not the mode in force: a nominal
+            # report rebuilt as noon-to-noon after a switch to demo would read
+            # as impossible (2026-11-23).
+            window = report.window_for(settings, day, knowledge_at=known_at,
+                                       day_start=day_start)
         except ValueError as problem:
             # A NAMED CRITERION RATHER THAN A TRACEBACK. dag_daily cannot
             # produce such a row -- its knowledge date is the end of the
