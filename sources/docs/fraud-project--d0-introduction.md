@@ -149,47 +149,48 @@ Les exigences suivantes sont extraites ou déduites de la fiche de projet \[R2\]
 
 Les exigences identifiées dans la section §0.3.2 ne couvrent pas complètement les exigences de compétence spécifiées dans \[R1\] (cf. annexe ci-dessous). Les exigences ci-dessous complètent les exigences issues de \[R2\] pour couvrir complètement les compétences B3-C1 à B3-C5.
 
-| #        | Exigence                                                                                                                                                           | Source       | Type | Vér. |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---- | ---- |
-|          | **B3-C1 : Concevoir**                                                                                                                                                 |              |      |      |
-| **B3-EC01** | Définir la typologie de chaque source et de chaque magasin : format, schéma, encodage, cardinalité, encodage temporel                                              | B3-C1           | D/A  | ✅    |
-| **B3-EC02** | Chiffrer le débit de transactions attendu et fixer un objectif de latence entre l’arrivée d’une transaction et sa notification                                     | B3-C1/B3-EE04    | D/A  | ✅    |
-| **B3-EC03** | Chiffrer la volumétrie de stockage par magasin en régime établi (débit × durée de conservation), distinctement du débit                                            | B3-C1           | D/A  | ✅    |
-| **B3-EC04** | Énoncer les contraintes et normes opérationnelles retenues comme hypothèses : disponibilité attendue, fenêtre de maintenance, conformité applicable                | B3-C1           | D    | ✅    |
-|          | **B3-C2 : Réaliser**                                                                                                                                                  |              |      |      |
-| **B3-EC05** | Mettre en œuvre au moins deux magasins de natures ou de technologies distinctes, et au moins un flux de transformation de l'un vers l'autre                        | B3-C2           | A    | ✅    |
-| **B3-EC06** | Implémenter les transformations du pipeline en code versionné                                                                                                      | B3-C2           | A    | ✅    |
-| **B3-EC07** | Tenir une matrice de traçabilité des exigences → élément d'infrastructure → emplacement du code                                                                    | B3-C2           | D    | ✅    |
-|          | **B3-C3 : Automatiser**                                                                                                                                               |              |      |      |
-| **B3-EC08** | Déclencher chaque flux par un ordonnanceur, sans intervention manuelle, et déclarer la cadence de chacun                                                           | B3-C3/B3-EI06     | A    | ✅    |
-| **B3-EC09** | Exprimer explicitement les dépendances entre tâches et entre flux : ordre d'exécution et conditions de démarrage                                                   | B3-C3           | D    | ✅    |
-| **B3-EC10** | Déclarer et implémenter une politique de reprise en fonction de la nature de chaque tâche : nombre d'essais, délai, comportement terminal en cas d'échec définitif | B3-C3/B3-EE03    | F    | ✅    |
-| **B3-EC11** | Mesurer la durée de chaque exécution, et justifier au moins une décision d'optimisation par cette mesure                                                           | B3-C3           | A/D  | ✅    |
-|          | **B3-C4 : Surveiller**                                                                                                                                                |              |      |      |
-| **B3-EC12** | Journaliser chaque exécution dans un magasin interrogeable : début, fin, état, volumes lus / valides / rejetés, durée                                              | B3-C4           | F    | ✅    |
-| **B3-EC13** | Alerter en cas d'échec ou d'anomalie du pipeline, sur un canal distinct de la notification de fraude                                                               | B3-C4/B3-EE02     | F    | ✅    |
-| **B3-EC14** | Détecter les absences : exécution manquante, exécution à zéro ligne, fraîcheur dépassée                                                                            | B3-C4           | F    | ✅    |
-| **B3-EC15** | Surveiller la qualité dans le temps long : taux de rejet, fraîcheur, complétude                                                                                    | B3-C4           | F    | ✅    |
-| **B3-EC16** | Formaliser une politique de gouvernance écrite : données personnelles identifiées, pseudonymisation ou minimisation, rôles et droits, durées de conservation       | B3-C4           | D    | ✅    |
-| **B3-EC17** | Pseudonymiser ou minimiser les données personnelles dans les magasins exploités                                                                                    | B3-C4/B3-EC16     | F    | ✅    |
-| **B3-EC18** | Appliquer les durées de conservation par un traitement effectif, et tracer les suppressions                                                                        | B3-C4/B3-EC16     | F    | ✅    |
-| **B3-EC19** | Externaliser les secrets                                                                                                                                           | B3-C4           | A    | ✅    |
-| **B3-EC20** | Restreindre les accès aux magasins par rôle                                                                                                                        | B3-C4/B3-EC16     | F    | ✅    |
+| #           | Exigence                                                                                                                                                           | Source        | Type | Vér. |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | ---- | ---- |
+|             | **B3-C1 : Concevoir**                                                                                                                                              |               |      |      |
+| **B3-EC01** | Définir la typologie de chaque source et de chaque magasin : format, schéma, encodage, cardinalité, encodage temporel                                              | B3-C1         | D/A  | ✅    |
+| **B3-EC02** | Chiffrer le débit de transactions attendu et fixer un objectif de latence entre l’arrivée d’une transaction et sa notification                                     | B3-C1/B3-EE04 | D/A  | ✅    |
+| **B3-EC03** | Chiffrer la volumétrie de stockage par magasin en régime établi (débit × durée de conservation), distinctement du débit                                            | B3-C1         | D/A  | ✅    |
+| **B3-EC04** | Énoncer les contraintes et normes opérationnelles retenues comme hypothèses : disponibilité attendue, fenêtre de maintenance, conformité applicable                | B3-C1         | D    | ✅    |
+|             | **B3-C2 : Réaliser**                                                                                                                                               |               |      |      |
+| **B3-EC05** | Mettre en œuvre au moins deux magasins de natures ou de technologies distinctes, et au moins un flux de transformation de l'un vers l'autre                        | B3-C2         | A    | ✅    |
+| **B3-EC06** | Implémenter les transformations du pipeline en code versionné                                                                                                      | B3-C2         | A    | ✅    |
+| **B3-EC07** | Tenir une matrice de traçabilité des exigences → élément d'infrastructure → emplacement du code                                                                    | B3-C2         | D    | ✅    |
+|             | **B3-C3 : Automatiser**                                                                                                                                            |               |      |      |
+| **B3-EC08** | Déclencher chaque flux par un ordonnanceur, sans intervention manuelle, et déclarer la cadence de chacun                                                           | B3-C3/B3-EI06 | A    | ✅    |
+| **B3-EC09** | Exprimer explicitement les dépendances entre tâches et entre flux : ordre d'exécution et conditions de démarrage                                                   | B3-C3         | D    | ✅    |
+| **B3-EC10** | Déclarer et implémenter une politique de reprise en fonction de la nature de chaque tâche : nombre d'essais, délai, comportement terminal en cas d'échec définitif | B3-C3/B3-EE03 | F    | ✅    |
+| **B3-EC11** | Mesurer la durée de chaque exécution, et justifier au moins une décision d'optimisation par cette mesure                                                           | B3-C3         | A/D  | ✅    |
+|             | **B3-C4 : Surveiller**                                                                                                                                             |               |      |      |
+| **B3-EC12** | Journaliser chaque exécution dans un magasin interrogeable : début, fin, état, volumes lus / valides / rejetés, durée                                              | B3-C4         | F    | ✅    |
+| **B3-EC13** | Alerter en cas d'échec ou d'anomalie du pipeline, sur un canal distinct de la notification de fraude                                                               | B3-C4/B3-EE02 | F    | ✅    |
+| **B3-EC14** | Détecter les absences : exécution manquante, exécution à zéro ligne, fraîcheur dépassée                                                                            | B3-C4         | F    | ✅    |
+| **B3-EC15** | Surveiller la qualité dans le temps long : taux de rejet, fraîcheur, complétude                                                                                    | B3-C4         | F    | ✅    |
+| **B3-EC16** | Formaliser une politique de gouvernance écrite : données personnelles identifiées, pseudonymisation ou minimisation, rôles et droits, durées de conservation       | B3-C4         | D    | ✅    |
+| **B3-EC17** | Pseudonymiser ou minimiser les données personnelles dans les magasins exploités                                                                                    | B3-C4/B3-EC16 | F    | ✅    |
+| **B3-EC18** | Appliquer les durées de conservation par un traitement effectif, et tracer les suppressions                                                                        | B3-C4/B3-EC16 | F    | ✅    |
+| **B3-EC19A** | Externaliser les secrets                                                                                                                                           | B3-C4         | A    | ✅    |
+| **B3-EC19B** | Restreindre les accès aux magasins par rôle                                                                                                                        | B3-C4/B3-EC16 | F    | ✅    |
 
 <div style="page-break-after: always;"></div>
 
 | #        | Exigence                                                                                                                                                           | Source       | Type | Vér. |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---- | ---- |
 |          | **B3-C5 : Contrôler et corriger**                                                                                                                                     |              |      |      |
-| **B3-EC21** | Valider chaque enregistrement entrant : schéma, types, valeurs nulles, doublons, valeurs aberrantes                                                                | B3-C5           | F    | ✅    |
-| **B3-EC22** | Valider la cohérence *entre champs* d'un même enregistrement                                                                                                       | B3-C5           | F    | ✅    |
-| **B3-EC23** | Définir et implémenter le sort d'un enregistrement invalide : rejet journalisé, quarantaine motivée, ou correction documentée                                      | B3-C5           | F    | ✅    |
-| **B3-EC24** | Garantir l'idempotence des processus d'ingestion : un rejeu ne doit pas produire de doublon                                                                        | B3-C5/B3-EI08     | F    | ✅    |
-| **B3-EC25** | Permettre le rejeu d'une plage de données déjà ingérée depuis les données conservées, sans réinterroger la source                                                  | B3-C5           | F    | ✅    |
-| **B3-EC26** | Provoquer une erreur et montrer sa détection et son traitement dans la capture vidéo                                                                               | B3-C5/B3-EE06     | L    | ✅    |
+| **B3-EC20** | Valider chaque enregistrement entrant : schéma, types, valeurs nulles, doublons, valeurs aberrantes                                                                | B3-C5           | F    | ✅    |
+| **B3-EC21** | Valider la cohérence *entre champs* d'un même enregistrement                                                                                                       | B3-C5           | F    | ✅    |
+| **B3-EC22** | Définir et implémenter le sort d'un enregistrement invalide : rejet journalisé, quarantaine motivée, ou correction documentée                                      | B3-C5           | F    | ✅    |
+| **B3-EC23** | Garantir l'idempotence des processus d'ingestion : un rejeu ne doit pas produire de doublon                                                                        | B3-C5/B3-EI08     | F    | ✅    |
+| **B3-EC24** | Permettre le rejeu d'une plage de données déjà ingérée depuis les données conservées, sans réinterroger la source                                                  | B3-C5           | F    | ✅    |
+| **B3-EC25** | Provoquer une erreur et montrer sa détection et son traitement dans la capture vidéo                                                                               | B3-C5/B3-EE06     | L    | ✅    |
 |          | **Autres sources**                                                                                                                                                 |              |      |      |
-| **B3-EC27** | Héberger le code sur **GitHub**                                                                                                                                    | R1/B3-D2       | L    | ✅    |
-| **B3-EC28** | Démontrer l'infrastructure dans une configuration déployée, cloud ou on-premise                                                                                    | R1/B3-D3/B3-EE06 | DM   | ✅    |
+| **B3-EC26** | Héberger le code sur **GitHub**                                                                                                                                    | R1/B3-D2       | L    | ✅    |
+| **B3-EC27** | Démontrer l'infrastructure dans une configuration déployée, cloud ou on-premise                                                                                    | R1/B3-D3/B3-EE06 | DM   | ✅    |
+| **B3-EC28** | Structurer le dossier de sorte que les compétences B3-C1..B3-C5 soient localisables par une référence explicite                                                    | R1               | D    | ✅    |
 
 > _Légendes : F : fonctionnelle, L : livrable, A : architecturale, D : documentaire, DM : démonstration, Vér. : vérifiable._
 
@@ -202,9 +203,9 @@ Les exigences identifiées dans la section §0.3.2 ne couvrent pas complètement
 - B3-EC11 : prouve la clause finale de B3-C3 (optimiser les performances de l'infrastructure).
 - B3-EC14 : un pipeline arrêté est indiscernable d'une absence de fraude, et aucun contrôle portant sur les données traitées ne peut capturer cet évènement. 
 - B3-EC15 : marque la frontière entre B3-C4 (surveiller dans la durée) et B3-C5 (contrôler et corriger).
-- B3-EC18/B3-EC25 : la durée de conservation est aussi la fenêtre de rejeu (le rejeu a besoin des données brutes que la rétention supprime).
-- B3-EC19 : pas d'identifiant ou de clé en clair dans le code versionné.
-- B3-EC28 : précise B3-EE06 : \[R1\] dit « en production », ce qui exclut la démonstration depuis un carnet interactif (*notebook*) tout en acceptant l'_on-premise_. 
+- B3-EC18/B3-EC24 : la durée de conservation est aussi la fenêtre de rejeu (le rejeu a besoin des données brutes que la rétention supprime).
+- B3-EC19A : pas d'identifiant ou de clé en clair dans le code versionné.
+- B3-EC27 : précise B3-EE06 : \[R1\] dit « en production », ce qui exclut la démonstration depuis un carnet interactif (*notebook*) tout en acceptant l'_on-premise_. 
 
 ---
 
@@ -242,16 +243,16 @@ Fonctionnalités à construire. D'après §0.3.
 | **B3-F06-2** | Notifier l'analyste de fraude sur les transactions prédites frauduleuses                                                                    | B3-G1             | B3-EE02       |
 |           | **B3-G2**                                                                                                                                      |                |            |
 | **B3-F07-1** | Produire chaque matin le bilan des paiements et des fraudes de la veille, sur fenêtre calendaire                                            | B3-G2             | B3-EE03/B3-EI07 |
-| **B3-F07-2** | Confronter les scores aux verdicts échus pour mesurer le rappelet la précision réellement observés, par version de modèle              | B3-C4             | B3-EI02/B3-EI03 |
+| **B3-F07-2** | Confronter les scores aux verdicts échus pour mesurer le rappel et la précision réellement observés, par version de modèle              | B3-C4             | B3-EI02/B3-EI03 |
 | **B3-F07-3** | Restituer la répartition des rejets par motif                                                                                               | B3-C4/B3-C5         | B3-EC15/B3-EC22 |
 | **B3-F07-4** | Comparer les volumes de transactions entrées avec les volumes de transaction rapportées et rapporter l’écart                                |                | B3-EI08       |
 |           | **Automatisation**                                                                                                                          |                |            |
-| **B3-F08-1** | Orchestrer les traitements à des cadences distinctes,sans intervention manuelle                                                        | B3-C3             | B3-EI06, B3-EC08 |
-| **B3-F08-2** | Exprimer les dépendances entre traitementspar des conditions de garde sur l'historique d'exécution                                     | B3-C3             | B3-EC09       |
+| **B3-F08-1** | Orchestrer les traitements à des cadences distinctes, sans intervention manuelle                                                        | B3-C3             | B3-EI06, B3-EC08 |
+| **B3-F08-2** | Exprimer les dépendances entre traitements par des conditions de garde sur l'historique d'exécution                                     | B3-C3             | B3-EC09       |
 | **B3-F08-3** | Appliquer une politique de reprise : essais, délai, comportement terminal                                                                   |                | B3-EC10       |
 |           | **Qualité**                                                                                                                                 |                |            |
-| **B3-F09-1** | Valider les données entrantes :schéma, types, valeurs nulles, doublons, valeurs aberrantes                                             | B3-C5             | B3-EC20       |
-| **B3-F09-2** | Valider la cohérence **entre** colonnes,et non seulement chaque colonne isolément                                                      | B3-C5             | B3-EC21       |
+| **B3-F09-1** | Valider les données entrantes : schéma, types, valeurs nulles, doublons, valeurs aberrantes                                             | B3-C5             | B3-EC20       |
+| **B3-F09-2** | Valider la cohérence **entre** colonnes, et non seulement chaque colonne isolément                                                      | B3-C5             | B3-EC21       |
 | **B3-F09-3** | Mettre en quarantaine les enregistrements rejetés, avec leur motif                                                                          | B3-C5             | B3-EC22       |
 | **B3-F09-4** | Rejouer le traitement depuis la zone brute (par lot, sans produire de doublon)                                                              | B3-C5             | B3-EC23/B3-EC24 |
 |           | **Monitoring**                                                                                                                          |                |            |
@@ -262,8 +263,8 @@ Fonctionnalités à construire. D'après §0.3.
 |           | **Gouvernance**                                                                                                                             |                |            |
 | **B3-F11-1** | Pseudonymiser l'identifiant porteur (sans recopier les données d'identité dans la couche exploitée) (a)                                     | B3-C4             | B3-EC17       |
 |           | **Sécurité**                                                                                                                                |                |            |
-| **B3-F12-1** | Gérer les secrets                                                                                                                           | B3-C4             | B3-EC19       |
-| **B3-F12-2** | Gérer les accès par rôle                                                                                                                    | B3-C4             | B3-EC19       |
+| **B3-F12-1** | Gérer les secrets                                                                                                                           | B3-C4             | B3-EC19A       |
+| **B3-F12-2** | Gérer les accès par rôle                                                                                                                    | B3-C4             | B3-EC19B       |
 | **B3-F12-3** | Purger les données brutes au-delà de la durée de conservation et tracer la purge                                                            | B3-C4             | B3-EC18       |
 |           | **Démontrabilité**                                                                                                                          |                |            |
 | **B3-F13-1** | Paramétriser les durées qui dépassent celle de la démonstration (délai de verdict, rétention)                                               |                | B3-EE06/B3-EI12 |

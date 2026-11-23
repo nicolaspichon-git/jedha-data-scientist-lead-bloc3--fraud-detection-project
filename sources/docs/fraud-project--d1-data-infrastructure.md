@@ -90,7 +90,7 @@ d'entraînement et d'un historique comportemental.
 
 <div style="page-break-after: always;"></div>
 
-### 1.4.3. Verdicts Source
+### 1.4.4. Verdicts Source
 ###### Diagramme détaillé : S3.4
 ![[diagrams/fraud-project--data-infrastructure--diagram-3-4.md]]
 
