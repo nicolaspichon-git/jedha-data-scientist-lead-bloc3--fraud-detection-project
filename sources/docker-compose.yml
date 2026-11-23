@@ -87,7 +87,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./sql:/work/sql:ro               # for psql -f /work/sql/...
     ports:
-      - "5432:5432"                      # the PostgreSQL protocol, not HTTP
+      - "8431:5432"                      # the PostgreSQL protocol, not HTTP
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -126,7 +126,7 @@ services:
     restart: unless-stopped
     command: webserver
     ports:
-      - "8080:8080"
+      - "8081:8080"
 
   mlflow:
     build: ./mlflow
@@ -146,7 +146,38 @@ services:
     volumes:
       - mlruns:/mlruns
     ports:
-      - "5000:5000"
+      - "8001:5000"
+
+  # THE REAL-TIME SOURCE, run here rather than on Hugging Face: the copy of the
+  # Space's code kept in vendor/realtime-transactions-producer. app.py is left
+  # unchanged -- it is the source, not our code.
+  #
+  #   - built on python:3.11-slim by the Dockerfile of that directory; the
+  #     original one, FROM jedha/real-time-payments-api-lead-program, is kept
+  #     in its _old/ and that base is never pulled. Each call still reads
+  #     fraudTest.csv from the course's S3 bucket, so the container needs the
+  #     internet;
+  #   - gunicorn binds to $PORT: 4000, the port of the vendor's run.sh;
+  #   - Airflow reaches it as http://producer:4000 on the compose network
+  #     (governance.yml, realtime.endpoint). The host port, bound to 127.0.0.1,
+  #     is only for looking at it from this machine;
+  #   - the limit of 5 calls per minute and per address is the Space's own:
+  #     every DAG run calls from the same container, as it did from one address
+  #     before.
+  producer:
+    build: ./vendor/realtime-transactions-producer
+    environment:
+      PORT: "4000"
+    ports:
+      - "127.0.0.1:8801:4000"
+    healthcheck:
+      # /docs answers without spending one of the five calls per minute.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/docs', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
 
   # THE DASHBOARD OF B3-S6 (lot B3-R4). The one container a browser talks to, so it
   # is built to be UNABLE rather than careful:

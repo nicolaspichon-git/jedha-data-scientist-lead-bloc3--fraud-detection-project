@@ -1,5 +1,5 @@
 ---
-version: v17
+version: v16
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 1. Data Infrastructure Design
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v17 --- 2026/11/16.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v16 --- 2026/11/16.*
 ---
 
 ## 1.1. Vue d'ensemble 

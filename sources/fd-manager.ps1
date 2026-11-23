@@ -48,7 +48,8 @@ param(
     [string]$Batch,
 
     [ValidateSet('postgres', 'airflow-init', 'airflow-scheduler',
-                 'airflow-webserver', 'mlflow', 'dashboard')]
+                 'airflow-webserver', 'mlflow', 'dashboard',
+                 'producer')]
     [string]$Service,
 
     [string]$TaskId = 'preflight',
@@ -387,14 +388,15 @@ switch ($Task) {
         Write-Host ""
         & docker compose ps
         Write-Host ""
-        Write-Host "Airflow    : http://localhost:8080   (admin / admin)" -ForegroundColor Cyan
-        Write-Host "MLflow     : http://localhost:5000" -ForegroundColor Cyan
+        Write-Host "Airflow    : http://localhost:8081   (admin / admin)" -ForegroundColor Cyan
+        Write-Host "MLflow     : http://localhost:8001" -ForegroundColor Cyan
         Write-Host "Streamlit  : http://localhost:8501   (fd_dashboard, lecture seule)" -ForegroundColor Cyan
         if (-not $env:FD_DASHBOARD_PASSWORD) {
             Write-Host "  FD_DASHBOARD_PASSWORD est vide : le tableau de bord ne pourra pas se connecter." -ForegroundColor Yellow
             Write-Host "  .\fd-manager.ps1 setup   puis   .\fd-manager.ps1 init" -ForegroundColor Yellow
         }
-        Write-Host "PostgreSQL : localhost:5432" -ForegroundColor Cyan
+        Write-Host "PostgreSQL : localhost:8431" -ForegroundColor Cyan
+        Write-Host "Producteur : http://localhost:8801/docs   (source temps reel)" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Pour consulter la base :  .\fd-manager.ps1 psql"
         Write-Host ""
@@ -439,7 +441,7 @@ switch ($Task) {
         # status=running, whose support varies.
         # airflow-init is absent from this list: it migrates the schema and
         # then exits. Seeing it as "Exited (0)" is the expected behaviour.
-        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow', 'dashboard')
+        $expected = @('postgres', 'airflow-scheduler', 'airflow-webserver', 'mlflow', 'dashboard', 'producer')
         $up = 0
         foreach ($svc in $expected) {
             $id = @(& docker compose ps -q $svc) -join ''
@@ -492,7 +494,7 @@ switch ($Task) {
             & docker compose exec -T airflow-scheduler bash -c $cmd
         }
         Write-Host ""
-        Write-Host "admin / admin   sur http://localhost:8080" -ForegroundColor Green
+        Write-Host "admin / admin   sur http://localhost:8081" -ForegroundColor Green
         Write-Host ""
     }
 

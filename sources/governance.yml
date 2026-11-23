@@ -418,7 +418,10 @@ realtime:
   # Measured in B3-N0 (ws/fraud-project--n0-mesure-api--20261116-0826.md), on a
   # campaign of 60 calls run ALONE -- three overlapping campaigns had reported
   # 13 % failures that were our own load.
-  endpoint: https://sdacelo-real-time-fraud-detection.hf.space/current-transactions
+  # Since 2026-11-23 the source runs in the stack (service producer of
+  # docker-compose.yml). The Space measured above, to switch back:
+  #   https://sdacelo-real-time-fraud-detection.hf.space/current-transactions
+  endpoint: http://producer:4000/current-transactions
 
   # A 502 costs 25 s and is the expensive failure; a 429 costs 0.23 s. A timeout
   # under 26 s would cut off calls that were about to succeed.

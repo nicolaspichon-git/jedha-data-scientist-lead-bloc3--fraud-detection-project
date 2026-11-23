@@ -78,10 +78,11 @@ que le conteneur ne monte pas encore.
 
 | Service | Adresse | Accès |
 | --- | --- | --- |
-| Airflow | <http://localhost:8080> | `admin` / `admin` |
-| MLflow | <http://localhost:5000> | --- |
+| Airflow | <http://localhost:8081> | `admin` / `admin` |
+| MLflow | <http://localhost:8001> | --- |
 | Tableau de bord | <http://127.0.0.1:8501> | cette machine seulement |
-| PostgreSQL | `localhost:5432` | identifiants de `.env` |
+| PostgreSQL | `localhost:8431` | identifiants de `.env` |
+| Producteur temps réel | <http://127.0.0.1:8801/docs> | cette machine seulement ; le pipeline l'appelle en `http://producer:4000` |
 
 Le tableau de bord écoute sur `127.0.0.1` et non sur le réseau : il n'a pas
 d'authentification, et le jour où il quitte cette machine il lui faut un

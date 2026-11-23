@@ -20,8 +20,8 @@ pip install -e ".[dev]"        # pour lancer pytest hors conteneur
 .\fd-manager.ps1 check             # vérifie tous les critères d'acceptation
 ```
 
-La page web du serveur Airflow est sur <http://localhost:8080> (connexion : `admin` / `admin`).
-La page web du serveur MLflow sur <http://localhost:5000>.
+La page web du serveur Airflow est sur <http://localhost:8081> (connexion : `admin` / `admin`).
+La page web du serveur MLflow sur <http://localhost:8001>.
 
 ## Les principes de l'organisation
 
