@@ -89,6 +89,8 @@ Les droits sont accordés à la colonne et non à la table :
 
 **Remarque.** La règle précédente n'est pas tenue pour la quarantaine. `fd_quarantine.payload` conserve la charge brute de chaque ligne rejetée, donc les mêmes données personnelles que la zone brute, et `fd_report` détient un `SELECT` sur toute la table. Le rapport du matin lit bien la quarantaine, mais seulement pour l'invariant de volume (`n_read` = transactions + lignes mises en quarantaine), qui ne touche que `batch_id` et `line_no`. Le correctif est un droit à la colonne excluant `payload`, comme pour les deux cas ci-dessus. Il n'est pas encore appliqué.
 
+<div style="page-break-after: always;"></div>
+
 **Remarque.** La restriction *append-only* vient de révocations (et non d'une convention) :
 
 ```sql
@@ -182,9 +184,14 @@ La purge est un traitement à part entière (`dag_purge`) et suit les règles su
 
 La matrice de traçabilité est produite par `tools/build_traceability.py` et présentée dans le document `TRACEABILITY.md`.
 
+---
+
+<div style="page-break-after: always;"></div>
+
 #### Références
 ##### Spécifications
 - \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](../../step-0/fraud-project--d0-introduction.pdf)
+##### Livrables
 - \[B3-D1\] [*Data Infrastructure Design*](../fraud-project--d1-data-infrastructure.pdf)
 ##### Ressources
 - \[R3\] [Fraudulent Payments full dataset](https://lead-program-assets.s3.eu-west-3.amazonaws.com/M05-Projects/fraudTest.csv)

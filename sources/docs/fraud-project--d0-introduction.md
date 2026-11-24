@@ -21,7 +21,7 @@ tags:
 
 ## 0.1. Contexte
 
-L'objectif de ce document est de présenter l'exercice de réalisation d'un pipeline de données pour l'apprentissage automatique dans le contexte de détection automatique de fraude bancaire spécifié dans \[R2\].
+Ce document présente l'exercice de réalisation d'un pipeline de données pour l'apprentissage machine dans le contexte de détection automatique de fraude bancaire spécifié dans \[R2\].
 
 ## 0.2. Enoncé
 
@@ -175,11 +175,6 @@ Les exigences identifiées dans la section §0.3.2 ne couvrent pas complètement
 | **B3-EC18** | Appliquer les durées de conservation par un traitement effectif, et tracer les suppressions                                                                        | B3-C4/B3-EC16 | F    | ✅    |
 | **B3-EC19A** | Externaliser les secrets                                                                                                                                           | B3-C4         | A    | ✅    |
 | **B3-EC19B** | Restreindre les accès aux magasins par rôle                                                                                                                        | B3-C4/B3-EC16 | F    | ✅    |
-
-<div style="page-break-after: always;"></div>
-
-| #        | Exigence                                                                                                                                                           | Source       | Type | Vér. |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---- | ---- |
 |          | **B3-C5 : Contrôler et corriger**                                                                                                                                     |              |      |      |
 | **B3-EC20** | Valider chaque enregistrement entrant : schéma, types, valeurs nulles, doublons, valeurs aberrantes                                                                | B3-C5           | F    | ✅    |
 | **B3-EC21** | Valider la cohérence *entre champs* d'un même enregistrement                                                                                                       | B3-C5           | F    | ✅    |
@@ -209,6 +204,8 @@ Les exigences identifiées dans la section §0.3.2 ne couvrent pas complètement
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 ## 0.4. Périmètre
 
 On explicite les fonctionnalités à construire, les contraintes à vérifier et la documentation à produire, et on précise les limites des périmètres fonctionnel et architectural de l'infrastructure à réaliser.
@@ -223,11 +220,6 @@ Fonctionnalités à construire. D'après §0.3.
 | **B3-F02-1** | Interroger le simulateur \[R4\] en quasi-temps réel et récupérer les nouvelles transactions                                                 | B3-G1             | B3-EE01/B3-EI09 |
 | **B3-F02-2** | Charger l'historique des transactions \[R3\]                                                                                                |                | B3-EI04/B3-EI05 |
 | **B3-F02-3** | Dissocier la transaction de son verdict (et anti-dater ce dernier)                                                                          |                | B3-EI01/B3-EI02 |
-
-<div style="page-break-after: always;"></div>
-
-| #         | Fonctionnalité                                                                                                                              | C/&nbsp;R1\|R2 | C/ B3-D0      |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------- |
 |           | **Stockage**                                                                                                                                |                |            |
 | **B3-F03-1** | Conserver les données brutes, sans changement (en *append-only*)                                                                            | B3-C2/B3-C5         | B3-EC24       |
 | **B3-F03-2** | Stocker les transactions *typées*, leurs features et leur prédiction                                                                        | B3-C2             | B3-EE08/B3-EI03 |
@@ -269,8 +261,6 @@ Fonctionnalités à construire. D'après §0.3.
 |           | **Démontrabilité**                                                                                                                          |                |            |
 | **B3-F13-1** | Paramétriser les durées qui dépassent celle de la démonstration (délai de verdict, rétention)                                               |                | B3-EE06/B3-EI12 |
 > _Légende : C/ R1|R2 : couvre un élément de R1 ou de R2, C/ B3-D0 : couvre une exigence B3-D0 (EE, EI, EC)_
-
-<div style="page-break-after: always;"></div>
 
 ###### Remarques
 - (a) On suppose qu'une requête de transaction contient nécessairement les informations suivantes : nom, prénom, rue, date de naissance, profession, coordonnées du domicile, numéro de carte bancaire (tokenisé ou non).
@@ -332,6 +322,8 @@ D'après \[R2\].
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 ## Annexe : Compétences à démontrer
 
 Compétences à démontrer dans le réalisation de l'exercice. D'après \[R1\].
@@ -351,5 +343,3 @@ Compétences à démontrer dans le réalisation de l'exercice. D'après \[R1\].
 - \[R2\] [Automatic Fraud Detection Project](https://app.jedha.co/course/etl-with-airflow-lds/automatic-fraud-detection-project-lds)
 - \[R3\] [Fraudulent Payments full dataset](https://lead-program-assets.s3.eu-west-3.amazonaws.com/M05-Projects/fraudTest.csv)
 - \[R4\] [Real-time payment API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
-
----

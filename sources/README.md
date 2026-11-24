@@ -22,7 +22,7 @@ Le système est construit autour de deux à trois points d'entrée, de sept proc
 		- \> la source de verdicts est, fortuitement, le producteur de transaction ;
 		- \> mais ce double rôle n'est pas une obligation : il est tout à fait possible d'imaginer deux sources distinctes (de fait, dans la vraie vie, les transactions et les verdicts ne sont pas du tout produits à la même cadence) ;
 - Processus : 
-	- six processus, exprimés en *DAG* (*Directed Acyclic Graph*) et orchestrés par *Airflow* (cf. détails ci-après) ;
+	- six processus, dont cinq automatisés, exprimés en *DAG* (*Directed Acyclic Graph*) et orchestrés par *Airflow* (cf. détails ci-après) ;
 - Points de sortie :
 	- 2 canaux de notifications représentés par des fichiers locaux ;
 	- 1 application de restitution continue qui affiche un tableau de bord en lecture seule.

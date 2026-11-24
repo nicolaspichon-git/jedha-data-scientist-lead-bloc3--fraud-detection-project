@@ -109,8 +109,6 @@ Une règle n'est implémentée qu'une seule fois : configuration yaml, composant
 - \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
 ##### Livrables
 - \[B3-D1\] [Data Infrastructure Design](fraud-project--d1-data-infrastructure.pdf)
-##### Annexes
-- \[B3-D1-B\] [Data Governance Policy](fraud-project--d1-annexe-b--gouvernance.pdf)
 ##### Ressources
 - \[R4\] [Real-time fraud detection API](https://huggingface.co/spaces/sdacelo/real-time-fraud-detection)
 
