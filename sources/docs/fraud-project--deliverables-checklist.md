@@ -29,12 +29,12 @@ A **video** capture of your working infrastructure on an example.
 # References
 
 #### Specifications
-- \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](fraud-project--d0-introduction.pdf)
+- \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](deliverables/fraud-project--d0-introduction.pdf)
 
 #### Deliverables
-- \[B3-D1\] [The Data Infrastructure Diagram](fraud-project--d1-data-infrastructure-diagram.pdf)
-- \[B3-D2\] [The source code](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project)
-- \[B3-D3\] [A video capture](fraud-project--d3-a-video-capture-vidyard-link)
+- \[B3-D1\] [The Data Infrastructure Diagram](deliverables/fraud-project--d1-data-infrastructure-diagram.pdf)
+- \[B3-D2\] [The source code](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project.git)
+- \[B3-D3\] [A video capture](deliverables/fraud-project--d3-a-video-capture-vidyard-link)
 
 #### Appendices
 - \[B3-D1-A\] [Design Rationale](annexes/fraud-project--d1-annexe-a--principes.pdf)

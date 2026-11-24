@@ -1,11 +1,12 @@
 *AUTOMATIC FRAUD DETECTION* PROJECT
 ===
 
-Ce répertoire contient le code source de l'infrastructure de données réalisée pour le projet de détection de fraude automatique [B3-D0](fraud-project--d0-introduction.pdf). 
+Ce répertoire contient le code source de l'infrastructure de données réalisée pour le projet de détection de fraude automatique [B3-D0](deliverables/fraud-project--d0-introduction.pdf). 
 
 Le système réalisé est un système de détection de fraude sur les paiements par carte : il ingère minute par minute les transactions d'une application temps-réelle, les score avec un modèle entraîné sur un historique de transaction libellées, notifie un analyste dans une limite de capacité donnée, et rend compte chaque matin des transactions et des fraudes détectées la veille.
 
-L'architecture des pipelines de données est présentée dans \[B3-D1\](fraud-project--d1-data-infrastructure.pdf). 
+L'architecture des pipelines de données est présentée dans [B3-D1](deliverables/fraud-project--d1-data-infrastructure.pdf). 
+le code source est hébergé sous [B0-D2](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project.git).
 
 ---
 
