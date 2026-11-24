@@ -134,3 +134,14 @@ def test_the_declared_schedule_is_the_one_load_reads():
     section = yaml.safe_load(
         config.governance_path().read_text(encoding="utf-8"))["report"]
     assert config.declared_report_schedule() == config._report_mode(section)[2]
+
+
+def test_the_alert_hours_are_written_in_the_declared_zone():
+    """THE DEFECT OF THE 2026-11-22 REPORT: PostgreSQL hands txn_ts back in
+    UTC, and section 2 showed 09:50 for a payment made at 10:50 in Paris."""
+    import test_report as tr
+
+    utc = dt.datetime(2026, 11, 23, 9, 50, tzinfo=dt.timezone.utc)
+    alert = {**tr._alert(), "txn_ts": utc}
+    text = report.render(tr._data(alerts=[alert]), tr._settings())
+    assert "| 1 | 10:50 |" in text

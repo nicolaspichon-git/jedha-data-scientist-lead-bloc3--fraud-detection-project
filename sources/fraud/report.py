@@ -413,7 +413,8 @@ def render(data: dict, settings) -> str:
     add("| | |")
     add("|---|---|")
     add("| Journée couverte | %s \u2192 %s |" % (_instant(window.start), _instant(window.end)))
-    add("| Informations arrêtées au | %s |" % _instant(window.knowledge_at))
+    add("| Informations arrêtées au | %s |" % _instant(
+        window.knowledge_at.astimezone(zoneinfo.ZoneInfo(window.zone))))
     add("| Fuseau horaire | %s |" % window.zone)
     add("| Version(s) de modèle | %s |"
         % (", ".join(versions) or "aucune alerte, donc aucune version"))
@@ -482,7 +483,12 @@ def render(data: dict, settings) -> str:
         for rank, row in enumerate(alerts_, 1):
             add("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |"
                 % (rank,
-                   row["txn_ts"].strftime("%H:%M"),
+                   # In the declared zone, like every other time in the
+                   # document: PostgreSQL hands timestamps back in the
+                   # session's zone, UTC, and the 2026-11-22 report showed
+                   # 09:50 for a payment made at 10:50 in Paris.
+                   row["txn_ts"].astimezone(
+                       zoneinfo.ZoneInfo(window.zone)).strftime("%H:%M"),
                    row["merchant"], row["category"],
                    _amount(row["amt"]), _ratio(row["score"]),
                    _amount(row["expected_loss"]),

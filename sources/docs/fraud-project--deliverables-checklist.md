@@ -32,13 +32,14 @@ A **video** capture of your working infrastructure on an example.
 - \[B3-D0\] [*Automatic Fraud Detection Project* Introduction](deliverables/fraud-project--d0-introduction.pdf)
 
 #### Deliverables
-- \[B3-D1\] [The Data Infrastructure Diagram](deliverables/fraud-project--d1-data-infrastructure-diagram.pdf)
+- \[B3-D1\] [The Data Infrastructure Diagram](deliverables/fraud-project--d1-data-infrastructure.pdf)
 - \[B3-D2\] [The source code](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project.git)
-- \[B3-D3\] [A video capture](deliverables/fraud-project--d3-a-video-capture-vidyard-link)
+- \[B3-D3\] [A video capture](https://www.swisstransfer.com/dl/01a20e1b-e023-7251-aaa0-300372188cad) (\*)
+	- (\*) lien provisoire valable jusqu'au 2026/112/23.
 
 #### Appendices
-- \[B3-D1-A\] [Design Rationale](annexes/fraud-project--d1-annexe-a--principes.pdf)
-- \[B3-D1-B\] [Data Governance Policy](annexes/fraud-project--d1-annexe-b--gouvernance.pdf)
+- \[B3-D1-A\] [Design Rationale](deliverables/annexes/fraud-project--d1-annexe-a--principes.pdf)
+- \[B3-D1-B\] [Data Governance Policy](deliverables/annexes/fraud-project--d1-annexe-b--gouvernance.pdf)
 
 #### Ressources
 - \[R1\] [Jedha Certification - AIA/BC03](https://app.jedha.co/certifications/rncp38777bc03)

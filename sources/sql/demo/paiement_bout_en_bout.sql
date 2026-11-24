@@ -8,11 +8,12 @@
 -- meta-commands arrives as ONE line: the first backslash command then swallows
 -- the rest as its arguments, quotes stripped. \i reads the file line by line.
 --
--- THE EXAMPLE. The notified fraud of YESTERDAY (Paris) that weighs the most,
--- score times amount: it opens section 2 of this morning's report. If
--- yesterday holds none, the most recent notified fraud WHOSE DAY HAS A REPORT
--- -- a fraud of today has none until tomorrow's delivery, and act 3 ends on
--- the report. Only then a fraud without one. The day and its report are printed.
+-- THE EXAMPLE. A fraud whose day HAS A REPORT comes first: act 3 ends on
+-- the report, and a day has none until its delivery (06:00 nominal, 14:00
+-- demo). Among those, the notified fraud of YESTERDAY (Paris) that weighs the
+-- most, score times amount: it opens section 2 of yesterday's report. Else the
+-- most recent reported day. Only then a fraud without a report. The day and
+-- its report are printed.
 --
 -- Reads only. Shows the NAMES of the identifying fields of the raw zone,
 -- never their values.
@@ -53,7 +54,7 @@ SELECT txn_id,
           FROM fd_frauds f
           JOIN fd_transactions t USING (txn_id)
          WHERE f.notified_at IS NOT NULL) AS c
- ORDER BY hier DESC, rapporte DESC, jour DESC, poids DESC
+ ORDER BY rapporte DESC, hier DESC, jour DESC, poids DESC
  LIMIT 1 \gset
 
 \if :{?txn_id}
