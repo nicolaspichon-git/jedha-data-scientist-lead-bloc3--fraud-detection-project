@@ -1,5 +1,5 @@
 ---
-version: v18
+version: v19
 locale: fr
 tags:
   - _RNCP38777
@@ -16,7 +16,7 @@ tags:
 
 # 1. Data Infrastructure Design
 
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v18 --- 2026/11/16.*
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Data Infrastructure Design / v19 --- 2026/11/16.*
 ---
 ## 1.0. Contexte 
 
@@ -112,7 +112,7 @@ Les composants principaux de l'infrastructure sont conteneurisés (*Airflow*, *P
 *Object :* amorcer le système : charger les transactions historiques libellées pour disposer d'un jeu
 d'entraînement et d'un historique comportemental.
 
-###### Diagramme détaillé : B3-S1
+###### Diagramme
 ![[diagrams/fraud-project--data-infrastructure--diagram-1.md]]
 
 <div style="page-break-after: always;"></div>
@@ -161,7 +161,8 @@ d'entraînement et d'un historique comportemental.
 
 ## 1.5. Reporting quotidien
 *Objet :* produire périodiquement, le matin, un rapport des transactions et des fraudes prédites de la veille.
-###### Diagramme détaillé : B3-S4
+
+###### Diagramme 
 ![[diagrams/fraud-project--data-infrastructure--diagram-4.md]]
 
 <div style="page-break-after: always;"></div>

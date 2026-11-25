@@ -481,7 +481,8 @@ realtime:
   #
   # That makes the cadence a constraint of the calibration, not a comfort
   # setting: fraud/threshold.py works at API_TXN_PER_DAY = 7200, five a minute,
-  # and both the threshold 0.93 and the capacity of 60 alerts/day rest on it. At
+  # and both the operating threshold (0.89 for the recipe in service, read from
+  # its run.json) and the capacity of 60 alerts/day rest on it. At
   # one run a minute of five calls we observe 7,200 a day and the figures mean
   # what they say. At one run every five minutes we would observe 1,152 -- 16 %
   # of the traffic -- and the capacity would be wrong by a factor of six while
@@ -489,10 +490,12 @@ realtime:
   schedule: "* * * * *"
   calls_per_run: 5
 
-  # Five, not four. Four was chosen in B3-N1 for margin under the limiter, which
-  # fired at 13 calls/minute and never below -- and five keeps a factor of 2.6
-  # there. What moved the number is coverage, measured against the announced
-  # rate above, and not the limiter.
+  # Five, not four. Four was chosen in B3-N1 for margin under the limiter of the
+  # hosted API, announced at five calls a minute. What moved the number is
+  # coverage, measured against the announced rate above, and not the limiter.
+  # The local producer (docker-compose.yml, PRODUCER_RATE_LIMIT) is set to ten a
+  # minute: a factor of two over these five, which leaves room for a manual
+  # ingest_once beside dag_ingest without a 429.
   #
   # The time budget, from B3-N0: median latency 5.4 s, so five sequential calls take
   # about 27 s of the minute. One 502 costs 25 s, which brings the worst
