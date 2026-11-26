@@ -1,5 +1,5 @@
 ---
-version: v03
+version: v04
 locale: en
 tags:
   - _RNCP38777
@@ -14,7 +14,7 @@ tags:
 
 # Deliverables Checklist
   
-> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Checklist / v03 --- 2026/11/26.*  
+> *Nicolas Pichon --- AIA RNCP 38777 / BC03 / Checklist / v04 --- 2026/11/26.*  
 ---
 
 ## B3-D1. The Data Infrastructure Diagram
@@ -34,8 +34,9 @@ A **video** capture of your working infrastructure on an example.
 #### Deliverables
 - \[B3-D1\] [The Data Infrastructure Diagram](deliverables/fraud-project--d1-data-infrastructure.pdf)
 - \[B3-D2\] [The source code](https://github.com/nicolaspichon-git/jedha-data-scientist-lead-bloc3--fraud-detection-project.git)
-- \[B3-D3\] [A video capture](https://www.swisstransfer.com/dl/01a20e1b-e023-7251-aaa0-300372188cad) (\*)
-	- (\*) lien provisoire valable jusqu'au 2026/112/23.
+- \[B3-D31\] [The presentation](deliverables/fraud-project--d3-presentation-slides.pdf)
+- \[B3-D32\] [A video capture](https://www.swisstransfer.com/dl/01a20e1b-e023-7251-aaa0-300372188cad) (\*)
+	- (\*) lien provisoire valable jusqu'au 2026/12/23.
 
 #### Appendices
 - \[B3-D1-A\] [Design Rationale](deliverables/annexes/fraud-project--d1-annexe-a--principes.pdf)
